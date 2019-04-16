@@ -1,13 +1,12 @@
-#!/usr/bin/python3
-# -*- coding: iso-8859-15 -*-
+# -*- coding: UTF-8 -*-
 """Mappilary Dataset.
 
 This module creates a class that extends the torch Dataset object to parse the
-mappilary dataset images. Each data point in the dataset contains a dictionary
+mapillary dataset images. Each data point in the dataset contains a dictionary
 containing the raw image, the segmentation, and the panoptic segmentation.
 
 Authors:
-    Yvan Satyawan <ys88@saturn.uni-freiburg.de>
+    Yvan Satyawan <y_satyawan@hotmail.com>
 """
 import torch
 from os import listdir
@@ -28,7 +27,7 @@ class augment:
             image (imageio.core.util.Array): The image to be augmented.
 
         Returns:
-            (imageio.core.util.Array): The augmented image.
+            imageio.core.util.Array: The augmented image.
         """
         # Define the probabilities
         def rl(aug):
@@ -99,7 +98,7 @@ class MappilaryDataset(Dataset):
         to the number of image in every on eof the other directories.
 
         Returns:
-            (int) The number of images in the dataset.
+            int: The number of images in the dataset.
         """
         return len(listdir(self.images_dir))
 
@@ -111,7 +110,7 @@ class MappilaryDataset(Dataset):
             idx (int): The id of the item number that is requested.
 
         Returns:
-            A dictionary with the keys (raw, segment, panoptic), each with their
+            dict: A sample with keys (raw, segment, panoptic), each with their
             corresponding image as a tensor.
         """
         # Set paths
@@ -135,7 +134,7 @@ class MappilaryDataset(Dataset):
             tensor.
 
         Returns:
-            (torch.Tensor): The image as a torch tensor.
+            torch.Tensor: The image as a torch tensor.
         """
         if self.with_aug:
             # apply image augmentation sequential
@@ -144,7 +143,6 @@ class MappilaryDataset(Dataset):
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
-
         image = image.transpose((2, 0, 1))
 
         return torch.from_numpy(image).to(dtype=torch.float)

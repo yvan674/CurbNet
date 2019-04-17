@@ -12,8 +12,6 @@ Author:
 import tkinter as tk
 import numpy as np
 from PIL import ImageTk, Image
-import os
-
 
 class TrainingGUI:
     def __init__(self, total_epoch):
@@ -48,11 +46,13 @@ class TrainingGUI:
         self.step_var = tk.StringVar(master=self.root, value="Step: 0/0")
         self.epoch_var = tk.StringVar(master=self.root, value="Epoch: 0/{}"
                                       .format(total_epoch))
+
         self.rate_var = tk.StringVar(master=self.root, value="Rate: 0 steps/s")
+        self.time_var = tk.StringVar(master=self.root, value="Time left: 0:00")
 
         self.accuracy_var = tk.StringVar(master=self.root, value="0.00%")
         self.loss_var = tk.StringVar(master=self.root, value="Loss: 0.00")
-        self.time_var = tk.StringVar(master=self.root, value="Time left: 0:00")
+
         self.status = tk.StringVar(master=self.root, value="Preparing dataset")
 
         # Prepare image canvases
@@ -96,17 +96,18 @@ class TrainingGUI:
         tk.Label(self.root, textvariable=self.time_var).grid(row=2, column=2,
                                                              sticky="W", padx=5,
                                                              pady=5)
+
         # Row 3 labels
         tk.Label(self.root, textvariable=self.status).grid(row=3, column=1,
                                                            columnspan=3,
-                                                           sticky="SW", padx=5,
+                                                           sticky="NW", padx=5,
                                                            pady=5)
 
         # Update root so it actually shows something
         self._update()
 
         # Tell the user the window is loaded
-        self.status.set("Window Loaded.")
+        self.update_status("GUI window loaded.")
 
         # Bring the window to the front
         self._lift()
@@ -141,6 +142,7 @@ class TrainingGUI:
             message (str): The new message that should displayed.
         """
         self.status.set(message)
+        print(message)
         self._update()
 
     def _update(self):

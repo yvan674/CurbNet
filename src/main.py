@@ -20,8 +20,9 @@ def parse_arguments():
         - Plot path (optional)
         - Inference mode
         - Path to weights
+        - Image augmentation
     """
 
 if __name__ == "__main__":
     t = Trainer()
-    t.train("", 5, 5, "", "")
+    t.train("", 5, 5, "", "", True)

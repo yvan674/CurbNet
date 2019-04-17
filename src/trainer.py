@@ -13,7 +13,9 @@ import torch.nn as nn
 from time import strftime, gmtime
 from os import path
 from gui.training_gui import TrainingGUI
+from utils.mapillarydataset import MappilaryDataset
 import time
+from torch.utils.data.dataloader import DataLoader
 
 
 class Trainer:
@@ -44,7 +46,8 @@ class Trainer:
         # Set the network to train
         self.network.train()
 
-    def train(self, data_path, batch_size, num_epochs, plot_path, save_path):
+    def train(self, data_path, batch_size, num_epochs, plot_path, save_path,
+              augmentation):
         """Start training the network.
 
         Args:
@@ -53,7 +56,8 @@ class Trainer:
             num_epochs (int): Number of epochs to run the trainer for.
             plot_path (str): Path to save the loss plot. This should be a
                              directory.
-            save_path (str): The path to the weights
+            save_path (str): The path to the weights,
+            augmentation (bool): Whether or not to use augmentation,
         """
         counter = 0
 
@@ -65,7 +69,21 @@ class Trainer:
         # Create GUI
         gui = TrainingGUI(num_epochs)
 
-        # Load the parameters list
+        # Load the dataset
+        dataset = MappilaryDataset(data_path, augmentation)
+        data_loader = DataLoader(dataset,
+                                 batch_size,
+                                 shuffle=True)
+
+        gui.update_status("Dataset loaded.")
+
+        # Load the state dictionary
+        if path.isfile(save_path):
+            self.network.load_state_dict(torch.load(save_path))
+            gui.update_status("Loaded weights into state dictionary.")
+        else:
+            gui.update_status("Warning: Weights do not exist. "
+                              "Running with random weights.")
 
 
 

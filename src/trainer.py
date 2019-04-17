@@ -6,7 +6,6 @@ This class implements the necessary functions to train the network.
 Authors:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
-
 from curbnet import CurbNet
 import torch
 import torch.nn as nn
@@ -67,7 +66,10 @@ class Trainer:
         # Plot save location. This is a plot of the accuracy and loss over time.
         # The plot should be saved every 10 batches
         plot_path = path.join(plot_path, strftime("%Y_%m_%d_%H-%M-%S", gmtime())
-                             + '-loss_data.csv')
+                              + '-loss_data.csv')
+
+        loss_file = open(plot_path, 'a')
+        loss_file.write("loss, accuracy\n")
 
         # Create GUI
         gui = TrainingGUI(num_epochs)
@@ -128,10 +130,29 @@ class Trainer:
                 if counter % 2 == 0:
                     rate = float(counter)/(time.time() - start_time)
 
+                loss_value = loss.item()
+
                 gui.update_data(target=target_image[0],
                                 generated=out.cpu().detach()[0],
                                 step=data[0] + 1,
                                 epoch=epoch,
                                 accuracy=accuracy,
-                                loss=loss.item(),
+                                loss=loss_value,
                                 rate=rate)
+
+                # Write to the plot file every step
+                loss_file.write("{}, {}\n".format(loss_value, accuracy))
+
+        # Now save the loss and accuracy file
+        loss_file.close()
+
+        # Save the weights
+        torch.save(self.network.state_dict(),
+                   weights_path)
+
+        torch.cuda.empty_cache()
+
+        gui.update_status("Done training.")
+        # TODO plot output
+        gui.mainloop()
+

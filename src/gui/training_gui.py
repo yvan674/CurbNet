@@ -14,6 +14,7 @@ import numpy as np
 from PIL import ImageTk, Image
 import datetime
 
+
 class TrainingGUI:
     def __init__(self, total_epoch):
         """Creates a GUI to show training status.
@@ -150,7 +151,7 @@ class TrainingGUI:
 
         # Calculate time left
         if rate == 0:
-            time_left = ("NaN")
+            time_left = "NaN"
         else:
             time_left = int(((self.total_steps * self.total_epochs)
                              - ((float(step) + 1.)
@@ -193,3 +194,10 @@ class TrainingGUI:
         """
         self.total_steps = total_steps
         self.step_var.set("Step: 0/{}".format(total_steps))
+
+    def mainloop(self):
+        """Calls the mainloop() function.
+
+        Called at the end of training to keep the window on the screen.
+        """
+        self.root.mainloop()

@@ -9,6 +9,7 @@ import argparse
 from trainer import Trainer
 import sys
 
+
 def parse_arguments():
     """Parses arguments.
 
@@ -82,6 +83,7 @@ def parse_arguments():
         parser.error("Must profile a specific mode")
 
     return arguments
+
 
 def main(arguments):
     """Main function that runs everything.

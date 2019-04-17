@@ -17,6 +17,8 @@ class CurbNet(nn.Module):
         """A neural network that identifies and segments curbs and curb cuts."""
         super(CurbNet, self).__init__()  # Initialize the superclass
 
+        self.fc1 = nn.Linear(5, 5)
+
         # Nothing here yet
 
     def forward(self, img):
@@ -28,4 +30,5 @@ class CurbNet(nn.Module):
         Returns:
             (torch.Tensor): The segmentation of the image.
         """
-        return img
+        out = self.fc1(img)
+        return out

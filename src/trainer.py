@@ -34,19 +34,19 @@ class Trainer:
         # classification
         self.criterion = nn.CrossEntropyLoss
 
-        # # Set the optimizer according to the arguments
-        # if optimizer == "adam":
-        #     self.optimizer = torch.optim.Adam(self.network.parameters(), lr=lr)
-        # elif optimizer == "sgd":
-        #     self.optimizer = torch.optim.SGD(self.network.parameters(), lr=lr)
-        # else:
-        #     raise ValueError("Illegal optimizer value: only SGD and Adam"
-        #                      "optimizers are currently supported.")
+        # Set the optimizer according to the arguments
+        if optimizer == "adam":
+            self.optimizer = torch.optim.Adam(self.network.parameters(), lr=lr)
+        elif optimizer == "sgd":
+            self.optimizer = torch.optim.SGD(self.network.parameters(), lr=lr)
+        else:
+            raise ValueError("Illegal optimizer value: only SGD and Adam"
+                             "optimizers are currently supported.")
 
         # Set the network to train
         self.network.train()
 
-    def train(self, data_path, batch_size, num_epochs, plot_path, save_path,
+    def train(self, data_path, batch_size, num_epochs, plot_path, weights_path,
               augmentation):
         """Start training the network.
 
@@ -56,10 +56,13 @@ class Trainer:
             num_epochs (int): Number of epochs to run the trainer for.
             plot_path (str): Path to save the loss plot. This should be a
                              directory.
-            save_path (str): The path to the weights,
+            weights_path (str): The path to the weights,
             augmentation (bool): Whether or not to use augmentation,
         """
+        # Stat variables
         counter = 0
+        rate = 0
+        start_time = time.time()
 
         # Plot save location. This is a plot of the accuracy and loss over time.
         # The plot should be saved every 10 batches
@@ -78,12 +81,57 @@ class Trainer:
         gui.update_status("Dataset loaded.")
 
         # Load the state dictionary
-        if path.isfile(save_path):
-            self.network.load_state_dict(torch.load(save_path))
+        if path.isfile(weights_path):
+            self.network.load_state_dict(torch.load(weights_path))
             gui.update_status("Loaded weights into state dictionary.")
         else:
             gui.update_status("Warning: Weights do not exist. "
                               "Running with random weights.")
 
+        # Start training
+        for epoch in range(num_epochs):
+            gui.update_status("Starting training.")
 
+            # Figure out number of max steps for info displays
+            gui.set_max_step(len(data_loader))
 
+            for data in enumerate(data_loader):
+                # Grab the raw and target images
+                raw_image = data[1]["raw"]
+                target_image = data[1]["segmented"]
+
+                # Run the network, but make sure the tensor is in the right
+                # format
+                out = self.network(raw_image.to(self.device, non_blocking=True))
+
+                # Make sure it's been run properly
+                if out is None:
+                    raise ValueError("forward() has not been run properly.")
+
+                # Calculate loss, converting the tensor if necessary
+                loss = self.criterion(out, target_image.to(self.device,
+                                                           non_blocking=True))
+
+                # Zero out the optimizer
+                self.optimizer.zero_grad()
+
+                # Backprop and perform optimization
+                loss.backward()
+                self.optimizer.step()
+
+                counter += 1
+
+                # TODO Track accuracy
+                accuracy = 0
+
+                # Calculate time per step every 2 steps
+                if counter % 2 == 0:
+                    rate = float(counter)/(time.time() - start_time)
+
+                gui.update_data(target=target_image[0],
+                                generated=out.cpu().detach()[0],
+                                step=data[0] + 1,
+                                epoch=epoch,
+                                accuracy=accuracy,
+                                loss=loss.item(),
+                                rate=rate)

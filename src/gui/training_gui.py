@@ -12,6 +12,7 @@ Author:
 import tkinter as tk
 import numpy as np
 from PIL import ImageTk, Image
+import datetime
 
 class TrainingGUI:
     def __init__(self, total_epoch):
@@ -50,8 +51,8 @@ class TrainingGUI:
         self.rate_var = tk.StringVar(master=self.root, value="Rate: 0 steps/s")
         self.time_var = tk.StringVar(master=self.root, value="Time left: 0:00")
 
-        self.accuracy_var = tk.StringVar(master=self.root, value="0.00%")
         self.loss_var = tk.StringVar(master=self.root, value="Loss: 0.00")
+        self.accuracy_var = tk.StringVar(master=self.root, value="0.000%")
 
         self.status = tk.StringVar(master=self.root, value="Preparing dataset")
 
@@ -60,13 +61,13 @@ class TrainingGUI:
         black_image = ImageTk.PhotoImage(image=Image.fromarray(black_array))
 
         self.target_canvas = tk.Canvas(self.root, width=408, height=306)
-        target_canvas_img = self.target_canvas.create_image(0, 0, anchor="nw",
-                                                            image=black_image)
+        self.target_canvas_img = self.target_canvas\
+            .create_image(0, 0, anchor="nw", image=black_image)
         self.target_canvas.grid(row=0, column=0, rowspan=4)
 
         self.seg_canvas = tk.Canvas(self.root, width=408, height=306)
-        seg_canvas_img = self.seg_canvas.create_image(0, 0, anchor="nw",
-                                                      image=black_image)
+        self.seg_canvas_img = self.seg_canvas\
+            .create_image(0, 0, anchor="nw", image=black_image)
         self.seg_canvas.grid(row=4, column=0)
 
         # Prepare tk labels to be put on the grid
@@ -80,14 +81,14 @@ class TrainingGUI:
                                                               padx=5, pady=5)
 
         # Row 1 labels
+        tk.Label(self.root, textvariable=self.loss_var).grid(row=1, column=1,
+                                                             sticky="W", padx=5,
+                                                             pady=5)
         tk.Label(self.root, textvariable=self.accuracy_var).grid(row=1,
-                                                                 column=1,
+                                                                 column=2,
                                                                  sticky="W",
                                                                  padx=5,
                                                                  pady=5)
-        tk.Label(self.root, textvariable=self.loss_var).grid(row=1, column=2,
-                                                             sticky="W", padx=5,
-                                                             pady=5)
 
         # Row 2 labels
         tk.Label(self.root, textvariable=self.rate_var).grid(row=2, column=1,
@@ -132,6 +133,31 @@ class TrainingGUI:
             rate (float): The rate the network is running at in steps per
                           second.
         """
+        # Update images
+        self.target_canvas.itemconfig(self.target_canvas_img, image=target)
+        self.seg_canvas.itemconfig(self.seg_canvas_img, image=generated)
+
+        # Row 0 labels
+        self.step_var.set("Step: {}/{}".format(step, self.total_steps))
+        self.epoch_var.set("Epoch: {}/{}".format(epoch, self.total_epochs))
+
+        # Row 1 labels
+        self.loss_var.set("Loss: {.3f}".format(loss))
+        self.accuracy_var.set("Accuracy: {.3f}%".format(accuracy))
+
+        # Row 2 labels
+        self.rate_var.set("Rate: {.3f} steps/sec".format(rate))
+
+        # Calculate time left
+        if rate == 0:
+            time_left = ("NaN")
+        else:
+            time_left = int(((self.total_steps * self.total_epochs)
+                             - ((float(step) + 1.)
+                             + (self.total_steps * epoch))) / rate)
+            time_left = str(datetime.timedelta(seconds=time_left))
+
+        self.time_var.set("Time left: {}".format(time_left))
 
         self._update()
 
@@ -166,3 +192,4 @@ class TrainingGUI:
             total_steps (int): The total number of steps.
         """
         self.total_steps = total_steps
+        self.step_var.set("Step: 0/{}".format(total_steps))

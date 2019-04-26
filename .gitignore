@@ -219,3 +219,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# IDEA file
+.idea

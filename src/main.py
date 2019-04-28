@@ -2,38 +2,41 @@
 
 The main script that is called to run everything else.
 
+
+Positional arguments:
+    W               path to the file that contains the weights. If the
+                    file doesn't exist, one will be created.
+
+Optional arguments:
+    -h, --help          show this help message and exit
+    -t, --train         sets to training mode and gives the path to the data
+                        directory
+    -v, --validate      sets to validation mode and gives the path to the
+                        data directory for validation
+    -r --learning-rate  sets the learning rate for the optimizer
+    -o, --optimizer     sets the optimizer. Currently supported optimizers
+                        are "adam" and "sgd"
+    -b, --batch-size    sets the batch size for the session
+    -e, --epochs        sets the number of epochs for the session
+    -a, --augment       activates image augmentation for the session
+    -p, --plot          sets the path for the loss and accuracy csv file. If
+                        none is given, set to current working directory
+    -i, --infer         runs the network for inference
+    --profile           profiles the network when used in conjunction with
+                        either training, validation or inference mode
+
 Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
 import argparse
 from trainer import Trainer
+from os import getcwd
+from os.path import join
 import sys
 
 
 def parse_arguments():
-    """Parses arguments.
-
-    Positional arguments:
-        W               path to the file that contains the weights. If the
-                        file doesn't exist, one will be created.
-
-    Optional arguments:
-        -h, --help          show this help message and exit
-        -t, --train         sets to training mode and gives the path to the data
-                            directory
-        -v, --validate      sets to validation mode and gives the path to the
-                            data directory for validation
-        -r --learning-rate  sets the learning rate for the optimizer
-        -o, --optimizer     sets the optimizer. Currently supported optimizers
-                            are "adam" and "sgd"
-        -b, --batch-size    sets the batch size for the session
-        -e, --epochs        sets the number of epochs for the session
-        -a, --augment       activates image augmentation for the session
-        -p, --plot          sets the path for the loss and accuracy csv file
-        -i, --infer         runs the network for inference
-        --profile           profiles the network when used in conjunction with
-                            either training, validation or inference mode
-    """
+    """Parses arguments."""
     description = "Trains or validates CurbNet on a dataset, " \
                   "or uses it for inference."
     parser = argparse.ArgumentParser(description=description)
@@ -62,7 +65,9 @@ def parse_arguments():
     parser.add_argument('-a', '--augment', action='store_true',
                         help="activates image augmentation for the session")
     parser.add_argument('-p', '--plot', type=str, nargs='?',
-                        help="sets the path for the loss and accuracy csv file")
+                        help="sets the path for the loss and accuracy csv file."
+                             " If none is given, set to the current working "
+                             "directory")
     parser.add_argument('-i', '--infer', action='store_true',
                         help="runs the network for inference")
     parser.add_argument('--profile', action='store_true',
@@ -76,11 +81,17 @@ def parse_arguments():
                             or arguments.epochs or arguments.batch_size
                             or arguments.optimizer or arguments.learning_rate
                             or arguments.validate or arguments.train):
-        parser.error("Inference only requires weights to be given")
+        print("Warning: Inference only requires weights to be given. All other "
+              "arguments will be ignored.")
 
     if arguments.profile and not (arguments.infer or arguments.train
                                   or arguments.validate):
-        parser.error("Must profile a specific mode")
+        parser.error("Must profile a specific mode.")
+
+    if (arguments.train or arguments.validate) and not arguments.plot:
+        print("Warning: Plot save path not given. Setting path to the current "
+              "working directory.")
+        arguments.plot = join(getcwd(), "plot")
 
     return arguments
 
@@ -91,14 +102,16 @@ def main(arguments):
     Args:
         arguments (argparse.Namespace): The arguments given by the user.
     """
-    if arguments.train:
-        # Run in training mode
-        trainer = Trainer(arguments.learning_rate, arguments.optimizer)
-        trainer.train(arguments.train, arguments.batch_size, arguments.epochs,
-                      arguments.plot, arguments.W, arguments.augment)
-
-        # Clean exit on completion
-        sys.exit()
+    print("Arguments: {}".format(arguments))
+    # if arguments.train:
+    #     # Run in training mode
+    #     trainer = Trainer(arguments.learning_rate, arguments.optimizer)
+    #
+    #     trainer.train(arguments.train, arguments.batch_size, arguments.epochs,
+    #                   arguments.plot, arguments.weights, arguments.augment)
+    #
+    #     # Clean exit on completion
+    #     sys.exit()
 
 
 if __name__ == "__main__":

@@ -206,6 +206,7 @@ class TrainingGUI:
         Returns:
             (np.array) in the form [H, W, Color]
         """
+        image = image.numpy()
         out = np.zeros((image.shape[0], image.shape[1], 3), dtype=np.uint8)
 
         out[image == 1] = np.array([255, 0, 0])

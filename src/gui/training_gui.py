@@ -16,6 +16,12 @@ import datetime
 from time import strftime, gmtime
 from torch import argmax
 
+import matplotlib
+
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+
 
 class TrainingGUI:
     def __init__(self, total_epoch):
@@ -64,13 +70,15 @@ class TrainingGUI:
         black_image = ImageTk.PhotoImage(image=Image.fromarray(black_array))
 
         self.target_canvas = tk.Canvas(self.root, width=408, height=306)
-        self.target_canvas_img = self.target_canvas\
-            .create_image(0, 0, anchor="nw", image=black_image)
+        self.target_img = black_image
+        self.target_canvas_img = self.target_canvas \
+            .create_image(0, 0, anchor="nw", image=self.target_img)
         self.target_canvas.grid(row=0, column=0, rowspan=4)
 
         self.seg_canvas = tk.Canvas(self.root, width=408, height=306)
-        self.seg_canvas_img = self.seg_canvas\
-            .create_image(0, 0, anchor="nw", image=black_image)
+        self.seg_img = black_image
+        self.seg_canvas_img = self.seg_canvas \
+            .create_image(0, 0, anchor="nw", image=self.seg_img)
         self.seg_canvas.grid(row=4, column=0)
 
         # Prepare tk labels to be put on the grid
@@ -107,6 +115,10 @@ class TrainingGUI:
                                                            sticky="NW", padx=5,
                                                            pady=5)
 
+        # Plot
+        self.plot = Plots(master=self.root)
+        self.plot.grid(row=4, column=1, columnspan=3)
+
         # Update root so it actually shows something
         self._update()
 
@@ -136,15 +148,15 @@ class TrainingGUI:
         """
         # Update images
         target_array = self._class_to_image_array(target)
-        target = ImageTk.PhotoImage(image=Image
-                                    .fromarray(target_array))
+        self.target_img = ImageTk.PhotoImage(image=Image
+                                             .fromarray(target_array))
 
         seg_array = self._class_prob_to_image_array(generated)
-        seg_img = ImageTk.PhotoImage(image=Image
-                                     .fromarray(seg_array))
+        self.seg_img = ImageTk.PhotoImage(image=Image.fromarray(seg_array))
 
-        self.target_canvas.itemconfig(self.target_canvas_img, image=target)
-        self.seg_canvas.itemconfig(self.seg_canvas_img, image=seg_img)
+        self.target_canvas.itemconfig(self.target_canvas_img,
+                                      image=self.target_img)
+        self.seg_canvas.itemconfig(self.seg_canvas_img, image=self.seg_img)
 
         # Row 0 labels
         self.step_var.set("Step: {}/{}".format(step, self.total_steps))
@@ -163,10 +175,13 @@ class TrainingGUI:
         else:
             time_left = int(((self.total_steps * self.total_epochs)
                              - ((float(step) + 1.)
-                             + (self.total_steps * epoch))) / rate)
+                                + (self.total_steps * epoch))) / rate)
             time_left = str(datetime.timedelta(seconds=time_left))
 
         self.time_var.set("Time left: {}".format(time_left))
+
+        # Update plot
+        self.plot.update_data(loss, accuracy)
 
         self._update()
 
@@ -176,7 +191,7 @@ class TrainingGUI:
         Args:
             message (str): The new message that should displayed.
         """
-        message = "[{}] {}".format(strftime("%H:%M:%S", gmtime()),message)
+        message = "[{}] {}".format(strftime("%H:%M:%S", gmtime()), message)
         self.status.set(message)
         print(message)
         self._update()
@@ -214,7 +229,7 @@ class TrainingGUI:
 
         return out
 
-    def _class_prob_to_image_array(self,image):
+    def _class_prob_to_image_array(self, image):
         """Converts the CurbNet output into an image array.
 
         Since the CurbNet output is a one-hot encoding of the probability
@@ -245,3 +260,43 @@ class TrainingGUI:
         Called at the end of training to keep the window on the screen.
         """
         self.root.mainloop()
+
+
+class Plots(tk.Frame):
+    def __init__(self, master=None):
+        """Creates a plotting frame that can be used as a tk module."""
+        super().__init__(master)
+        f = Figure(figsize=(3,2), dpi=100)
+        self.loss_values = []
+        self.accuracy_values = []
+        self.ax1 = f.add_subplot(111)
+        self.ax2 = self.ax1.twinx()
+
+        f.tight_layout()
+
+        self.canvas = FigureCanvasTkAgg(f, self)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH,
+                                         expand=True)
+        self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+    def update_data(self, loss, accuracy):
+        """Updates the data in the graph
+
+        Args:
+            loss (float): New loss value to be appended to the plot.
+            accuracy (float): New accuracy value to be appended to the plot
+        """
+        self.loss_values.append(loss)
+        self.accuracy_values.append(accuracy)
+
+        # Clear in preparation of new updates
+        self.ax1.clear()
+        self.ax2.clear()
+
+        # Plot the new values
+        self.ax1.plot(self.loss_values, color='tab:red')
+        self.ax2.plot(self.accuracy_values, color='tab:blue')
+
+        # Redraw canvas
+        self.canvas.draw()

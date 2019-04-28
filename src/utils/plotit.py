@@ -62,7 +62,6 @@ class PlotIt:
         ax1.set_ylabel('loss', color=color)
         ax1.plot(loss_data, color=color)
         ax1.tick_params(axis='y', labelcolor=color)
-        ax1.xaxis.set_major_locator(ticker.MultipleLocator(5))
 
         # Instantiate a second axes that shares the x-axis
         ax2 = ax1.twinx()

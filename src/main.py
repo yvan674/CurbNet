@@ -102,16 +102,17 @@ def main(arguments):
     Args:
         arguments (argparse.Namespace): The arguments given by the user.
     """
-    print("Arguments: {}".format(arguments))
-    # if arguments.train:
-    #     # Run in training mode
-    #     trainer = Trainer(arguments.learning_rate, arguments.optimizer)
-    #
-    #     trainer.train(arguments.train, arguments.batch_size, arguments.epochs,
-    #                   arguments.plot, arguments.weights, arguments.augment)
-    #
-    #     # Clean exit on completion
-    #     sys.exit()
+    # Print out the arguments for debug. Can be removed
+    # print("Arguments: {}".format(arguments))
+    if arguments.train:
+        # Run in training mode
+        trainer = Trainer(arguments.learning_rate, arguments.optimizer)
+
+        trainer.train(arguments.train, arguments.batch_size, arguments.epochs,
+                      arguments.plot, arguments.weights[0], arguments.augment)
+
+        # Clean exit on completion
+        sys.exit()
 
 
 if __name__ == "__main__":

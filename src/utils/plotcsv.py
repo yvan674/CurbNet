@@ -39,10 +39,9 @@ class PlotCSV:
             for key in parameters.keys():
                 params.write("{}: {}\n".format(key, parameters[key]))
 
-        self.csv_file = open(file_path, 'a')
+        self.csv_file = open(self.file_path, 'a', newline='')
         self.csv_writer = csv.DictWriter(self.csv_file, dialect=csv.excel,
-                                         fieldnames=["step", "loss",
-                                                     "accuracy"],
+                                         fieldnames=["loss", "accuracy"],
                                          restval="", extrasaction="ignore")
 
         self.csv_writer.writeheader()

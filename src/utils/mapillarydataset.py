@@ -10,11 +10,13 @@ Authors:
 """
 import torch
 from os import listdir
-from os.path import join
+from os.path import join, splitext
 
 from torch.utils.data import Dataset
 from skimage import io
 from imgaug import augmenters as iaa
+import numpy as np
+from PIL import Image
 
 
 # Here we define probabilities
@@ -110,23 +112,25 @@ class MappilaryDataset(Dataset):
             idx (int): The id of the item number that is requested.
 
         Returns:
-            dict: A sample with keys (raw, segment, panoptic), each with their
-            corresponding image as a tensor.
+            dict: A sample with keys (raw, segmented), raw having the image as a
+            tensor and segmented having the image as a numpy array.
         """
-        # Set paths
+        raw = self._to_tensor(io.imread(join(self.images_dir,
+                                             self.images[idx])))
 
+        segmented = Image.open(join(self.seg_dir, splitext(self.images[idx])[0]
+                                   + ".png"))
+        segmented = np.array(segmented)
+        segmented = self._process_segmented(segmented)
 
         # Get the dict images, processed to tensors
         out = {
-            "raw": self.to_tensor(io.imread(
-                join(self.images_dir, self.images[idx]))),
-            "segmented": self.to_tensor(io.imread(
-                join(self.seg_dir, self.images[idx]))),
-            "panoptic": self.to_tensor(io.imread(
-                join(self.pan_dir, self.images[idx])))
+            "raw": raw,
+            "segmented": segmented
         }
+        return out
 
-    def to_tensor(self, image):
+    def _to_tensor(self, image):
         """Transform the given image to a tensor and augments it.
 
         Args:
@@ -146,3 +150,23 @@ class MappilaryDataset(Dataset):
         image = image.transpose((2, 0, 1))
 
         return torch.from_numpy(image).to(dtype=torch.float)
+
+    def _process_segmented(self, image):
+        """Processes segmentation image to classes from a given config file.
+
+        Each pixel in the image should be given a label that corresponds to if
+        it is irrelevant, a curb, or a cut curb. 0 is irrelevant, 1 is curb, and
+        2 is curb cut.
+
+        Args:
+            image (np.array): The image to be processed.
+
+        Returns:
+            np.array: An array of the images with one-hot labelling.
+        """
+        out_array = np.zeros((image.shape[0], image.shape[1]), dtype=np.uint8)
+
+        out_array[image == 2] = 1  # Label for curb
+        out_array[image == 9] = 2  # Label for curb cut
+
+        return out_array

@@ -42,7 +42,7 @@ class Trainer:
 
         # Set the loss criterion according to the recommended for pixel-wise
         # classification
-        self.criterion = nn.CrossEntropyLoss
+        self.criterion = nn.CrossEntropyLoss()
 
         # Set the optimizer according to the arguments
         if optimizer == "adam":
@@ -72,11 +72,9 @@ class Trainer:
         # Stat variables
         counter = 0
         rate = 0
-        start_time = time.time()
 
         tracking = PlotCSV(plot_path, {"weights path": weights_path,
                                        "training data path": data_path,
-                                       "learning rate": self.lr,
                                        "optimizer": self.optimizer,
                                        "batch size": batch_size,
                                        "epochs": num_epochs,
@@ -86,25 +84,29 @@ class Trainer:
         gui = TrainingGUI(num_epochs)
 
         # Load the dataset
+        start_time = time.time()
         dataset = MappilaryDataset(data_path, augmentation)
         data_loader = DataLoader(dataset,
                                  batch_size,
                                  shuffle=True)
 
-        gui.update_status("Dataset loaded.")
+        gui.update_status("Dataset loaded. ({} ms)".format(
+            int(time.time() - start_time) * 1000))
 
         # Load the state dictionary
+        start_time = time.time()
         if path.isfile(weights_path):
             self.network.load_state_dict(torch.load(weights_path))
-            gui.update_status("Loaded weights into state dictionary.")
+            gui.update_status("Loaded weights into state dictionary. ({} ms)"
+                              .format(int(time.time() - start_time) * 1000))
         else:
             gui.update_status("Warning: Weights do not exist. "
                               "Running with random weights.")
 
         # Start training
+        start_time = time.time()
+        gui.update_status("Starting training.")
         for epoch in range(num_epochs):
-            gui.update_status("Starting training.")
-
             # Figure out number of max steps for info displays
             gui.set_max_step(len(data_loader))
 
@@ -123,6 +125,7 @@ class Trainer:
 
                 # Calculate loss, converting the tensor if necessary
                 loss = self.criterion(out, target_image.to(self.device,
+                                                           dtype=torch.long,
                                                            non_blocking=True))
 
                 # Zero out the optimizer
@@ -152,12 +155,8 @@ class Trainer:
                                 rate=rate)
 
                 # Write to the plot file every step
-                tracking.write_data({"step": data[0] + 1,
-                                     "loss": loss_value,
+                tracking.write_data({"loss": loss_value,
                                      "accuracy": accuracy})
-
-        # Now save the loss and accuracy file
-        tracking.close()
 
         # Save the weights
         torch.save(self.network.state_dict(),
@@ -166,4 +165,8 @@ class Trainer:
         torch.cuda.empty_cache()
 
         gui.update_status("Done training.")
+
+        # Now save the loss and accuracy file
+        tracking.close()
+
         gui.mainloop()

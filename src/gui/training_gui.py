@@ -13,6 +13,8 @@ import tkinter as tk
 import numpy as np
 from PIL import ImageTk, Image
 import datetime
+from time import strftime, gmtime
+from torch import argmax
 
 
 class TrainingGUI:
@@ -114,8 +116,6 @@ class TrainingGUI:
         # Bring the window to the front
         self._lift()
 
-        self.root.mainloop()  # FIXME Remove this later
-
     def update_data(self, target, generated, step, epoch, accuracy, loss, rate):
         """Updates the information within the GUI.
 
@@ -135,19 +135,27 @@ class TrainingGUI:
                           second.
         """
         # Update images
+        target_array = self._class_to_image_array(target)
+        target = ImageTk.PhotoImage(image=Image
+                                    .fromarray(target_array))
+
+        seg_array = self._class_prob_to_image_array(generated)
+        seg_img = ImageTk.PhotoImage(image=Image
+                                     .fromarray(seg_array))
+
         self.target_canvas.itemconfig(self.target_canvas_img, image=target)
-        self.seg_canvas.itemconfig(self.seg_canvas_img, image=generated)
+        self.seg_canvas.itemconfig(self.seg_canvas_img, image=seg_img)
 
         # Row 0 labels
         self.step_var.set("Step: {}/{}".format(step, self.total_steps))
         self.epoch_var.set("Epoch: {}/{}".format(epoch, self.total_epochs))
 
         # Row 1 labels
-        self.loss_var.set("Loss: {.3f}".format(loss))
-        self.accuracy_var.set("Accuracy: {.3f}%".format(accuracy))
+        self.loss_var.set("Loss: {:.3f}".format(loss))
+        self.accuracy_var.set("Accuracy: {:.3f}%".format(accuracy))
 
         # Row 2 labels
-        self.rate_var.set("Rate: {.3f} steps/sec".format(rate))
+        self.rate_var.set("Rate: {:.3f} steps/sec".format(rate))
 
         # Calculate time left
         if rate == 0:
@@ -168,6 +176,7 @@ class TrainingGUI:
         Args:
             message (str): The new message that should displayed.
         """
+        message = "[{}] {}".format(strftime("%H:%M:%S", gmtime()),message)
         self.status.set(message)
         print(message)
         self._update()
@@ -185,6 +194,40 @@ class TrainingGUI:
         """
         self.root.call('wm', 'attributes', '.', '-topmost', '1')
         self.root.call('wm', 'attributes', '.', '-topmost', '0')
+
+    @staticmethod
+    def _class_to_image_array(image):
+        """Converts the ground truth segmentation to an image array.
+
+        Args:
+            input (torch.Tensor): tensor array of classes in each pixel in the
+                                  shape [H, W]
+
+        Returns:
+            (np.array) in the form [H, W, Color]
+        """
+        out = np.zeros((image.shape[0], image.shape[1], 3), dtype=np.uint8)
+
+        out[image == 1] = np.array([255, 0, 0])
+        out[image == 2] = np.array([0, 255, 0])
+
+        return out
+
+    def _class_prob_to_image_array(self,image):
+        """Converts the CurbNet output into an image array.
+
+        Since the CurbNet output is a one-hot encoding of the probability
+        classes, we can simply use an argmax function on the output and run it
+        through the class to image array function.
+
+        Args:
+            image (torch.Tensor): tensor array of the CurbNet output in one-hot
+            encoding.
+
+        Returns:
+            (np.array) in the form [H, W, Color]
+        """
+        return self._class_to_image_array(argmax(image, dim=0))
 
     def set_max_step(self, total_steps):
         """Sets the number of steps that the training session will have.

@@ -11,6 +11,7 @@ Authors:
 """
 import argparse
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 import csv
@@ -46,8 +47,8 @@ class PlotIt:
             # skip the header
             next(data_reader, None)
             for row in data_reader:
-                loss_data.append(row[1])
-                acc_data.append(row[2])
+                loss_data.append(float(row[0]))
+                acc_data.append(float(row[1]))
 
         # Instantiate the subplots
         fig, ax1 = plt.subplots()
@@ -59,9 +60,9 @@ class PlotIt:
         color = 'tab:red'
         ax1.set_xlabel('step number')
         ax1.set_ylabel('loss', color=color)
-        ax1.invert_yaxis()
         ax1.plot(loss_data, color=color)
         ax1.tick_params(axis='y', labelcolor=color)
+        ax1.xaxis.set_major_locator(ticker.MultipleLocator(5))
 
         # Instantiate a second axes that shares the x-axis
         ax2 = ax1.twinx()

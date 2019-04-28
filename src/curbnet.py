@@ -16,7 +16,6 @@ References:
 """
 import torch
 import torch.nn as nn
-import torch.functional as F
 
 
 class Inception(nn.Module):
@@ -164,7 +163,7 @@ class CurbNet(nn.Module):
         out = self.encoder(x)
         out = self.classifier_conv(out)
 
-        out = F.interpolate(input=out, size=input_spatial_dim,
+        out = nn.functional.interpolate(input=out, size=input_spatial_dim,
                                      mode="bilinear")
         out = self.softmax(out)
 

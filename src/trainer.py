@@ -6,20 +6,31 @@ This class implements the necessary functions to train the network.
 Authors:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
+# Network import
 from curbnet import CurbNet
+
+# Torch imports
 import torch
 import torch.nn as nn
-from time import strftime, gmtime
+from torch.utils.data.dataloader import DataLoader
+
+# Python built in imports
+import time
 from os import path
+
+# Custom classes imports
 from gui.training_gui import TrainingGUI
 from utils.mapillarydataset import MappilaryDataset
-import time
-from torch.utils.data.dataloader import DataLoader
+from utils.plotcsv import PlotCSV
 
 
 class Trainer:
     def __init__(self, lr=0.01, optimizer="sgd"):
         self.network = CurbNet()
+
+        # Parameters
+        self.lr = lr,
+        self.optimizer = optimizer
 
         if torch.cuda.is_available():
             # Check if cuda is available and use it if it is
@@ -63,13 +74,13 @@ class Trainer:
         rate = 0
         start_time = time.time()
 
-        # Plot save location. This is a plot of the accuracy and loss over time.
-        # The plot should be saved every 10 batches
-        plot_path = path.join(plot_path, strftime("%Y_%m_%d_%H-%M-%S", gmtime())
-                              + '-loss_data.csv')
-
-        loss_file = open(plot_path, 'a')
-        loss_file.write("loss, accuracy\n")
+        tracking = PlotCSV(plot_path, {"weights path": weights_path,
+                                       "training data path": data_path,
+                                       "learning rate": self.lr,
+                                       "optimizer": self.optimizer,
+                                       "batch size": batch_size,
+                                       "epochs": num_epochs,
+                                       "augmentation": augmentation})
 
         # Create GUI
         gui = TrainingGUI(num_epochs)
@@ -141,10 +152,12 @@ class Trainer:
                                 rate=rate)
 
                 # Write to the plot file every step
-                loss_file.write("{}, {}\n".format(loss_value, accuracy))
+                tracking.write_data({"step": data[0] + 1,
+                                     "loss": loss_value,
+                                     "accuracy": accuracy})
 
         # Now save the loss and accuracy file
-        loss_file.close()
+        tracking.close()
 
         # Save the weights
         torch.save(self.network.state_dict(),
@@ -153,6 +166,4 @@ class Trainer:
         torch.cuda.empty_cache()
 
         gui.update_status("Done training.")
-        # TODO plot output
         gui.mainloop()
-

@@ -46,9 +46,8 @@ class PlotIt:
             # skip the header
             next(data_reader, None)
             for row in data_reader:
-                print(row)
-                loss_data.append(row[0])
-                acc_data.append(row[1])
+                loss_data.append(row[1])
+                acc_data.append(row[2])
 
         # Instantiate the subplots
         fig, ax1 = plt.subplots()

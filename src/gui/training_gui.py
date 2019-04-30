@@ -13,7 +13,6 @@ import tkinter as tk
 import numpy as np
 from PIL import ImageTk, Image
 import datetime
-from time import strftime, gmtime
 from torch import argmax
 
 import matplotlib
@@ -164,7 +163,7 @@ class TrainingGUI:
 
         # Row 1 labels
         self.loss_var.set("Loss: {:.3f}".format(loss))
-        self.accuracy_var.set("Accuracy: {:.3f}%".format(accuracy))
+        self.accuracy_var.set("Accuracy: {:.3f}%".format(accuracy * 100))
 
         # Row 2 labels
         self.rate_var.set("Rate: {:.3f} steps/sec".format(rate))
@@ -191,7 +190,6 @@ class TrainingGUI:
         Args:
             message (str): The new message that should displayed.
         """
-        message = "[{}] {}".format(strftime("%H:%M:%S", gmtime()), message)
         self.status.set(message)
         print(message)
         self._update()
@@ -241,7 +239,7 @@ class TrainingGUI:
             encoding.
 
         Returns:
-            (np.array) in the form [H, W, Color]
+            np.array: in the form [H, W, Color]
         """
         return self._class_to_image_array(argmax(image, dim=0))
 

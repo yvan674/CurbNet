@@ -29,23 +29,30 @@ class PlotCSV:
         # Set the file location to the current time and date for future
         # referencing
         current_time = strftime("%Y_%m_%d_%H-%M-%S", gmtime())
-        self.file_path = os.path.join(directory, current_time
-                                      + '-loss_data.csv')
 
-        param_path = os.path.join(directory, current_time + '-parameters.txt')
+        # Set up the log file
+        log_path = os.path.join(directory, current_time + '-log.txt')
+        self.log_file = open(log_path, 'a')
 
         # Write out the parameters of this test.
-        with open(param_path, 'w') as params:
-            for key in parameters.keys():
-                params.write("{}: {}\n".format(key, parameters[key]))
+        self.log_file.write("Training Parameters:\n====================\n")
+        for key in parameters.keys():
+            self.log_file.write("{}: {}\n".format(key, parameters[key]))
 
+        self.log_file.write("\n\nTraining Log\n============\n")
+
+        # Prepare csv file
+        self.file_path = os.path.join(directory, current_time
+                                      + '-loss_data.csv')
         self.csv_file = open(self.file_path, 'a', newline='')
+        # Create the writer for the csv
         self.csv_writer = csv.DictWriter(self.csv_file, dialect=csv.excel,
                                          fieldnames=["loss", "accuracy"],
                                          restval="", extrasaction="ignore")
 
         self.csv_writer.writeheader()
 
+        # Create a queue of lines to be written to avoid hdd writes every line
         self.queued_lines = []
 
     def write_data(self, data):
@@ -61,8 +68,22 @@ class PlotCSV:
             self.csv_writer.writerows(self.queued_lines)
             self.queued_lines = []
 
+    def write_log(self, message):
+        """Writes a message to the log.
+
+        Args:
+            message (str): The message to be written
+        """
+        self.log_file.write("{}\n".format(message))
+
     def close(self):
-        """Writes any last lines, closes the csv file, and shows the plot."""
+        """Writes any last lines, closes open files, and shows the plot."""
+        # Deal with the csv file
         self.csv_writer.writerows(self.queued_lines)
         self.csv_file.close()
+
+        # Deal with the log file
+        self.log_file.close()
+
+        # Open the plot
         PlotIt(self.file_path)

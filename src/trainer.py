@@ -177,7 +177,7 @@ class Trainer:
                 gui.update_data(target=target_image[0],
                                 generated=detached_out[0],
                                 step=data[0] + 1,
-                                epoch=epoch,
+                                epoch=epoch + 1,
                                 accuracy=accuracy,
                                 loss=loss_value,
                                 rate=rate)

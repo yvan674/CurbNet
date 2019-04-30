@@ -147,6 +147,3 @@ if __name__ == "__main__":
         main(parse_arguments())
     except KeyboardInterrupt:
         print("User exited program. Killing process.")
-
-    # t = Trainer()
-    # t.train("", 5, 5, "", "", True)

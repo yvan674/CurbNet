@@ -3,27 +3,42 @@
 The main script that is called to run everything else.
 
 
-Positional arguments:
-    W               path to the file that contains the weights. If the
-                    file doesn't exist, one will be created.
+positional arguments:
+    W                   path to the file that contains the weights. If the
+                        file doesn't exist, one will be created.
 
-Optional arguments:
+optional arguments:
     -h, --help          show this help message and exit
-    -t, --train         sets to training mode and gives the path to the data
-                        directory
-    -v, --validate      sets to validation mode and gives the path to the
-                        data directory for validation
-    -r --learning-rate  sets the learning rate for the optimizer
-    -o, --optimizer     sets the optimizer. Currently supported optimizers
-                        are "adam" and "sgd"
-    -b, --batch-size    sets the batch size for the session
-    -e, --epochs        sets the number of epochs for the session
-    -a, --augment       activates image augmentation for the session
-    -p, --plot          sets the path for the loss and accuracy csv file. If
-                        none is given, set to current working directory
-    -i, --infer         runs the network for inference
     --profile           profiles the network when used in conjunction with
                         either training, validation or inference mode
+
+mode:
+    mode to run the network in
+
+    -t TRAIN, --train TRAIN
+                        sets to training mode and gives the path to the data
+                        directory
+    -v VALIDATE, --validate VALIDATE
+                        sets to validation mode and gives the path to the data
+                        directory
+    -i, --infer         runs the network for inference
+
+training arguments:
+    -r [LEARNING_RATE], --learning-rate [LEARNING_RATE]
+                        sets the learning rate for the optimizer
+    -o [OPTIMIZER], --optimizer [OPTIMIZER]
+                        sets the optimizer. Currently supportedoptimizers are
+                        "adam" and "sgd"
+    -b [BATCH_SIZE], --batch-size [BATCH_SIZE]
+                        sets the batch size for the session
+    -e [EPOCHS], --epochs [EPOCHS]
+                        sets the number of epochs for the session
+    -a, --augment       activates image augmentation for the session
+    -l LOSS_WEIGHTS [LOSS_WEIGHTS ...], --loss-weights LOSS_WEIGHTS
+                        custom per class loss weights as a set of 3 floats
+    -p [PLOT], --plot [PLOT]
+                        sets the path for the loss and accuracy csv file. If
+                        none is given, set to the current working directory
 
 Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
@@ -37,7 +52,7 @@ import sys
 
 def parse_arguments():
     """Parses arguments."""
-    description = "Trains or validates CurbNet on a dataset, " \
+    description = "trains or validates CurbNet on a dataset, " \
                   "or uses it for inference."
     parser = argparse.ArgumentParser(description=description)
 
@@ -45,31 +60,43 @@ def parse_arguments():
     parser.add_argument('weights', metavar='W', type=str, nargs=1,
                         help="path to the file that contains the weights. "
                              "If the file doesn't exist, one will be created.")
-    parser.add_argument('-t', '--train', type=str, nargs='?',
-                        help="sets to training mode and gives the path to the "
-                             "data directory")
-    parser.add_argument('-v', '--validate', type=str, nargs='?',
-                        help="sets to validation mode and gives the path to "
-                             "the data directory for validation")
-    parser.add_argument('-r', '--learning-rate', type=float, nargs='?',
+
+    # Mutex args
+    mode = parser.add_argument_group("mode", "mode to run the network in")
+    mutex = mode.add_mutually_exclusive_group(required=True)
+    mutex.add_argument('-t', '--train', type=str, nargs=1,
+                          help="sets to training mode and gives the path to "
+                               "the data directory")
+    mutex.add_argument('-v', '--validate', type=str, nargs=1,
+                       help="sets to validation mode and gives the path to "
+                            "the data directory")
+
+    mutex.add_argument('-i', '--infer', action='store_true',
+                       help="runs the network for inference")
+
+    # Training arguments
+    training = parser.add_argument_group("training arguments")
+    training.add_argument('-r', '--learning-rate', type=float, nargs='?',
                         default=0.002,
                         help="sets the learning rate for the optimizer")
-    parser.add_argument('-o', '--optimizer', type=str, nargs='?',
+    training.add_argument('-o', '--optimizer', type=str, nargs='?',
                         default="adam",
                         help="sets the optimizer. Currently supported"
                              "optimizers are \"adam\" and \"sgd\"")
-    parser.add_argument('-b', '--batch-size', type=int, nargs='?', default=5,
+    training.add_argument('-b', '--batch-size', type=int, nargs='?', default=5,
                         help="sets the batch size for the session")
-    parser.add_argument('-e', '--epochs', type=int, nargs='?', default=1,
+    training.add_argument('-e', '--epochs', type=int, nargs='?', default=1,
                         help="sets the number of epochs for the session")
-    parser.add_argument('-a', '--augment', action='store_true',
+    training.add_argument('-a', '--augment', action='store_true',
                         help="activates image augmentation for the session")
-    parser.add_argument('-p', '--plot', type=str, nargs='?',
+    training.add_argument('-l', '--loss-weights', type=float, nargs='+',
+                        help='custom per class loss weights as a set of 3 '
+                             'floats')
+    training.add_argument('-p', '--plot', type=str, nargs='?',
                         help="sets the path for the loss and accuracy csv file."
                              " If none is given, set to the current working "
                              "directory")
-    parser.add_argument('-i', '--infer', action='store_true',
-                        help="runs the network for inference")
+
     parser.add_argument('--profile', action='store_true',
                         help="profiles the network when used in conjunction "
                              "with either training, validation or "
@@ -108,7 +135,7 @@ def main(arguments):
         # Run in training mode
         trainer = Trainer(arguments.learning_rate, arguments.optimizer)
 
-        trainer.train(arguments.train, arguments.batch_size, arguments.epochs,
+        trainer.train(arguments.train[0], arguments.batch_size, arguments.epochs,
                       arguments.plot, arguments.weights[0], arguments.augment)
 
         # Clean exit on completion

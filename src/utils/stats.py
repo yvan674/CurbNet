@@ -17,6 +17,12 @@ import argparse
 from PIL import Image
 import numpy as np
 
+# Import sound only on windows
+try:
+    import winsound
+except:
+    pass
+
 
 CURB_LABEL = 2
 CURB_CUT_LABEL = 9
@@ -96,7 +102,7 @@ def main(path):
                 min_dim[1] = key[1]
 
         folder_stats["max dim"] = (max_dim[0], max_dim[1])
-        folder_stats["min_dim"] = (min_dim[0], min_dim[1])
+        folder_stats["min dim"] = (min_dim[0], min_dim[1])
 
         folder_stats["dims"] = dimensions
 
@@ -122,7 +128,6 @@ def main(path):
                                               / num_cuts
 
         l1 = ["Total images:\t{}".format(folder_stats["total"]),
-              "Max dim:\t{}".format(folder_stats["max dim"]),
               "Max dim:\t{}".format(folder_stats["max dim"]),
               "Min dim:\t{}\n".format(folder_stats["min dim"]),
               "List of dims:"]
@@ -152,6 +157,11 @@ def main(path):
             stat_file.write(line + '\n')
 
         stat_file.close()
+
+        # Beep to acknowledge program complete
+        if os.name == "nt":
+            winsound.Beep(440, 500)
+            winsound.Beep(784, 500)
 
 
 def process_image(image_name, labels_dir):

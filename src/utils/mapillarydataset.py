@@ -19,7 +19,7 @@ import numpy as np
 from PIL import Image
 
 
-# Here we define probabilities
+# Here we define augmentation
 class augment:
     @staticmethod
     def augment(image):

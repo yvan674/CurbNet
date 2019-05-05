@@ -14,6 +14,7 @@ from os.path import join, splitext
 
 from torch.utils.data import Dataset
 from skimage import io
+import imgaug as ia
 from imgaug import augmenters as iaa
 import numpy as np
 from PIL import Image
@@ -31,6 +32,7 @@ class Augment:
         Returns:
             imageio.core.util.Array: The augmented image.
         """
+
         # Define the probabilities
         def rl(aug):
             """Defines the "rarely" probability value."""
@@ -59,7 +61,7 @@ class Augment:
             st(iaa.Multiply((0.10, 2.5), per_channel=0.2)),
             # improve or worsen the contrast
             rl(iaa.ContrastNormalization((0.5, 1.5), per_channel=0.5)),
-            ],
+        ],
             random_order=True)
 
         # Return the augmented image
@@ -93,7 +95,7 @@ class MapillaryDataset(Dataset):
         # Read viability list
         with open(join(path, "viable.txt"), mode='r') as viability:
             for line in viability:
-                self.images.append(line)
+                self.images.append(line[:-1])
 
     def __len__(self):
         """Returns the number of items in the dataset.
@@ -116,22 +118,24 @@ class MapillaryDataset(Dataset):
             dict: A sample with keys (raw, segmented), raw having the image as a
             tensor and segmented having the image as a numpy array.
         """
-        raw = self._to_tensor(io.imread(join(self.images_dir,
-                                             self.images[idx])))
+        raw = self._process_raw(io.imread(join(self.images_dir,
+                                               self.images[idx] + ".jpg")))
 
-        segmented = Image.open(join(self.seg_dir, splitext(self.images[idx])[0]
-                                   + ".png"))
+        segmented = Image.open(join(self.seg_dir, self.images[idx] + ".png"))
         segmented = np.array(segmented)
         segmented = self._process_segmented(segmented)
 
-        # Get the dict images, processed to tensors
+        # Turn the selected file into a dict
         out = {
             "raw": raw,
             "segmented": segmented
         }
+
+        # Resize the images in the dict
+
         return out
 
-    def _to_tensor(self, image):
+    def _process_raw(self, image):
         """Transform the given image to a tensor and augments it.
 
         Args:
@@ -141,6 +145,10 @@ class MapillaryDataset(Dataset):
         Returns:
             torch.Tensor: The image as a torch tensor.
         """
+        # Resize the image to 640 x 480
+        image = ia.imresize_single_image(image, (640, 480),
+                                         interpolation='cubic')
+
         if self.with_aug:
             # apply image augmentation sequential
             image = Augment.augment(image)
@@ -166,6 +174,11 @@ class MapillaryDataset(Dataset):
         Returns:
             np.array: An array of the images with one-hot labelling.
         """
+        # First resize the image
+        image = ia.imresize_single_image(image, (640, 480),
+                                         interpolation='nearest')
+
+        # Create an out array
         out_array = np.zeros((image.shape[0], image.shape[1]), dtype=np.uint8)
 
         out_array[image == 2] = 1  # Label for curb

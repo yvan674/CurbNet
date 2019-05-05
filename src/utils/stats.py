@@ -30,7 +30,7 @@ CURB_CUT_LABEL = 9
 
 def parse_arguments():
     """Parses arguments."""
-    description = "gathers statistics on the mapillary dataset."
+    description = "gathers statistics on the mapillary dataset"
     parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument('path', metavar='P', type=str, nargs=1,
@@ -127,6 +127,19 @@ def main(path):
         folder_stats["average cuts exists"] = float(np.sum(curb_cuts)) \
                                               / num_cuts
 
+        # Calculate if every image with curbs have curb cuts
+        all_cuts_have_curbs = True
+        cuts_without_curbs = 0
+        for i in range(len(curbs)):
+            if curb_cuts[i]:
+                if not curbs[i]:
+                    all_cuts_have_curbs = False
+                    cuts_without_curbs += 1
+
+        # Calculate percentage of cuts that are a part of curbs
+
+
+        # Create output strings
         l1 = ["Total images:\t{}".format(folder_stats["total"]),
               "Max dim:\t{}".format(folder_stats["max dim"]),
               "Min dim:\t{}\n".format(folder_stats["min dim"]),
@@ -141,7 +154,9 @@ def main(path):
               "  where exists:\t{}"
                   .format(folder_stats["average curbs exists"]),
               "Average cuts:\t{}".format(folder_stats["average cuts total"]),
-              "  where exists:\t{}".format(folder_stats["average cuts exists"])
+              "  where exists:\t{}".format(folder_stats["average cuts exists"]),
+              "Cuts in curbs:\t{}".format(all_cuts_have_curbs),
+              "Cuts w/o curbs:\t{}".format(cuts_without_curbs)
               ]
         lines = l1 + l2
 

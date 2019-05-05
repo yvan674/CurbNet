@@ -25,7 +25,7 @@ import datetime
 
 # Custom classes imports
 from gui.training_gui import TrainingGUI
-from utils.mapillarydataset import MappilaryDataset
+from utils.mapillarydataset import MapillaryDataset
 from utils.plotcsv import PlotCSV
 
 
@@ -106,7 +106,7 @@ class Trainer:
 
         # Load the dataset
         start_time = time.time()
-        dataset = MappilaryDataset(data_path, augmentation)
+        dataset = MapillaryDataset(data_path, augmentation)
         data_loader = DataLoader(dataset,
                                  batch_size,
                                  shuffle=True)

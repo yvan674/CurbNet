@@ -20,7 +20,7 @@ from PIL import Image
 
 
 # Here we define augmentation
-class augment:
+class Augment:
     @staticmethod
     def augment(image):
         """Augments an image in the dataset.
@@ -66,7 +66,7 @@ class augment:
         return seq.augment_image(image)
 
 
-class MappilaryDataset(Dataset):
+class MapillaryDataset(Dataset):
     def __init__(self, path, with_aug):
         """Dataset object that contains the mapillary dataset.
 
@@ -76,7 +76,7 @@ class MappilaryDataset(Dataset):
         segmentation.
 
         Args:
-            path (string): The path to the specific mapillary dataset folder.
+            path (string): The path to the specific mapillary dataset subfolder.
             with_aug (bool): Whether or not to use image augmentation.
         """
         super().__init__()
@@ -88,10 +88,12 @@ class MappilaryDataset(Dataset):
         self.seg_dir = join(self.path, "labels")
         self.pan_dir = join(self.path, "panoptic")
 
-        # Save a list of all the image names
-        self.images = listdir(self.images_dir)
+        self.images = []
 
-        # TODO Do stuff
+        # Read viability list
+        with open(join(path, "viable.txt"), mode='r') as viability:
+            for line in viability:
+                self.images.append(line)
 
     def __len__(self):
         """Returns the number of items in the dataset.
@@ -102,8 +104,7 @@ class MappilaryDataset(Dataset):
         Returns:
             int: The number of images in the dataset.
         """
-        return len(listdir(self.images_dir))
-
+        return len(listdir(self.seg_dir))
 
     def __getitem__(self, idx):
         """Returns the items in the dataset with the specified idx.
@@ -142,7 +143,7 @@ class MappilaryDataset(Dataset):
         """
         if self.with_aug:
             # apply image augmentation sequential
-            image = augment.augment(image)
+            image = Augment.augment(image)
 
         # swap color axis because
         # numpy image: H x W x C
@@ -151,7 +152,8 @@ class MappilaryDataset(Dataset):
 
         return torch.from_numpy(image).to(dtype=torch.float)
 
-    def _process_segmented(self, image):
+    @staticmethod
+    def _process_segmented(image):
         """Processes segmentation image to classes from a given config file.
 
         Each pixel in the image should be given a label that corresponds to if

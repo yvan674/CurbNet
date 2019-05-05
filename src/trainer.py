@@ -170,7 +170,7 @@ class Trainer:
 
                 # Calculate time per step every 2 steps
                 if counter % 2 == 0:
-                    rate = float(counter)/(time.time() - start_time)
+                    rate = float(counter) / (time.time() - start_time)
 
                 loss_value = loss.item()
 
@@ -193,9 +193,8 @@ class Trainer:
         torch.cuda.empty_cache()
 
         self._update_status(
-            "Finished training in {}."
-                .format(datetime.timedelta(seconds=int(time.time()
-                                                   - absolute_start_time))),
+            "Finished training in {}.".format(datetime.timedelta(
+                seconds=int(time.time() - absolute_start_time))),
             gui, tracking)
 
         # Now save the loss and accuracy file
@@ -254,7 +253,6 @@ class Trainer:
         # Calculate intersect
         intersect = np.sum(ground_truth == predicted) - zeros
 
-
         # Return intersect over union, with special handling for union = 0
         if union == 0:
             if intersect == 0:
@@ -264,7 +262,8 @@ class Trainer:
         else:
             return intersect / union
 
-    def _update_status(self, message, gui, plot_csv):
+    @staticmethod
+    def _update_status(message, gui, plot_csv):
         """Updates the status of the program in the GUI, console, and log.
 
         Args:

@@ -11,7 +11,6 @@ Authors:
 """
 import argparse
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 import csv

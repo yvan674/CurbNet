@@ -66,7 +66,7 @@ class Inception(nn.Module):
         y2 = self.b2(x)
         y3 = self.b3(x)
         y4 = self.b4(x)
-        return torch.cat((y1,y2,y3,y4), 1)
+        return torch.cat((y1, y2, y3, y4), 1)
 
 
 class GoogLeNet(nn.Module):
@@ -136,16 +136,15 @@ class CurbNet(nn.Module):
         self.classifier_conv = classifier_conv
         self.softmax = nn.Softmax(dim=1)
 
+    @staticmethod
+    def _normal_initialization(layer):
+        """Initializes a layer with some weights.
+        Args:
+            layer (nn.Module): The layer to be initialized.
+        """
+        layer.weight.data.normal_(0, 0.01)
 
-    def _normal_initialization(self, layer):
-            """Initializes a layer with some weights.
-            Args:
-                layer (nn.Module): The layer to be initialized.
-            """
-            layer.weight.data.normal_(0, 0.01)
-
-            layer.bias.data.zero_()
-
+        layer.bias.data.zero_()
 
     def forward(self, x):
         """Describes the architecture of the neural network.
@@ -164,7 +163,7 @@ class CurbNet(nn.Module):
         out = self.classifier_conv(out)
 
         out = nn.functional.interpolate(input=out, size=input_spatial_dim,
-                                     mode="bilinear")
+                                        mode="bilinear")
         out = self.softmax(out)
 
         return out

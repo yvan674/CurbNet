@@ -16,10 +16,11 @@ import datetime
 from torch import argmax
 
 import matplotlib
-
-matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+
+
+matplotlib.use("TkAgg")
 
 
 class TrainingGUI:
@@ -264,7 +265,7 @@ class Plots(tk.Frame):
     def __init__(self, master=None):
         """Creates a plotting frame that can be used as a tk module."""
         super().__init__(master)
-        f = Figure(figsize=(3,2), dpi=100)
+        f = Figure(figsize=(3, 2), dpi=100)
         self.loss_values = []
         self.accuracy_values = []
         self.ax1 = f.add_subplot(111)

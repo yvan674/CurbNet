@@ -27,7 +27,7 @@ training arguments:
     -r [LEARNING_RATE], --learning-rate [LEARNING_RATE]
                         sets the learning rate for the optimizer
     -o [OPTIMIZER], --optimizer [OPTIMIZER]
-                        sets the optimizer. Currently supportedoptimizers are
+                        sets the optimizer. Currently supported optimizers are
                         "adam" and "sgd"
     -b [BATCH_SIZE], --batch-size [BATCH_SIZE]
                         sets the batch size for the session
@@ -65,8 +65,8 @@ def parse_arguments():
     mode = parser.add_argument_group("mode", "mode to run the network in")
     mutex = mode.add_mutually_exclusive_group(required=True)
     mutex.add_argument('-t', '--train', type=str, nargs=1,
-                          help="sets to training mode and gives the path to "
-                               "the data directory")
+                       help="sets to training mode and gives the path to "
+                            "the data directory")
     mutex.add_argument('-v', '--validate', type=str, nargs=1,
                        help="sets to validation mode and gives the path to "
                             "the data directory")
@@ -77,25 +77,25 @@ def parse_arguments():
     # Training arguments
     training = parser.add_argument_group("training arguments")
     training.add_argument('-r', '--learning-rate', type=float, nargs='?',
-                        default=0.002,
-                        help="sets the learning rate for the optimizer")
+                          default=0.002,
+                          help="sets the learning rate for the optimizer")
     training.add_argument('-o', '--optimizer', type=str, nargs='?',
-                        default="adam",
-                        help="sets the optimizer. Currently supported"
-                             "optimizers are \"adam\" and \"sgd\"")
+                          default="adam",
+                          help="sets the optimizer. Currently supported"
+                               "optimizers are \"adam\" and \"sgd\"")
     training.add_argument('-b', '--batch-size', type=int, nargs='?', default=5,
-                        help="sets the batch size for the session")
+                          help="sets the batch size for the session")
     training.add_argument('-e', '--epochs', type=int, nargs='?', default=1,
-                        help="sets the number of epochs for the session")
+                          help="sets the number of epochs for the session")
     training.add_argument('-a', '--augment', action='store_true',
-                        help="activates image augmentation for the session")
+                          help="activates image augmentation for the session")
     training.add_argument('-l', '--loss-weights', type=float, nargs='+',
-                        help='custom per class loss weights as a set of 3 '
-                             'floats')
+                          help='custom per class loss weights as a set of 3 '
+                               'floats')
     training.add_argument('-p', '--plot', type=str, nargs='?',
-                        help="sets the path for the loss and accuracy csv file."
-                             " If none is given, set to the current working "
-                             "directory")
+                          help="sets the path for the loss and accuracy csv "
+                               "file. If none is given, set to the current "
+                               "working directory")
 
     parser.add_argument('--profile', action='store_true',
                         help="profiles the network when used in conjunction "
@@ -135,7 +135,8 @@ def main(arguments):
         # Run in training mode
         trainer = Trainer(arguments.learning_rate, arguments.optimizer)
 
-        trainer.train(arguments.train[0], arguments.batch_size, arguments.epochs,
+        trainer.train(arguments.train[0], arguments.batch_size,
+                      arguments.epochs,
                       arguments.plot, arguments.weights[0], arguments.augment)
 
         # Clean exit on completion

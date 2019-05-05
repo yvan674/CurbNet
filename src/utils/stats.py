@@ -20,9 +20,8 @@ import numpy as np
 # Import sound only on windows
 try:
     import winsound
-except:
-    pass
-
+except ImportError:
+    winsound = None
 
 CURB_LABEL = 2
 CURB_CUT_LABEL = 9
@@ -54,10 +53,10 @@ def main(path):
                         "dims": None,
                         "percent with curbs": None,
                         "percent with cuts": None,
-                        "average curbs total": None,
-                        "average curbs exists": None,
-                        "average cuts total": None,
-                        "average cuts exists": None}
+                        "avg curbs total": None,
+                        "avg curbs exists": None,
+                        "avg cuts total": None,
+                        "avg cuts exists": None}
 
         current_dir = os.path.join(path, folder)
         images_dir = os.path.join(current_dir, "images")
@@ -119,13 +118,13 @@ def main(path):
         folder_stats["percent with cuts"] = num_cuts / total
 
         # Get averages for curbs
-        folder_stats["average curbs total"] = np.average(curbs)
-        folder_stats["average curbs exists"] = float(np.sum(curbs)) / num_curbs
+        folder_stats["avg curbs total"] = np.average(curbs)
+        folder_stats["avg curbs exists"] = float(np.sum(curbs)) / num_curbs
 
         # Get averages for curb cuts
-        folder_stats["average cuts total"] = np.average(curb_cuts)
-        folder_stats["average cuts exists"] = float(np.sum(curb_cuts)) \
-                                              / num_cuts
+        folder_stats["avg cuts total"] = np.average(curb_cuts)
+        folder_stats["avg cuts exists"] = \
+            float(np.sum(curb_cuts)) / num_cuts
 
         # Calculate if every image with curbs have curb cuts
         all_cuts_have_curbs = True
@@ -138,7 +137,6 @@ def main(path):
 
         # Calculate percentage of cuts that are a part of curbs
 
-
         # Create output strings
         l1 = ["Total images:\t{}".format(folder_stats["total"]),
               "Max dim:\t{}".format(folder_stats["max dim"]),
@@ -150,11 +148,10 @@ def main(path):
         l2 = ["",
               "Percent curbs:\t{}".format(folder_stats["percent with curbs"]),
               "Percent cuts:\t{}".format(folder_stats["percent with cuts"]),
-              "Average curbs:\t{}".format(folder_stats["average curbs total"]),
-              "  where exists:\t{}"
-                  .format(folder_stats["average curbs exists"]),
-              "Average cuts:\t{}".format(folder_stats["average cuts total"]),
-              "  where exists:\t{}".format(folder_stats["average cuts exists"]),
+              "Average curbs:\t{}".format(folder_stats["avg curbs total"]),
+              "  where exists:\t{}".format(folder_stats["avg curbs exists"]),
+              "Average cuts:\t{}".format(folder_stats["avg cuts total"]),
+              "  where exists:\t{}".format(folder_stats["avg cuts exists"]),
               "Cuts in curbs:\t{}".format(all_cuts_have_curbs),
               "Cuts w/o curbs:\t{}".format(cuts_without_curbs)
               ]
@@ -184,7 +181,6 @@ def process_image(image_name, labels_dir):
 
     Args:
         image_name (str): Image file name without extension.
-        images_dir (str): The directory of the images.
         labels_dir (str): The directory of the labelled images.
 
     Returns:
@@ -203,8 +199,8 @@ def process_image(image_name, labels_dir):
     # Use a numpy array to calculate curb and curb cut proportions
     labeled = np.array(labeled)
 
-    # Note: We use np.count_nonzero instead of np.sum because it is approximately
-    # 139% faster than np.sum()
+    # Note: We use np.count_nonzero instead of np.sum because it is
+    # approximately 139% faster than np.sum()
     total_curbs = np.count_nonzero(labeled == CURB_LABEL)
     total_curb_cuts = np.count_nonzero(labeled == CURB_CUT_LABEL)
 

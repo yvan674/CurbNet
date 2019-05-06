@@ -2,7 +2,7 @@
 """PlotIt.
 
 This module visualizes the plot of the loss function created while training the
-network.
+Network.
 
 Authors:
     Maximilian Roth <max@die-roths.de>

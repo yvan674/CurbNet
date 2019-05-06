@@ -9,11 +9,11 @@ positional arguments:
 
 optional arguments:
     -h, --help          show this help message and exit
-    --profile           profiles the network when used in conjunction with
+    --profile           profiles the Network when used in conjunction with
                         either training, validation or inference mode
 
 mode:
-    mode to run the network in
+    mode to run the Network in
 
     -t TRAIN, --train TRAIN
                         sets to training mode and gives the path to the data
@@ -21,7 +21,7 @@ mode:
     -v VALIDATE, --validate VALIDATE
                         sets to validation mode and gives the path to the data
                         directory
-    -i, --infer         runs the network for inference
+    -i, --infer         runs the Network for inference
 
 training arguments:
     -r [LEARNING_RATE], --learning-rate [LEARNING_RATE]
@@ -62,7 +62,7 @@ def parse_arguments():
                              "If the file doesn't exist, one will be created.")
 
     # Mutex args
-    mode = parser.add_argument_group("mode", "mode to run the network in")
+    mode = parser.add_argument_group("mode", "mode to run the Network in")
     mutex = mode.add_mutually_exclusive_group(required=True)
     mutex.add_argument('-t', '--train', type=str, nargs=1,
                        help="sets to training mode and gives the path to "
@@ -72,7 +72,7 @@ def parse_arguments():
                             "the data directory")
 
     mutex.add_argument('-i', '--infer', action='store_true',
-                       help="runs the network for inference")
+                       help="runs the Network for inference")
 
     # Training arguments
     training = parser.add_argument_group("training arguments")
@@ -98,7 +98,7 @@ def parse_arguments():
                                "working directory")
 
     parser.add_argument('--profile', action='store_true',
-                        help="profiles the network when used in conjunction "
+                        help="profiles the Network when used in conjunction "
                              "with either training, validation or "
                              "inference mode")
 

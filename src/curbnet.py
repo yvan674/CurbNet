@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 """CurbNet.
 
-A deep neural network designed to identify and segment urban images for curbs
+A deep neural Network designed to identify and segment urban images for curbs
 and curb cuts.
 
 Author:
@@ -124,7 +124,7 @@ class GoogLeNet(nn.Module):
 
 class CurbNet(nn.Module):
     def __init__(self):
-        """A neural network that identifies and segments curbs and curb cuts."""
+        """A neural Network that identifies and segments curbs and curb cuts."""
         super(CurbNet, self).__init__()  # Initialize the superclass
 
         # Currently use the same architecture from the AIS project, i.e.
@@ -147,7 +147,7 @@ class CurbNet(nn.Module):
         layer.bias.data.zero_()
 
     def forward(self, x):
-        """Describes the architecture of the neural network.
+        """Describes the architecture of the neural Network.
 
         Args:
             x (torch.Tensor): The input image as a tensor.
@@ -158,7 +158,7 @@ class CurbNet(nn.Module):
         # Calculate the spatial dimension for output later
         input_spatial_dim = x.size()[2:]
 
-        # Run the network
+        # Run the Network
         out = self.encoder(x)
         out = self.classifier_conv(out)
 

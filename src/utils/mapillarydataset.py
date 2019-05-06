@@ -17,7 +17,7 @@ from PIL import Image
 from skimage import io
 
 
-DIM_WIDTH = 420
+DIM_WIDTH = 100  # Ideally, this would be 640 if it could fit in the GPU memory
 DIMENSIONS = (DIM_WIDTH, int(float(DIM_WIDTH) * .75))
 
 

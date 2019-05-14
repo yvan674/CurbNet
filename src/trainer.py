@@ -31,9 +31,9 @@ if torch.cuda.device_count() == 1:
     from curbnet import CurbNet as Network
 # elif torch.cuda.device_count() > 1:
 #     from parallel_curbnet import ParallelCurbNet as Network
-else:
-    raise RuntimeError("Training can only be done on a computer with CUDA "
-                       "cores.")
+# else:
+#     raise RuntimeError("Training can only be done on a computer with CUDA "
+#                        "cores.")
 
 
 class Trainer:

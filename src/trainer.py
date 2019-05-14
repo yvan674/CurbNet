@@ -21,7 +21,7 @@ from os import path
 import datetime
 
 # Custom classes imports
-from gui.training_gui import TrainingGUI
+from ui.training_gui import TrainingGUI
 from utils.mapillarydataset import MapillaryDataset
 from utils.plotcsv import PlotCSV
 
@@ -108,7 +108,7 @@ class Trainer:
                                        "augmentation": augmentation})
 
         # Create GUI
-        gui = TrainingGUI(num_epochs)
+        gui = TrainingGUI()
 
         # Load the dataset
         start_time = time.time()
@@ -138,7 +138,7 @@ class Trainer:
                             .format(torch.cuda.device_count()), gui, tracking)
         for epoch in range(num_epochs):
             # Figure out number of max steps for info displays
-            gui.set_max_step(len(data_loader))
+            gui.set_max_values(len(data_loader), num_epochs)
 
             for data in enumerate(data_loader):
                 # Grab the raw and target images
@@ -181,13 +181,14 @@ class Trainer:
 
                 loss_value = loss.item()
 
-                gui.update_data(target=target_image[0],
-                                generated=detached_out[0],
-                                step=data[0] + 1,
+                gui.update_data(step=data[0] + 1,
                                 epoch=epoch + 1,
                                 accuracy=accuracy,
                                 loss=loss_value,
                                 rate=rate)
+
+                gui.update_image(target=target_image[0],
+                                generated=detached_out[0])
 
                 # Write to the plot file every step
                 tracking.write_data({"loss": loss_value,

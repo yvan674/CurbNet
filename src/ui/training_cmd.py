@@ -7,13 +7,20 @@ Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
 from ui.training_ui import TrainingUI
+import datetime
+try:
+    import curses
+except ImportError:
+    pass
 
 
 class TrainingCmd(TrainingUI):
     def __init__(self):
         """Initializes a curses based training UI."""
-        self.max_steps = 0
-        self.max_epochs = 0
+        self.max_step = 0
+        self.max_epoch = 0
+        self.stdscr = curses.initscr()
+        self.stdscr.clear()
 
     def update_data(self, step, epoch, accuracy, loss, rate):
         """Updates the strings within the UI.
@@ -26,7 +33,29 @@ class TrainingCmd(TrainingUI):
             rate (float): The rate the Network is running at in steps per
                           second.
         """
-        print("Step: {}/{}, Epoch: {}/{}, Rate: 0 S/s, Time left: 0 seconds")
+        # Calculate time left
+        if rate == 0:
+            time_left = "NaN"
+        else:
+            time_left = int(((self.max_step * self.max_epoch)
+                             - ((float(step) + 1.)
+                                + (self.max_step * epoch))) / rate)
+            time_left = str(datetime.timedelta(seconds=time_left))
+
+        # Clear only the top part of the screen
+        for i in range(3):
+            self.stdscr.addstr(i, 0,
+                               "                              "
+                               "                              ")
+
+        self.stdscr.addstr(0, 0, "Step: {} / {}".format(step, self.max_step))
+        self.stdscr.addstr(0, 30, "Epoch: {}/ {}".format(epoch, self.max_epoch))
+
+        self.stdscr.addstr(1, 0, "Loss: {:.3f}".format(loss))
+        self.stdscr.addstr(1, 30, "Accuracy: {:.3f}%".format(accuracy))
+
+        self.stdscr.addstr(2, 0, "Rate: {:.3f} Steps/s".format(rate))
+        self.stdscr.addstr(2, 30, "Time left: {}".format(time_left))
 
     def update_status(self, message):
         """Updates the status message within the UI.
@@ -34,7 +63,7 @@ class TrainingCmd(TrainingUI):
         Args:
             message (str): The new message that should be displayed.
         """
-        pass
+        self.stdscr.addstr(3, 0, message)
 
     def set_max_values(self, total_steps, total_epochs):
         """Sets the number of steps and epochs during this training session.
@@ -43,5 +72,5 @@ class TrainingCmd(TrainingUI):
             total_steps (int): The total number of steps.
             total_epochs (int): The total number of epochs.
         """
-        self.max_steps = total_steps
-        self.max_epochs = total_epochs
+        self.max_step = total_steps
+        self.max_epoch = total_epochs

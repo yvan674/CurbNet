@@ -134,7 +134,8 @@ class Trainer:
         # Start training
         start_time = time.time()
         absolute_start_time = time.time()
-        self._update_status("Starting training.", gui, tracking)
+        self._update_status("Starting training on {} GPU(s)."
+                            .format(torch.cuda.device_count()), gui, tracking)
         for epoch in range(num_epochs):
             # Figure out number of max steps for info displays
             gui.set_max_step(len(data_loader))

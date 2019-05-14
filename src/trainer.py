@@ -27,8 +27,8 @@ from utils.mapillarydataset import MapillaryDataset
 from utils.plotcsv import PlotCSV
 
 # Network imports
-if torch.cuda.device_count() == 1:
-    from curbnet import CurbNet as Network
+# if torch.cuda.device_count() == 1:
+from curbnet import CurbNet as Network
 # elif torch.cuda.device_count() > 1:
 #     from parallel_curbnet import ParallelCurbNet as Network
 # else:

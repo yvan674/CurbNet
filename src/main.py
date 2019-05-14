@@ -137,7 +137,8 @@ def main(arguments):
     # print("Arguments: {}".format(arguments))
     if arguments.train:
         # Run in training mode
-        trainer = Trainer(arguments.learning_rate, arguments.optimizer)
+        trainer = Trainer(arguments.learning_rate, arguments.optimizer,
+                          arguments.cmd_line)
 
         trainer.train(arguments.train[0], arguments.batch_size,
                       arguments.epochs,

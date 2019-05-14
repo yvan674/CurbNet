@@ -102,6 +102,10 @@ def parse_arguments():
                              "with either training, validation or "
                              "inference mode")
 
+    parser.add_argument('-c', '--cmd-line', action='store_true',
+                        help="runs the program in command line mode using "
+                             "curses. Used for remote training.")
+
     arguments = parser.parse_args()
 
     if arguments.infer and (arguments.plot or arguments.augment

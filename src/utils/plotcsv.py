@@ -15,13 +15,37 @@ from utils.plotit import PlotIt
 
 
 class PlotCSV:
-    def __init__(self, directory, parameters):
+    def __init__(self):
         """Writes training parameters and the loss and accuracy data to a CSV.
+        """
+        # Initialize variables
+        self.log_file = None
+        self.file_path = None
+        self.csv_file = None
+        self.csv_writer = None
+        self.configured = False
+
+        # Create a queue of lines to be written to avoid hdd writes every line
+        self.queued_lines = []
+
+    def configure(self, parameters):
+        """Configures the parameters for the module.
 
         Args:
-            directory (str): The directory that the data should be saved in.
-            parameters (dict): The training hyper parameters to be stored.
+            parameters (dict): Required parameters:
+                - "plot path" (str): Where to put the plot file.
+                - "weights path" (str): Where the weights will be saved.
+                - "training data path" (str): Where the training data is.
+                - "optimizer" (str): The optimizer used to train.
+                - "batch size" (int): The size of the batch in this session.
+                - "epochs" (int): Number of epochs to train for.
+                - "augmentation" (bool): Whether or not to use augmentation.
         """
+        # Reassign the plot path
+        directory = parameters["plot path"]
+        # Remove it from the parameters list so it isn't printed to the log.
+        parameters.pop("plot path")
+
         # Create the directory if it doesn't exist
         if not os.path.isdir(directory):
             os.mkdir(directory)
@@ -31,7 +55,8 @@ class PlotCSV:
         current_time = strftime("%Y_%m_%d_%H-%M-%S", gmtime())
 
         # Set up the log file
-        log_path = os.path.join(directory, current_time + '-log.txt')
+        log_path = os.path.join(directory,
+                                current_time + '-log.txt')
         self.log_file = open(log_path, 'a')
 
         # Write out the parameters of this test.
@@ -51,9 +76,7 @@ class PlotCSV:
                                          restval="", extrasaction="ignore")
 
         self.csv_writer.writeheader()
-
-        # Create a queue of lines to be written to avoid hdd writes every line
-        self.queued_lines = []
+        self.configured = True
 
     def write_data(self, data):
         """Queues data for writing to the CSV file.
@@ -61,6 +84,9 @@ class PlotCSV:
         Args:
             data (dict): Data to be written to the CSV file.
         """
+        if not self.configured:
+            raise Exception("PlotCSV has not been properly configured.")
+
         self.queued_lines.append(data)
 
         # Writes every 10 lines to reduce hdd dependency time
@@ -74,6 +100,9 @@ class PlotCSV:
         Args:
             message (str): The message to be written
         """
+        if not self.configured:
+            raise Exception("PlotCSV has not been properly configured.")
+
         self.log_file.write("{}\n".format(message))
 
     def close(self):

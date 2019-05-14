@@ -255,7 +255,6 @@ class GeneratedImage(ImageFrame):
         """Updates the image that is to be displayed."""
         # Turn the generated output into an image
         generated_array = self._class_prob_to_image_array(image)
-        print("Updating Generated Image")
 
         self._update_image(Image.fromarray(generated_array))
 
@@ -279,9 +278,6 @@ class GeneratedImage(ImageFrame):
 class TrainingGUI(TrainingUI):
     def __init__(self):
         """Creates a GUI to show training status using tkinter."""
-        # Call super first
-        super().__init__()
-
         # Configure root
         self.root = tk.Tk()
         self.root.title("CurbNet Training")

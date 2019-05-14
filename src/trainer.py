@@ -22,6 +22,7 @@ import datetime
 
 # Custom classes imports
 from ui.training_gui import TrainingGUI
+from ui.training_cmd import TrainingCmd
 from utils.mapillarydataset import MapillaryDataset
 from utils.plotcsv import PlotCSV
 
@@ -36,7 +37,8 @@ else:
 
 
 class Trainer:
-    def __init__(self, lr=0.01, optimizer="sgd", loss_weights=None):
+    def __init__(self, lr=0.01, optimizer="sgd", loss_weights=None,
+                 cmd_line=False):
         """Training class used to train the CurbNet Network.
 
         Args:
@@ -45,6 +47,8 @@ class Trainer:
             loss_weights (list): A list of floats with length 3 that are the
                                  weight values for each class used by the loss
                                  function.
+            cmd_line (bool): Whether or not to use the command line interface.
+                             Defaults to False.
         """
         if loss_weights is None:
             # To avoid mutable default values
@@ -83,8 +87,19 @@ class Trainer:
         # Set the Network to train
         self.network.train()
 
+        # Create UI
+        if cmd_line:
+            self.ui = TrainingCmd()
+        else:
+            self.ui = TrainingGUI()
+
+        self.cmd_line = cmd_line
+
+        # Creates logging tracker
+        self.tracker = PlotCSV()
+
     def train(self, data_path, batch_size, num_epochs, plot_path, weights_path,
-              augmentation):
+              augmentation=True):
         """Start training the Network.
 
         Args:
@@ -93,22 +108,23 @@ class Trainer:
             num_epochs (int): Number of epochs to run the trainer for.
             plot_path (str): Path to save the loss plot. This should be a
                              directory.
-            weights_path (str): The path to the weights,
-            augmentation (bool): Whether or not to use augmentation,
+            weights_path (str): The path to the weights.
+            augmentation (bool): Whether or not to use augmentation. Defaults to
+                                 True.
         """
         # Stat variables
         counter = 0
         rate = 0
 
-        tracking = PlotCSV(plot_path, {"weights path": weights_path,
-                                       "training data path": data_path,
-                                       "optimizer": self.optimizer,
-                                       "batch size": batch_size,
-                                       "epochs": num_epochs,
-                                       "augmentation": augmentation})
-
-        # Create GUI
-        gui = TrainingGUI()
+        self.tracker.configure({
+            "plot path": plot_path,
+            "weights path": weights_path,
+            "training data path": data_path,
+            "optimizer": self.optimizer,
+            "batch size": batch_size,
+            "epochs": num_epochs,
+            "augmentation": augmentation
+        })
 
         # Load the dataset
         start_time = time.time()
@@ -118,27 +134,26 @@ class Trainer:
                                  shuffle=True)
 
         self._update_status("Dataset loaded. ({} ms)".format(
-            int(time.time() - start_time) * 1000), gui, tracking)
+            int(time.time() - start_time) * 1000))
 
         # Load the state dictionary
         start_time = time.time()
         if path.isfile(weights_path):
             self.network.load_state_dict(torch.load(weights_path))
             self._update_status("Loaded weights into state dictionary. ({} ms)"
-                                .format(int(time.time() - start_time) * 1000),
-                                gui, tracking)
+                                .format(int(time.time() - start_time) * 1000))
         else:
             self._update_status("Warning: Weights do not exist. "
-                                "Running with random weights.", gui, tracking)
+                                "Running with random weights.")
 
         # Start training
         start_time = time.time()
         absolute_start_time = time.time()
         self._update_status("Starting training on {} GPU(s)."
-                            .format(torch.cuda.device_count()), gui, tracking)
+                            .format(torch.cuda.device_count()))
         for epoch in range(num_epochs):
             # Figure out number of max steps for info displays
-            gui.set_max_values(len(data_loader), num_epochs)
+            self.ui.set_max_values(len(data_loader), num_epochs)
 
             for data in enumerate(data_loader):
                 # Grab the raw and target images
@@ -181,18 +196,19 @@ class Trainer:
 
                 loss_value = loss.item()
 
-                gui.update_data(step=data[0] + 1,
-                                epoch=epoch + 1,
-                                accuracy=accuracy,
-                                loss=loss_value,
-                                rate=rate)
+                self.ui.update_data(step=data[0] + 1,
+                                    epoch=epoch + 1,
+                                    accuracy=accuracy,
+                                    loss=loss_value,
+                                    rate=rate)
 
-                gui.update_image(target=target_image[0],
-                                generated=detached_out[0])
+                if not self.cmd_line:
+                    self.ui.update_image(target=target_image[0],
+                                    generated=detached_out[0])
 
                 # Write to the plot file every step
-                tracking.write_data({"loss": loss_value,
-                                     "accuracy": accuracy})
+                self.tracker.write_data({"loss": loss_value,
+                                         "accuracy": accuracy})
 
         # Save the weights
         torch.save(self.network.state_dict(),
@@ -202,13 +218,13 @@ class Trainer:
 
         self._update_status(
             "Finished training in {}.".format(datetime.timedelta(
-                seconds=int(time.time() - absolute_start_time))),
-            gui, tracking)
+                seconds=int(time.time() - absolute_start_time))))
 
         # Now save the loss and accuracy file
-        tracking.close()
+        self.tracker.close()
 
-        gui.mainloop()
+        if not self.cmd_line:
+            self.ui.mainloop()
 
     def _calculate_batch_accuracy(self, ground_truth, predicted, batch_size):
         """Calculates accuracy of the batch using intersection over union.
@@ -277,15 +293,14 @@ class Trainer:
         else:
             return intersect / union
 
-    @staticmethod
-    def _update_status(message, gui, plot_csv):
+    def _update_status(self, message):
         """Updates the status of the program in the GUI, console, and log.
 
         Args:
             message (str): The message to be written.
-            gui (gui.training_gui.TrainingGUI): The GUI object used.
+            ui (ui.TrainingUI): The UI object used.
             plot_csv (utils.plotcsv.PlotCSV): The PlotCSV object used
         """
         message = "[{}] {}".format(strftime("%H:%M:%S", localtime()), message)
-        plot_csv.write_log(message)
-        gui.update_status(message)
+        self.tracker.write_log(message)
+        self.ui.update_status(message)

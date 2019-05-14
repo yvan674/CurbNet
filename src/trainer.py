@@ -48,7 +48,7 @@ class Trainer:
         """
         if loss_weights is None:
             # To avoid mutable default values
-            loss_weights = [0.05, 5., 8.]
+            loss_weights = [0.005825, 0.49516, 0.499015]
 
         # Initialize the Network
         self.network = Network()

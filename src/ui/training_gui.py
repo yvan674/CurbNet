@@ -102,9 +102,13 @@ class Status(tk.Frame):
         if rate == 0:
             time_left = "NaN"
         else:
-            time_left = int(((self.max_step * self.max_epoch)
-                             - ((float(step) + 1.)
-                                + (self.max_step * epoch))) / rate)
+            steps_total = float((self.max_step * self.max_epoch))
+            steps_done_this_epoch = float(step + 1)
+            steps_times_epochs_done = float(self.max_step * (epoch - 1))
+            steps_left = steps_total - steps_done_this_epoch\
+                         - steps_times_epochs_done
+
+            time_left = int(steps_left / rate)
             time_left = str(datetime.timedelta(seconds=time_left))
 
         self.time_var.set("Time left: {}".format(time_left))

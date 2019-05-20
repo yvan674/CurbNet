@@ -11,6 +11,8 @@ optional arguments:
     -h, --help          show this help message and exit
     --profile           profiles the Network when used in conjunction with
                         either training, validation or inference mode
+    -c, --cmd-line      runs the program in command line mode using curses. Used
+                        for remote training.
 
 mode:
     mode to run the Network in

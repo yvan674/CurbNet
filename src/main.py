@@ -140,7 +140,7 @@ def main(arguments):
     if arguments.train:
         # Run in training mode
         trainer = Trainer(arguments.learning_rate, arguments.optimizer,
-                          arguments.cmd_line)
+                          arguments.loss_weights, arguments.cmd_line)
 
         trainer.train(arguments.train[0], arguments.batch_size,
                       arguments.epochs,

@@ -65,8 +65,12 @@ class Status(tk.Frame):
         for label in self.labels:
             label["bg"] = "#282c34"
             label["fg"] = "#a8afb8"
-            label.grid(row=int(counter / 2), column=counter % 2, sticky="W",
-                       padx=5, pady=5)
+            if counter > 7:
+                label.grid(row=int(counter / 2), column=counter % 2, sticky="W",
+                           padx=5, pady=5)
+            else:
+                label.grid(row=int(counter / 2), column=counter % 2, sticky="W",
+                           columnspan=2, padx=5, pady=5)
             counter += 1
 
     def update_data(self, step, epoch, accuracy, loss, rate):
@@ -142,6 +146,14 @@ class Plots(tk.Frame):
         ax2 = ax1.twinx()
         self.axes = [ax1, ax2]
 
+        # Axis label and color
+        self.axes[0].set_ylabel("Loss")
+        self.axes[0].yaxis.label.set_color("#a8afb8")
+        self.axes[0].tick_params(axis='y', colors="tab:red")
+        self.axes[1].set_ylabel("Accuracy")
+        self.axes[1].tick_params(axis='y', colors="tab:blue")
+        self.axes[1].yaxis.label.set_color("#a8afb8")
+
         # Colors for the axes
         for axis in self.axes:
             axis.set_facecolor("#282c34")
@@ -150,7 +162,6 @@ class Plots(tk.Frame):
             axis.spines["left"].set_color("#a8afb8")
             axis.spines["right"].set_color("#a8afb8")
             axis.tick_params(axis='x', colors='#a8afb8')
-            axis.tick_params(axis='y', colors='#a8afb8')
             axis.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
         f.tight_layout()
@@ -179,6 +190,14 @@ class Plots(tk.Frame):
         # Plot the new values
         self.axes[0].plot(self.loss_values, color='tab:red')
         self.axes[1].plot(self.accuracy_values, color='tab:blue')
+
+        # Axis label and color
+        self.axes[0].set_ylabel("Loss")
+        self.axes[0].yaxis.label.set_color("#a8afb8")
+        self.axes[0].tick_params(axis='y', colors="tab:red")
+        self.axes[1].set_ylabel("Accuracy")
+        self.axes[1].tick_params(axis='y', colors="tab:blue")
+        self.axes[1].yaxis.label.set_color("#a8afb8")
 
         # Redraw canvas
         self.canvas.draw()

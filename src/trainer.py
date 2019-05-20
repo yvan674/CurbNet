@@ -33,7 +33,6 @@ elif torch.cuda.device_count() > 1:
     from parallel_curbnet import ParallelCurbNet as Network
 
 
-
 class Trainer:
     def __init__(self, lr=0.01, optimizer="sgd", loss_weights=None,
                  cmd_line=False):
@@ -50,7 +49,7 @@ class Trainer:
         """
         if loss_weights is None:
             # To avoid mutable default values
-            loss_weights = [0.005825, 0.49516, 0.499015]
+            loss_weights = [0.00583, 0.49516, 0.49902]
 
         # Initialize the Network
         self.network = Network()
@@ -70,8 +69,8 @@ class Trainer:
         # Set the loss criterion according to the recommended for pixel-wise
         # classification. We use weights so that missing curbs
         # will be more heavily penalized
-        self.criterion = nn.CrossEntropyLoss(
-            weight=torch.tensor(loss_weights).cuda())
+        loss_weights = torch.tensor(loss_weights, dtype=torch.float).cuda()
+        self.criterion = nn.CrossEntropyLoss(weight=loss_weights)
 
         # Set the optimizer according to the arguments
         if optimizer == "adam":
@@ -202,7 +201,7 @@ class Trainer:
 
                 if not self.cmd_line:
                     self.ui.update_image(target=target_image[0],
-                                    generated=detached_out[0])
+                                         generated=detached_out[0])
 
                 # Write to the plot file every step
                 self.tracker.write_data({"loss": loss_value,

@@ -15,10 +15,20 @@ from imgaug import augmenters as iaa
 from os.path import join
 from PIL import Image
 from skimage import io
+from sklearn.preprocessing import normalize
 
 
 DIM_WIDTH = 200  # Ideally, this would be 640 if it could fit in the GPU memory
 DIMENSIONS = (DIM_WIDTH, int(float(DIM_WIDTH) * .75))
+
+# Create a normalized index array based on the dimensions
+index_array = np.indices((DIMENSIONS[1], DIMENSIONS[0]))
+NORMALIZED_INDICES = []
+# Normalize each axis independently
+for axis in index_array:
+    NORMALIZED_INDICES.append(normalize(axis, axis=0, norm="max"))
+# Combine the axes back into a single np array
+NORMALIZED_INDICES = np.array(NORMALIZED_INDICES)
 
 
 def augment(image):
@@ -171,6 +181,9 @@ class MapillaryDataset(Dataset):
     def _process_raw(self, image):
         """Transform the given image to a tensor and augments it.
 
+        This also adds the indices array, to allow the network to also
+        learn from pixel coordinates.
+
         Args:
             image (imageio.core.util.Array): The image to be turned into a
             tensor.
@@ -189,6 +202,7 @@ class MapillaryDataset(Dataset):
         # numpy image: H x W x C
         # torch image: C X H X W
         image = image.transpose((2, 0, 1))
+        image = np.append(image, INDEX_ARRAY, axis=0)
 
         return torch.from_numpy(image).to(dtype=torch.float)
 

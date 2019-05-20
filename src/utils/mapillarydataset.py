@@ -202,7 +202,7 @@ class MapillaryDataset(Dataset):
         # numpy image: H x W x C
         # torch image: C X H X W
         image = image.transpose((2, 0, 1))
-        image = np.append(image, INDEX_ARRAY, axis=0)
+        image = np.append(image, NORMALIZED_INDICES, axis=0)
 
         return torch.from_numpy(image).to(dtype=torch.float)
 

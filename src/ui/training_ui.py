@@ -18,9 +18,9 @@ class TrainingUI(ABC):
         Args:
             step (int): The current step of the training process.
             epoch (int): The current epoch of the training process.
-            accuracy (float): The accuracy of the Network at the current step.
-            loss (float): The loss of the Network at the current step.
-            rate (float): The rate the Network is running at in steps per
+            accuracy (float): The accuracy of the network at the current step.
+            loss (float): The loss of the network at the current step.
+            rate (float): The rate the network is running at in steps per
                           second.
         """
         pass

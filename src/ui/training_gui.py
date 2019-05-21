@@ -2,9 +2,9 @@
 
 This module allows training to be displayed through a GUI. This makes it easier
 to see what's going on and is just nicer overall compared to training a
-segmentation Network over the command line. The purpose of the module is to
+segmentation network over the command line. The purpose of the module is to
 show the ground truth and the generated segmentation, the status of the training
-session, and a plot of the current loss vs accuracy of the Network.
+session, and a plot of the current loss vs accuracy of the network.
 
 Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
@@ -82,9 +82,9 @@ class Status(tk.Frame):
         Args:
             step (int): The current step of the training process.
             epoch (int): The current epoch of the training process.
-            accuracy (float): The accuracy of the Network at the current step.
-            loss (float): The loss of the Network at the current step.
-            rate (float): The rate the Network is running at in steps per
+            accuracy (float): The accuracy of the network at the current step.
+            loss (float): The loss of the network at the current step.
+            rate (float): The rate the network is running at in steps per
                           second.
         """
         # Row 0 labels
@@ -105,8 +105,8 @@ class Status(tk.Frame):
             steps_total = float((self.max_step * self.max_epoch))
             steps_done_this_epoch = float(step + 1)
             steps_times_epochs_done = float(self.max_step * (epoch - 1))
-            steps_left = steps_total - steps_done_this_epoch\
-                         - steps_times_epochs_done
+            steps_left = (steps_total - steps_done_this_epoch
+                          - steps_times_epochs_done)
 
             time_left = int(steps_left / rate)
             time_left = str(datetime.timedelta(seconds=time_left))
@@ -227,13 +227,14 @@ class ImageFrame(tk.Frame):
                                                    image=self.img)
         self.canvas.pack()
 
-    def _update_image(self, image):
-        """Internal image update to reduce code reuse."""
-        # Resize the image.
-        image = image.resize((400, 300), Image.NEAREST)
-        self.img = ImageTk.PhotoImage(image=image)
-        self.canvas.itemconfig(self.canvas_img,
-                               image=self.img)
+    def update_image(self, image):
+        """Updates the image that is to be displayed."""
+        img_array = self._class_to_image_array(image)
+
+        img_array = Image.fromarray(img_array)
+        img_array = img_array.resize((400, 300), Image.NEAREST)
+        self.img = ImageTk.PhotoImage(image=img_array)
+        self.canvas.itemconfig(self.canvas_img, image=self.img)
 
     @staticmethod
     def _class_to_image_array(image):
@@ -255,47 +256,6 @@ class ImageFrame(tk.Frame):
         out[image == 2] = np.array([152, 195, 121])
 
         return out
-
-
-class TargetImage(ImageFrame):
-    def __init__(self, master=None):
-        """Creates an image frame that can contain the target segmentation."""
-        super().__init__(master=master)
-
-    def update_image(self, image):
-        """Updates the image that is to be displayed."""
-        target_array = self._class_to_image_array(image)
-
-        self._update_image(Image.fromarray(target_array))
-
-
-class GeneratedImage(ImageFrame):
-    def __init__(self, master=None):
-        """Creates an image frame that can contain a network-generated image."""
-        super().__init__(master=master)
-
-    def update_image(self, image):
-        """Updates the image that is to be displayed."""
-        # Turn the generated output into an image
-        generated_array = self._class_prob_to_image_array(image)
-
-        self._update_image(Image.fromarray(generated_array))
-
-    def _class_prob_to_image_array(self, image):
-        """Converts the CurbNet output into an image array.
-
-        Since the CurbNet output is a one-hot encoding of the probability
-        classes, we can simply use an argmax function on the output and run it
-        through the class to image array function.
-
-        Args:
-            image (torch.Tensor): tensor array of the CurbNet output in one-hot
-            encoding.
-
-        Returns:
-            np.array: in the form [H, W, Color]
-        """
-        return self._class_to_image_array(argmax(image, dim=0))
 
 
 class TrainingGUI(TrainingUI):
@@ -326,10 +286,10 @@ class TrainingGUI(TrainingUI):
         self.root.rowconfigure(1, minsize=300)
 
         # Setup the widgets
-        self.widgets= [
-            TargetImage(self.root),
+        self.widgets = [
+            ImageFrame(self.root),
             Plots(self.root),
-            GeneratedImage(self.root),
+            ImageFrame(self.root),
             Status(self.root)
         ]
 

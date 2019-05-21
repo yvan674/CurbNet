@@ -9,13 +9,13 @@ positional arguments:
 
 optional arguments:
     -h, --help          show this help message and exit
-    --profile           profiles the Network when used in conjunction with
+    --profile           profiles the network when used in conjunction with
                         either training, validation or inference mode
     -c, --cmd-line      runs the program in command line mode using curses. Used
                         for remote training.
 
 mode:
-    mode to run the Network in
+    mode to run the network in
 
     -t TRAIN, --train TRAIN
                         sets to training mode and gives the path to the data
@@ -23,7 +23,7 @@ mode:
     -v VALIDATE, --validate VALIDATE
                         sets to validation mode and gives the path to the data
                         directory
-    -i, --infer         runs the Network for inference
+    -i, --infer         runs the network for inference
 
 training arguments:
     -r [LEARNING_RATE], --learning-rate [LEARNING_RATE]
@@ -52,8 +52,9 @@ from os.path import join
 import sys
 from platform import system
 import warnings
+import atexit
 try:
-    from curses import wrapper
+    import curses
 except ImportError:
     if system() == "Windows":
         pass
@@ -75,7 +76,7 @@ def parse_arguments():
                              "If the file doesn't exist, one will be created.")
 
     # Mutex args
-    mode = parser.add_argument_group("mode", "mode to run the Network in")
+    mode = parser.add_argument_group("mode", "mode to run the network in")
     mutex = mode.add_mutually_exclusive_group(required=True)
     mutex.add_argument('-t', '--train', type=str, nargs=1,
                        help="sets to training mode and gives the path to "
@@ -85,7 +86,7 @@ def parse_arguments():
                             "the data directory")
 
     mutex.add_argument('-i', '--infer', action='store_true',
-                       help="runs the Network for inference")
+                       help="runs the network for inference")
 
     # Training arguments
     training = parser.add_argument_group("training arguments")
@@ -111,7 +112,7 @@ def parse_arguments():
                                "working directory")
 
     parser.add_argument('--profile', action='store_true',
-                        help="profiles the Network when used in conjunction "
+                        help="profiles the network when used in conjunction "
                              "with either training, validation or "
                              "inference mode")
 
@@ -154,9 +155,10 @@ def main(arguments):
                           arguments.loss_weights, arguments.cmd_line)
 
         if arguments.cmd_line:
-            wrapper(trainer.train(arguments.train[0], arguments.batch_size,
-                                  arguments.epochs, arguments.plot,
-                                  arguments.weights[0], arguments.augment))
+            curses.wrapper(trainer.train(arguments.train[0],
+                                         arguments.batch_size, arguments.epochs,
+                                         arguments.plot, arguments.weights[0],
+                                         arguments.augment))
 
         else:
             trainer.train(arguments.train[0], arguments.batch_size,
@@ -168,10 +170,21 @@ def main(arguments):
         sys.exit()
 
 
+def closing_functions():
+    try:
+        curses.echo()
+        curses.endwin()
+    except curses.error:
+        pass
+    sys.exit()
+
+atexit.register(closing_functions)
+
 if __name__ == "__main__":
     arguments = parse_arguments()
+
     if arguments.cmd_line:
-        wrapper(main(arguments))
+        curses.wrapper(main(arguments))
 
     else:
         try:

@@ -7,7 +7,7 @@ Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
 import torch.nn as nn
-from curbnet import CurbNet
+from network.curbnet import CurbNet
 
 
 class ParallelCurbNet(nn.Module):
@@ -18,7 +18,7 @@ class ParallelCurbNet(nn.Module):
         self.parallelized = nn.DataParallel(self.parallelized)
 
     def forward(self, x):
-        """Runs the CurbNet Network in parallel.
+        """Runs the CurbNet network in parallel.
 
         Args:
             x (torch.Tensor): The input image as a tensor.

@@ -37,25 +37,24 @@ class TrainingCmd(TrainingUI):
         Args:
             step (int): The current step of the training process.
             epoch (int): The current epoch of the training process.
-            accuracy (float): The accuracy of the Network at the current step.
-            loss (float): The loss of the Network at the current step.
-            rate (float): The rate the Network is running at in steps per
+            accuracy (float): The accuracy of the network at the current step.
+            loss (float): The loss of the network at the current step.
+            rate (float): The rate the network is running at in steps per
                           second.
         """
+        # Calculate time left
         # Calculate time left
         if rate == 0:
             time_left = "NaN"
         else:
-            time_left = int(((self.max_step * self.max_epoch)
-                             - ((float(step) + 1.)
-                                + (self.max_step * epoch))) / rate)
-            time_left = str(datetime.timedelta(seconds=time_left))
+            steps_total = float((self.max_step * self.max_epoch))
+            steps_done_this_epoch = float(step + 1)
+            steps_times_epochs_done = float(self.max_step * (epoch - 1))
+            steps_left = (steps_total - steps_done_this_epoch
+                          - steps_times_epochs_done)
 
-        # Clear only the top part of the screen
-        for i in range(3):
-            self.stdscr.addstr(i, 0,
-                               "                              "
-                               "                              ")
+            time_left = int(steps_left / rate)
+            time_left = str(datetime.timedelta(seconds=time_left))
 
         self.step_var = "Step: {} / {}".format(step, self.max_step)
         self.epoch_var = "Epoch: {}/ {}".format(epoch, self.max_epoch)
@@ -87,6 +86,11 @@ class TrainingCmd(TrainingUI):
 
     def _update_screen(self):
         """Updates the screen with the current string variables."""
+        # Clear only the top part of the screen
+        for i in range(4):
+            self.stdscr.addstr(i, 0,
+                               "                              "
+                               "                              ")
         self.stdscr.addstr(0, 0, self.step_var)
         self.stdscr.addstr(0, 30, self.epoch_var)
 

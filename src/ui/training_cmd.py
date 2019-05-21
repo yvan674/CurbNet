@@ -22,6 +22,15 @@ class TrainingCmd(TrainingUI):
         self.stdscr = curses.initscr()
         self.stdscr.clear()
 
+        # String variables
+        self.step_var = ""
+        self.epoch_var = ""
+        self.loss_var = ""
+        self.acc_var = ""
+        self.rate_var = ""
+        self.time_var = ""
+        self.status_var = ""
+
     def update_data(self, step, epoch, accuracy, loss, rate):
         """Updates the strings within the UI.
 
@@ -48,14 +57,14 @@ class TrainingCmd(TrainingUI):
                                "                              "
                                "                              ")
 
-        self.stdscr.addstr(0, 0, "Step: {} / {}".format(step, self.max_step))
-        self.stdscr.addstr(0, 30, "Epoch: {}/ {}".format(epoch, self.max_epoch))
+        self.step_var = "Step: {} / {}".format(step, self.max_step)
+        self.epoch_var = "Epoch: {}/ {}".format(epoch, self.max_epoch)
+        self.loss_var = "Loss: {:.3f}".format(loss)
+        self.acc_var = "Accuracy: {:.3f}%".format(accuracy)
+        self.rate_var = "Rate: {:.3f} Steps/s".format(rate)
+        self.time_var = "Time left: {}".format(time_left)
 
-        self.stdscr.addstr(1, 0, "Loss: {:.3f}".format(loss))
-        self.stdscr.addstr(1, 30, "Accuracy: {:.3f}%".format(accuracy))
-
-        self.stdscr.addstr(2, 0, "Rate: {:.3f} Steps/s".format(rate))
-        self.stdscr.addstr(2, 30, "Time left: {}".format(time_left))
+        self._update_screen()
 
     def update_status(self, message):
         """Updates the status message within the UI.
@@ -63,7 +72,8 @@ class TrainingCmd(TrainingUI):
         Args:
             message (str): The new message that should be displayed.
         """
-        self.stdscr.addstr(3, 0, message)
+        self.status_var = message
+        self._update_screen()
 
     def set_max_values(self, total_steps, total_epochs):
         """Sets the number of steps and epochs during this training session.
@@ -74,3 +84,16 @@ class TrainingCmd(TrainingUI):
         """
         self.max_step = total_steps
         self.max_epoch = total_epochs
+
+    def _update_screen(self):
+        """Updates the screen with the current string variables."""
+        self.stdscr.addstr(0, 0, self.step_var)
+        self.stdscr.addstr(0, 30, self.epoch_var)
+
+        self.stdscr.addstr(1, 0, self.loss_var)
+        self.stdscr.addstr(1, 30, self.acc_var)
+
+        self.stdscr.addstr(2, 0, self.rate_var)
+        self.stdscr.addstr(2, 30, self.time_var)
+        self.stdscr.addstr(3, 0, self.status_var)
+        self.stdscr.refresh()

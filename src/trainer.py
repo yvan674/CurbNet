@@ -19,6 +19,7 @@ import time
 from time import strftime, localtime
 from os import path
 import datetime
+import warnings
 
 # Custom classes imports
 from ui.training_gui import TrainingGUI
@@ -64,7 +65,8 @@ class Trainer:
             self.network.cuda()
         else:
             self.device = torch.device("cpu")
-            print("Warning: CUDA compatible GPU not found. Running on CPU")
+            warnings.warn("CUDA compatible GPU not found. Running on CPU",
+                          ResourceWarning)
 
         # Set the loss criterion according to the recommended for pixel-wise
         # classification. We use weights so that missing curbs

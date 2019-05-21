@@ -163,7 +163,7 @@ class CurbNet(nn.Module):
         out = self.classifier_conv(out)
 
         out = nn.functional.interpolate(input=out, size=input_spatial_dim,
-                                        mode="bilinear")
+                                        mode="bilinear", align_corners=False)
         out = self.softmax(out)
 
         return out

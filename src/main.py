@@ -50,6 +50,17 @@ from trainer import Trainer
 from os import getcwd
 from os.path import join
 import sys
+from platform import system
+import warnings
+try:
+    from curses import wrapper
+except ImportError:
+    if system() == "Windows":
+        pass
+    else:
+        warnings.warn("Running on a non-Windows OS without curses. Command line"
+                      " usage will not be possible.",
+                      ImportWarning)
 
 
 def parse_arguments():
@@ -142,16 +153,28 @@ def main(arguments):
         trainer = Trainer(arguments.learning_rate, arguments.optimizer,
                           arguments.loss_weights, arguments.cmd_line)
 
-        trainer.train(arguments.train[0], arguments.batch_size,
-                      arguments.epochs,
-                      arguments.plot, arguments.weights[0], arguments.augment)
+        if arguments.cmd_line:
+            wrapper(trainer.train(arguments.train[0], arguments.batch_size,
+                                  arguments.epochs, arguments.plot,
+                                  arguments.weights[0], arguments.augment))
+
+        else:
+            trainer.train(arguments.train[0], arguments.batch_size,
+                          arguments.epochs, arguments.plot,
+                          arguments.weights[0], arguments.augment)
+
 
         # Clean exit on completion
         sys.exit()
 
 
 if __name__ == "__main__":
-    try:
-        main(parse_arguments())
-    except KeyboardInterrupt:
-        print("User exited program. Killing process.")
+    arguments = parse_arguments()
+    if arguments.cmd_line:
+        wrapper(main(arguments))
+
+    else:
+        try:
+            main(arguments)
+        except KeyboardInterrupt:
+            print("User exited program. Killing process.")

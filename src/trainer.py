@@ -3,6 +3,12 @@
 
 This class implements the necessary functions to train the network.
 
+Also creates a current status file. This file is to be able to check the status
+of the program from the command line without needing any sort of communication
+protocol. It works by just simply being a file that has the current state
+written to every 10 steps. It's located as a file that always has the same name
+within the plotting path.
+
 Authors:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
@@ -38,7 +44,7 @@ import network.postprocessing as post
 
 class Trainer:
     def __init__(self, lr=0.01, optimizer="sgd", loss_weights=None,
-                 cmd_line=False):
+                 cmd_line=False) -> None:
         """Training class used to train the CurbNet network.
 
         Args:
@@ -96,6 +102,9 @@ class Trainer:
 
         self.cmd_line = cmd_line
 
+        # Set the status file path variable
+        self.status_file_path = None
+
         # Creates logging tracker
         self.tracker = PlotCSV()
 
@@ -112,6 +121,9 @@ class Trainer:
             weights_path (str): The path to the weights.
             augmentation (bool): Whether or not to use augmentation. Defaults to
                                  True.
+
+        Returns:
+            None
         """
         # Stat variables
         counter = 0
@@ -126,6 +138,10 @@ class Trainer:
             "epochs": num_epochs,
             "augmentation": augmentation
         })
+
+        # Set up the status file
+        self.status_file_path = path.join(plot_path, "status.txt")
+
 
         # Load the dataset
         start_time = time.time()
@@ -208,7 +224,8 @@ class Trainer:
                                     epoch=epoch + 1,
                                     accuracy=accuracy,
                                     loss=loss_value,
-                                    rate=rate)
+                                    rate=rate,
+                                    status_file_path=self.status_file_path)
 
                 if not self.cmd_line:
                     self.ui.update_image(target=target_image[0],

@@ -66,7 +66,7 @@ except ImportError:
 
 def parse_arguments():
     """Parses arguments."""
-    description = "trains or validates CurbNet on a dataset, " \
+    description = "trains or validates CurbNetG on a dataset, " \
                   "or uses it for inference."
     parser = argparse.ArgumentParser(description=description)
 

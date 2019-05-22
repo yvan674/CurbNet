@@ -33,35 +33,50 @@ from ui.training_cmd import TrainingCmd
 from utils.mapillarydataset import MapillaryDataset
 from utils.plotcsv import PlotCSV
 
-# # network imports
-# if torch.cuda.device_count() <= 1:
-#     from network.curbnet import CurbNet as Network
-if torch.cuda.device_count() >= 1:
-    from network.parallel_curbnet import ParallelCurbNet \
-        as Network
+# network imports
+from network.parallelizer import Parllelizer as Network
+from network.curbnet_e import CurbNetE
+from network.curbnet_f import CurbNetF
+from network.curbnet_g import CurbNetG
+
 # import network.postprocessing as post
 
 
 class Trainer:
-    def __init__(self, lr=0.01, optimizer="sgd", loss_weights=None,
-                 cmd_line=False) -> None:
-        """Training class used to train the CurbNet network.
+    def __init__(self, lr: float=0.01, optimizer: str="sgd",
+                 loss_weights: list=None, cmd_line: bool=False,
+                 network: str="g") -> None:
+        """Training class used to train the CurbNetG network.
 
         Args:
             lr (float): Learning rate of the network
-            optimizer (str): The optimizer to be used.
+            optimizer (str): The optimizer to be used. Defaults to sgd.
+            Possible optimizers are:
+                - sgd: Stochastic Gradient Descent.
+                - Adam: Adaptive moment estimation.
             loss_weights (list): A list of floats with length 3 that are the
-                                 weight values for each class used by the loss
-                                 function.
+            weight values for each class used by the loss function.
             cmd_line (bool): Whether or not to use the command line interface.
                              Defaults to False.
+            network (str): The network to be used. Defaults to GoogLeNet.
+            Possible options are:
+                - e: ENET based network.
+                - f: FCN based network.
+                - g: GoogLeNet based encoder network.
         """
         if loss_weights is None:
             # To avoid mutable default values
             loss_weights = [0.00583, 0.49516, 0.49902]
 
+        if network == "e":
+            network = CurbNetE()
+        elif network == "f":
+            network = CurbNetF()
+        elif network == "g":
+            network = CurbNetG()
+
         # Initialize the network
-        self.network = Network()
+        self.network = Network(network)
 
         # Parameters
         self.lr = lr,
@@ -79,7 +94,8 @@ class Trainer:
         # Set the loss criterion according to the recommended for pixel-wise
         # classification. We use weights so that missing curbs
         # will be more heavily penalized
-        loss_weights = torch.tensor(loss_weights, dtype=torch.float).cuda()
+        loss_weights = torch.tensor(loss_weights,
+                                    dtype=torch.float).to(device=self.device)
         self.criterion = nn.CrossEntropyLoss(weight=loss_weights)
 
         # Set the optimizer according to the arguments

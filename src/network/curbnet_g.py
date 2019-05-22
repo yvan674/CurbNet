@@ -1,8 +1,10 @@
 # -*- coding: UTF-8 -*-
-"""CurbNet.
+"""CurbNetG.
 
 A deep neural network designed to identify and segment urban images for curbs
-and curb cuts.
+and curb cuts. This version is based on GoogLeNet. Modifications include adding
+pixel coordinates to the input since we're only segmenting one specific type
+of scene.
 
 Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
@@ -25,8 +27,10 @@ class GoogLeNet(nn.Module):
 
         This is the decoder architecture we'll try to use. It is an
         implementation of the architecture described in Going Deeper with
-        Convolutions known as GoogLeNet. It uses the Inception module described
-        above.
+        Convolutions known as GoogLeNet.
+
+        Returns:
+            tuple: A tuple of networks that are used
         """
         super(GoogLeNet, self).__init__()
         self.pre_layers = nn.Sequential(
@@ -72,10 +76,10 @@ class GoogLeNet(nn.Module):
         return out
 
 
-class CurbNet(nn.Module):
+class CurbNetG(nn.Module):
     def __init__(self):
         """A neural network that identifies and segments curbs and curb cuts."""
-        super(CurbNet, self).__init__()  # Initialize the superclass
+        super(CurbNetG, self).__init__()  # Initialize the superclass
 
         # Currently use the same architecture from the AIS project, i.e.
         # GoogLeNet encoder with FC decoders

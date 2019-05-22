@@ -174,7 +174,7 @@ def closing_functions():
     try:
         curses.echo()
         curses.endwin()
-    except curses.error:
+    except:
         pass
     sys.exit()
 

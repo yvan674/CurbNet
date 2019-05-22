@@ -33,13 +33,13 @@ from ui.training_cmd import TrainingCmd
 from utils.mapillarydataset import MapillaryDataset
 from utils.plotcsv import PlotCSV
 
-# network imports
-if torch.cuda.device_count() <= 1:
-    from network.curbnet import CurbNet as Network
-elif torch.cuda.device_count() > 1:
+# # network imports
+# if torch.cuda.device_count() <= 1:
+#     from network.curbnet import CurbNet as Network
+if torch.cuda.device_count() >= 1:
     from network.parallel_curbnet import ParallelCurbNet \
         as Network
-import network.postprocessing as post
+# import network.postprocessing as post
 
 
 class Trainer:

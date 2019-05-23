@@ -184,7 +184,7 @@ if __name__ == "__main__":
     arguments = parse_arguments()
 
     if arguments.cmd_line:
-        curses.wrapper(main(arguments))
+        main(arguments)
 
     else:
         try:

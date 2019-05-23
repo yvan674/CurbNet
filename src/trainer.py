@@ -68,11 +68,16 @@ class Trainer:
             # To avoid mutable default values
             loss_weights = [0.00583, 0.49516, 0.49902]
 
+        # Set up the different networks
         if network == "e":
+            self.px_coordinates = False
             network = CurbNetE()
         elif network == "f":
+            self.px_coordinates = True
             network = CurbNetF()
         elif network == "g":
+            # G is the only network so far working with pixel coordinates
+            self.px_coordinates = True
             network = CurbNetG()
 
         # Initialize the network
@@ -104,7 +109,7 @@ class Trainer:
         elif optimizer == "sgd":
             self.optimizer = torch.optim.SGD(self.network.parameters(), lr=lr)
         else:
-            raise ValueError("Illegal optimizer value: only SGD and Adam"
+            raise ValueError("Illegal optimizer value: only SGD and Adam "
                              "optimizers are currently supported.")
 
         # Set the network to train
@@ -152,7 +157,8 @@ class Trainer:
             "optimizer": self.optimizer,
             "batch size": batch_size,
             "epochs": num_epochs,
-            "augmentation": augmentation
+            "augmentation": augmentation,
+            "network": self.network
         })
 
         # Set up the status file
@@ -161,7 +167,7 @@ class Trainer:
 
         # Load the dataset
         start_time = time.time()
-        dataset = MapillaryDataset(data_path, augmentation)
+        dataset = MapillaryDataset(data_path, augmentation, self.px_coordinates)
         data_loader = DataLoader(dataset,
                                  batch_size,
                                  shuffle=True)

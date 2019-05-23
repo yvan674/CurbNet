@@ -276,7 +276,7 @@ class TrainingGUI(TrainingUI):
         """Creates a GUI to show training status using tkinter."""
         # Configure root
         self.root = tk.Tk()
-        self.root.title("CurbNetG Training")
+        self.root.title("CurbNet Training")
         self.root.configure(background="#282c34")
         self.root.resizable(False, False)
 

@@ -107,6 +107,7 @@ class TrainingCmd(TrainingUI):
         for i in range(4):
             self.stdscr.addstr(i, 0,
                                "                              "
+                               "                              "
                                "                              ")
         self.stdscr.addstr(0, 0, self.step_var)
         self.stdscr.addstr(0, 30, self.epoch_var)

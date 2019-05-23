@@ -18,7 +18,7 @@ from skimage import io
 from sklearn.preprocessing import normalize
 
 
-DIM_WIDTH = 100  # Ideally, this would be 640 if it could fit in the GPU memory
+DIM_WIDTH = 600  # Ideally, this would be 640 if it could fit in the GPU memory
 DIMENSIONS = (DIM_WIDTH, int(float(DIM_WIDTH) * .75))
 
 # Create a normalized index array based on the dimensions
@@ -115,7 +115,7 @@ def resize(image, interpolation):
 
 
 class MapillaryDataset(Dataset):
-    def __init__(self, path, with_aug):
+    def __init__(self, path, with_aug, with_px_coordinates):
         """Dataset object that contains the mapillary dataset.
 
         The dataset takes all the types of images within the specified training,
@@ -126,6 +126,8 @@ class MapillaryDataset(Dataset):
         Args:
             path (string): The path to the specific mapillary dataset subfolder.
             with_aug (bool): Whether or not to use image augmentation.
+            with_px_coordinates (bool): Whether or not the pixel coordinates
+                should also be returned in the tensor.
         """
         super().__init__()
 
@@ -135,6 +137,7 @@ class MapillaryDataset(Dataset):
         self.images_dir = join(self.path, "images")
         self.seg_dir = join(self.path, "labels")
         self.pan_dir = join(self.path, "panoptic")
+        self.px_coordinates = with_px_coordinates
 
         self.images = []
 
@@ -202,7 +205,9 @@ class MapillaryDataset(Dataset):
         # numpy image: H x W x C
         # torch image: C X H X W
         image = image.transpose((2, 0, 1))
-        image = np.append(image, NORMALIZED_INDICES, axis=0)
+
+        if self.px_coordinates:
+            image = np.append(image, NORMALIZED_INDICES, axis=0)
 
         return torch.from_numpy(image).to(dtype=torch.float)
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Main.
 
 The main script that is called to run everything else.
@@ -11,6 +12,8 @@ optional arguments:
     -h, --help          show this help message and exit
     -c, --cmd-line      runs the program in command line mode using curses. Used
                         for remote training.
+    -n, --network       choose the network. Options are "e" for ENet, "f" for
+                        FCN, and "g" for GoogLeNet
 
 mode:
     mode to run the network in

@@ -1,8 +1,10 @@
 # -*- coding: UTF-8 -*-
-"""CurbNet.
+"""CurbNetG.
 
 A deep neural network designed to identify and segment urban images for curbs
-and curb cuts.
+and curb cuts. This version is based on GoogLeNet. Modifications include adding
+pixel coordinates to the input since we're only segmenting one specific type
+of scene.
 
 Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
@@ -16,57 +18,7 @@ References:
 """
 import torch
 import torch.nn as nn
-
-
-class Inception(nn.Module):
-    def __init__(self, in_planes, n1x1, n3x3red, n3x3, n5x5red, n5x5,
-                 pool_planes):
-        """Inception module as described in Going Deeper with Convolutions."""
-        super(Inception, self).__init__()
-        # 1x1 conv branch
-        self.b1 = nn.Sequential(
-            nn.Conv2d(in_planes, n1x1, kernel_size=1),
-            nn.BatchNorm2d(n1x1),
-            nn.ReLU(True),
-        )
-
-        # 1x1 conv -> 3x3 conv branch
-        self.b2 = nn.Sequential(
-            nn.Conv2d(in_planes, n3x3red, kernel_size=1),
-            nn.BatchNorm2d(n3x3red),
-            nn.ReLU(True),
-            nn.Conv2d(n3x3red, n3x3, kernel_size=3, padding=1),
-            nn.BatchNorm2d(n3x3),
-            nn.ReLU(True),
-        )
-
-        # 1x1 conv -> 5x5 conv branch
-        self.b3 = nn.Sequential(
-            nn.Conv2d(in_planes, n5x5red, kernel_size=1),
-            nn.BatchNorm2d(n5x5red),
-            nn.ReLU(True),
-            nn.Conv2d(n5x5red, n5x5, kernel_size=3, padding=1),
-            nn.BatchNorm2d(n5x5),
-            nn.ReLU(True),
-            nn.Conv2d(n5x5, n5x5, kernel_size=3, padding=1),
-            nn.BatchNorm2d(n5x5),
-            nn.ReLU(True),
-        )
-
-        # 3x3 pool -> 1x1 conv branch
-        self.b4 = nn.Sequential(
-            nn.MaxPool2d(3, stride=1, padding=1),
-            nn.Conv2d(in_planes, pool_planes, kernel_size=1),
-            nn.BatchNorm2d(pool_planes),
-            nn.ReLU(True),
-        )
-
-    def forward(self, x):
-        y1 = self.b1(x)
-        y2 = self.b2(x)
-        y3 = self.b3(x)
-        y4 = self.b4(x)
-        return torch.cat((y1, y2, y3, y4), 1)
+from network.inception import Inception
 
 
 class GoogLeNet(nn.Module):
@@ -75,8 +27,10 @@ class GoogLeNet(nn.Module):
 
         This is the decoder architecture we'll try to use. It is an
         implementation of the architecture described in Going Deeper with
-        Convolutions known as GoogLeNet. It uses the Inception module described
-        above.
+        Convolutions known as GoogLeNet.
+
+        Returns:
+            tuple: A tuple of networks that are used
         """
         super(GoogLeNet, self).__init__()
         self.pre_layers = nn.Sequential(
@@ -122,10 +76,10 @@ class GoogLeNet(nn.Module):
         return out
 
 
-class CurbNet(nn.Module):
+class CurbNetG(nn.Module):
     def __init__(self):
         """A neural network that identifies and segments curbs and curb cuts."""
-        super(CurbNet, self).__init__()  # Initialize the superclass
+        super(CurbNetG, self).__init__()  # Initialize the superclass
 
         # Currently use the same architecture from the AIS project, i.e.
         # GoogLeNet encoder with FC decoders

@@ -9,8 +9,6 @@ positional arguments:
 
 optional arguments:
     -h, --help          show this help message and exit
-    --profile           profiles the network when used in conjunction with
-                        either training, validation or inference mode
     -c, --cmd-line      runs the program in command line mode using curses. Used
                         for remote training.
 
@@ -97,6 +95,9 @@ def parse_arguments():
                           default="adam",
                           help="sets the optimizer. Currently supported"
                                "optimizers are \"adam\" and \"sgd\"")
+    training.add_argument('-n', '--network', type=str, nargs='?', default="g",
+                          help="sets the network to be used. Supported options "
+                               "are \"e\", \"f\", and \"g\"")
     training.add_argument('-b', '--batch-size', type=int, nargs='?', default=5,
                           help="sets the batch size for the session")
     training.add_argument('-e', '--epochs', type=int, nargs='?', default=1,
@@ -111,10 +112,7 @@ def parse_arguments():
                                "file. If none is given, set to the current "
                                "working directory")
 
-    parser.add_argument('--profile', action='store_true',
-                        help="profiles the network when used in conjunction "
-                             "with either training, validation or "
-                             "inference mode")
+    # General arguments
 
     parser.add_argument('-c', '--cmd-line', action='store_true',
                         help="runs the program in command line mode using "
@@ -126,16 +124,12 @@ def parse_arguments():
                             or arguments.epochs or arguments.batch_size
                             or arguments.optimizer or arguments.learning_rate
                             or arguments.validate or arguments.train):
-        print("Warning: Inference only requires weights to be given. All other "
-              "arguments will be ignored.")
-
-    if arguments.profile and not (arguments.infer or arguments.train
-                                  or arguments.validate):
-        parser.error("Must profile a specific mode.")
+        warnings.warn("Inference only requires weights to be given. All "
+                      "other arguments will be ignored.", UserWarning)
 
     if (arguments.train or arguments.validate) and not arguments.plot:
-        print("Warning: Plot save path not given. Setting path to the current "
-              "working directory.")
+        warnings.warn("Plot save path not given. Setting path to the current "
+                      "working directory.", UserWarning)
         arguments.plot = join(getcwd(), "plot")
 
     return arguments
@@ -152,7 +146,8 @@ def main(arguments):
     if arguments.train:
         # Run in training mode
         trainer = Trainer(arguments.learning_rate, arguments.optimizer,
-                          arguments.loss_weights, arguments.cmd_line)
+                          arguments.loss_weights, arguments.cmd_line,
+                          arguments.network)
 
         if arguments.cmd_line:
             curses.wrapper(trainer.train(arguments.train[0],
@@ -174,7 +169,7 @@ def closing_functions():
     try:
         curses.echo()
         curses.endwin()
-    except curses.error:
+    except:
         pass
     sys.exit()
 

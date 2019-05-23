@@ -73,7 +73,7 @@ class Status(tk.Frame):
                            columnspan=2, padx=5, pady=5)
             counter += 1
 
-    def update_data(self, step, epoch, accuracy, loss, rate):
+    def update_data(self, step, epoch, accuracy, loss, rate, status_file_path):
         """Updates the string-based information within the GUI.
 
         The information displayed by the GUI should be updated after every step
@@ -86,6 +86,7 @@ class Status(tk.Frame):
             loss (float): The loss of the network at the current step.
             rate (float): The rate the network is running at in steps per
                           second.
+            status_file_path (str): The path to save the status file to.
         """
         # Row 0 labels
         self.step_var.set("Step: {}/{}".format(step, self.max_step))
@@ -112,6 +113,18 @@ class Status(tk.Frame):
             time_left = str(datetime.timedelta(seconds=time_left))
 
         self.time_var.set("Time left: {}".format(time_left))
+
+        # Now write the status file
+        if step % 10 == 0:
+            with open(status_file_path, 'w') as status_file:
+                lines = ["Step: {}\n".format(step),
+                         "Epoch: {}\n".format(epoch),
+                         "Accuracy: {}\n".format(accuracy),
+                         "Loss: {:.3f}\n".format(loss),
+                         "Rate: {:.3f} steps/s\n".format(rate),
+                         "Time left: {}\n".format(time_left)]
+
+                status_file.writelines(lines)
 
     def update_status(self, message):
         """Updates the status message within the GUI.
@@ -263,7 +276,7 @@ class TrainingGUI(TrainingUI):
         """Creates a GUI to show training status using tkinter."""
         # Configure root
         self.root = tk.Tk()
-        self.root.title("CurbNet Training")
+        self.root.title("CurbNetG Training")
         self.root.configure(background="#282c34")
         self.root.resizable(False, False)
 
@@ -300,9 +313,10 @@ class TrainingGUI(TrainingUI):
         # Finally, lift the window to the top
         self._lift()
 
-    def update_data(self, step, epoch, accuracy, loss, rate):
+    def update_data(self, step, epoch, accuracy, loss, rate, status_file_path):
         """Updates the string-based data in the GUI."""
-        self.widgets[3].update_data(step, epoch, accuracy, loss, rate)
+        self.widgets[3].update_data(step, epoch, accuracy, loss, rate,
+                                    status_file_path)
         self.widgets[1].update_data(loss, rate)
         self._update()
 

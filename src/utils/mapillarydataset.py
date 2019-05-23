@@ -18,7 +18,7 @@ from skimage import io
 from sklearn.preprocessing import normalize
 
 
-DIM_WIDTH = 200  # Ideally, this would be 640 if it could fit in the GPU memory
+DIM_WIDTH = 100  # Ideally, this would be 640 if it could fit in the GPU memory
 DIMENSIONS = (DIM_WIDTH, int(float(DIM_WIDTH) * .75))
 
 # Create a normalized index array based on the dimensions

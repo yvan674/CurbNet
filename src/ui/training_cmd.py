@@ -31,7 +31,7 @@ class TrainingCmd(TrainingUI):
         self.time_var = ""
         self.status_var = ""
 
-    def update_data(self, step, epoch, accuracy, loss, rate):
+    def update_data(self, step, epoch, accuracy, loss, rate, status_file_path):
         """Updates the strings within the UI.
 
         Args:
@@ -41,6 +41,7 @@ class TrainingCmd(TrainingUI):
             loss (float): The loss of the network at the current step.
             rate (float): The rate the network is running at in steps per
                           second.
+            status_file_path (str): The path to save the status file to.
         """
         # Calculate time left
         # Calculate time left
@@ -62,6 +63,22 @@ class TrainingCmd(TrainingUI):
         self.acc_var = "Accuracy: {:.3f}%".format(accuracy)
         self.rate_var = "Rate: {:.3f} Steps/s".format(rate)
         self.time_var = "Time left: {}".format(time_left)
+
+        # Now write the status file
+        if step % 10 == 0:
+            with open(status_file_path, 'w') as status_file:
+                lines = ["Step: {}\n".format(step),
+                         "Epoch: {}\n".format(epoch),
+                         "Accuracy: {}\n".format(accuracy),
+                         "Loss: {:.3f}\n".format(loss),
+                         "Rate: {:.3f} steps/s\n".format(rate),
+                         "Time left: {}\n".format(time_left)]
+
+                status_file.writelines(lines)
+
+        if step == self.max_step:
+            with open(status_file_path, 'w') as status_file:
+                status_file.write("Finished training.")
 
         self._update_screen()
 

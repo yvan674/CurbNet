@@ -103,7 +103,7 @@ def resize(image, interpolation):
 
 
 class MapillaryDataset(Dataset):
-    def __init__(self, path, with_aug, with_px_coordinates):
+    def __init__(self, path, with_aug):
         """Dataset object that contains the mapillary dataset.
 
         The dataset takes all the types of images within the specified training,
@@ -125,7 +125,6 @@ class MapillaryDataset(Dataset):
         self.images_dir = join(self.path, "images")
         self.seg_dir = join(self.path, "labels")
         self.pan_dir = join(self.path, "panoptic")
-        self.px_coordinates = with_px_coordinates
 
         self.images = []
 

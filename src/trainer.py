@@ -32,6 +32,7 @@ from ui.training_gui import TrainingGUI
 from ui.training_cmd import TrainingCmd
 from utils.mapillarydataset import MapillaryDataset
 from utils.plotcsv import PlotCSV
+import constants
 
 # network imports
 from network.parallelizer import Parllelizer as Network

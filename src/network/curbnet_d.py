@@ -17,6 +17,7 @@ from .deeplab.batchnorm import SynchronizedBatchNorm2d
 from .deeplab.aspp import build_aspp
 from .deeplab.decoder import build_decoder
 from .deeplab.backbone import build_backbone
+from .preprocessing import Preprocessing
 
 class CurbNetD(nn.Module):
     def __init__(self, backbone='drn', output_stride=8, num_classes=3,
@@ -28,7 +29,8 @@ class CurbNetD(nn.Module):
         else:
             BatchNorm = nn.BatchNorm2d
 
-        self.backbone = build_backbone(backbone, output_stride, BatchNorm)
+        self.backbone = build_backbone(backbone, output_stride,
+                                       BatchNorm, False)
         self.aspp = build_aspp(backbone, output_stride, BatchNorm)
         self.decoder = build_decoder(num_classes, backbone, BatchNorm)
 
@@ -36,7 +38,9 @@ class CurbNetD(nn.Module):
             self.freeze_bn()
 
     def forward(self, input: torch.Tensor):
-        x, low_level_feat = self.backbone(input)
+        # Pre process to add pixel coordinates
+        x = Preprocessing.append_px_coordinates(input)
+        x, low_level_feat = self.backbone(x)
         x = self.aspp(x)
         x = self.decoder(x, low_level_feat)
         x = F.interpolate(x, size=input.size()[2:], mode='bilinear',

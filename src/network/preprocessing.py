@@ -8,7 +8,25 @@ Authors:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
 import constants
-import numpy as np
+import torch
+
+
+# Constant INDICES to save a operations
+INDICES = torch.zeros((1, 2, constants.DIMENSIONS[1], constants.DIMENSIONS[0]))\
+    .to(device=constants.DEVICE)
+
+def change_indices_batch_size(batch_size):
+    # First create a new tensor with a "batch size" of whatever is needed, with
+    # 2 channels (x, y coordinates), and a size equivalent to the input tensor)
+    global INDICES
+    INDICES = torch.zeros((batch_size, 2, constants.DIMENSIONS[1],
+                           constants.DIMENSIONS[0])).to(device=constants.DEVICE)
+    for i in range(batch_size):
+        # Then fill it with the normalized indices from constants
+        INDICES[i] = constants.NORMALIZED_INDICES
+
+# Initialize INDICES with 1 item batch size
+change_indices_batch_size(1)
 
 
 class Preprocessing:
@@ -19,4 +37,8 @@ class Preprocessing:
         Args:
             input_tensor (torch.Tensor): The input tensor to be appended.
         """
-        return np.append(input_tensor, constants.NORMALIZED_INDICES, axis=0)
+        # change INDICES batch size if it's not the same as the input tensor
+        if INDICES.shape[0] != input_tensor.shape[0]:
+            change_indices_batch_size(input_tensor.shape[0])
+
+        return torch.cat((input_tensor, INDICES), dim=1)

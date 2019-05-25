@@ -171,7 +171,7 @@ class MapillaryDataset(Dataset):
     def _process_raw(self, image):
         """Transform the given image to a tensor and augments it.
 
-        This also adds the indices array, to allow the network to also
+        This also adds the INDICES array, to allow the network to also
         learn from pixel coordinates.
 
         Args:

@@ -223,7 +223,7 @@ class DownsamplingBottleneck(nn.Module):
         """Downsampling bottlenecks further downsample the feature map size.
 
         Main branch:
-        1. max pooling with stride 2; indices are saved to be used for
+        1. max pooling with stride 2; INDICES are saved to be used for
         unpooling later.
 
         Extension branch:
@@ -253,7 +253,7 @@ class DownsamplingBottleneck(nn.Module):
                 item 2 of the extension branch is asymmetric or not. Default:
                 False.
             return_indices (bool, optional): if True, will return the max
-                indices along with the outputs. Useful when unpooling later.
+                INDICES along with the outputs. Useful when unpooling later.
                 dropout_prob (float, optional): probability of an element to be
                 zeroed. Default: 0 (no dropout).
             bias (bool, optional): Adds a learnable bias to the output if True.
@@ -360,14 +360,14 @@ class UpsamplingBottleneck(nn.Module):
     def __init__(self, in_channels, out_channels, internal_ratio=4,
                  kernel_size=3, padding=0, dropout_prob=0., bias=False,
                  relu=True):
-        """Upsamples the feature map resolution using max pooling indices.
+        """Upsamples the feature map resolution using max pooling INDICES.
 
-        These indices are stored from the corresponding downsampling bottleneck.
+        These INDICES are stored from the corresponding downsampling bottleneck.
 
         Main branch:
         1. 1x1 convolution with stride 1 that decreases the number of channels
         by "internal_ratio", also called a projection;
-        2. max unpool layer using the max pool indices from the corresponding
+        2. max unpool layer using the max pool INDICES from the corresponding
         downsampling max pool layer.
 
         Extension branch:

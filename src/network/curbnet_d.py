@@ -1,7 +1,8 @@
 """CurbNetD.
 
 A deep neural network designed to identify and segment urban images for curbs
-and curb cuts. This version is based on DeepLab v3.
+and curb cuts. This version is based on DeepLab v3. Modifications include adding
+pixel coordinates to the input channel.
 
 References:
     Rethinking Atrous Convolution for Semantic Image Segmentation.

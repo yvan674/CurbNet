@@ -248,7 +248,8 @@ class Trainer:
 
                 if not self.cmd_line:
                     self.ui.update_image(target=target_image[0],
-                                         generated=d_out_argmax[0])
+                                         generated=d_out_argmax[0],
+                                         input_image=raw_image[0])
 
                 # Write to the plot file every step
                 self.tracker.write_data({"loss": loss_value,

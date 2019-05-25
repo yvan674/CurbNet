@@ -244,9 +244,10 @@ class ImageFrame(tk.Frame):
                                                    image=self.img)
         self.canvas.pack()
 
-    def update_image(self, image):
+    def update_image(self, segmentation, input_image):
         """Updates the image that is to be displayed."""
-        img_array = self._class_to_image_array(image)
+        img_array = self._class_to_image_array(segmentation)
+        img_array = self._overlay_image(input_image, img_array)
 
         img_array = Image.fromarray(img_array)
         img_array = img_array.resize((400, 300), Image.NEAREST)
@@ -267,12 +268,27 @@ class ImageFrame(tk.Frame):
         image = image.numpy()
         out = np.zeros((image.shape[0], image.shape[1], 3), dtype=np.uint8)
 
-        # Color code the output, but don't use hard colors to make it more
-        # aesthetically pleasing
-        out[image == 1] = np.array([224, 108, 117])
-        out[image == 2] = np.array([152, 195, 121])
+        # Color code the output
+        out[image == 1] = np.array([255, 0, 0])
+        out[image == 2] = np.array([0, 255, 0])
 
         return out
+
+    @staticmethod
+    def _overlay_image(input_image, segmentation):
+        """Overlays the segmentation on top of the input image.
+
+        Args:
+            input_image (torch.Tensor): The input image as a tensor.
+            segmentation (numpy.array): Segmentation as a numpy array.
+
+        Returns:
+            numpy.array: The overlaid image as a numpy array.
+        """
+        input_image = input_image.numpy()
+        output = np.transpose(input_image, (1, 2, 0))
+        output = np.maximum(output, segmentation)
+        return output.astype('uint8')
 
 
 class TrainingGUI(TrainingUI):
@@ -333,10 +349,10 @@ class TrainingGUI(TrainingUI):
         """Sets the max value for steps and epochs."""
         self.widgets[3].set_max(total_steps, total_epochs)
 
-    def update_image(self, target, generated):
+    def update_image(self, target, generated, input_image):
         """Updates the image in the GUI."""
-        self.widgets[0].update_image(target)
-        self.widgets[2].update_image(generated)
+        self.widgets[0].update_image(target, input_image)
+        self.widgets[2].update_image(generated, input_image)
 
     def _update(self):
         """Internal update call that shortens 2 lines to one."""

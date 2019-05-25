@@ -16,9 +16,9 @@ References:
     Going Deeper with Convolutions
     arXiv:1409.4842 [cs.CV] 17 Sep 2014
 """
-import torch
 import torch.nn as nn
-from network.inception import Inception
+from .inception import Inception
+from .preprocessing import Preprocessing
 
 
 class GoogLeNet(nn.Module):
@@ -111,6 +111,9 @@ class CurbNetG(nn.Module):
         """
         # Calculate the spatial dimension for output later
         input_spatial_dim = x.size()[2:]
+
+        # Preprocess to add the pixel coordinates
+        x = Preprocessing.append_px_coordinates(x)
 
         # Run the network
         out = self.encoder(x)

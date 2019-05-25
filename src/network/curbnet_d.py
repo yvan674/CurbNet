@@ -39,7 +39,7 @@ class CurbNetD(nn.Module):
         x, low_level_feat = self.backbone(input)
         x = self.aspp(x)
         x = self.decoder(x, low_level_feat)
-        x = F.interpolate(x, size=input.size[2:], mode='bilinear',
+        x = F.interpolate(x, size=input.size()[2:], mode='bilinear',
                           align_corners=True)
 
         return x

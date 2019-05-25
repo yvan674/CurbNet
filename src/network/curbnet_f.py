@@ -15,6 +15,7 @@ Based on the implementation found at:
 import torch
 import torch.nn as nn
 import numpy as np
+from .preprocessing import Preprocessing
 
 
 class CurbNetF(nn.Module):
@@ -100,6 +101,8 @@ class CurbNetF(nn.Module):
                 m.weight.data.copy_(initial_weight)
 
     def forward(self, x):
+        # Preprocess to add pixel coordinates
+        x = Preprocessing.append_px_coordinates(x)
         h = x
         h = self.relu1_1(self.conv1_1(h))
         h = self.relu1_2(self.conv1_2(h))

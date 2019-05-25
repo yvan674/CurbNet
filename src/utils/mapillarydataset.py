@@ -15,20 +15,7 @@ from imgaug import augmenters as iaa
 from os.path import join
 from PIL import Image
 from skimage import io
-from sklearn.preprocessing import normalize
-
-
-DIM_WIDTH = 600  # Ideally, this would be 640 if it could fit in the GPU memory
-DIMENSIONS = (DIM_WIDTH, int(float(DIM_WIDTH) * .75))
-
-# Create a normalized index array based on the dimensions
-index_array = np.indices((DIMENSIONS[1], DIMENSIONS[0]))
-NORMALIZED_INDICES = []
-# Normalize each axis independently
-for axis in index_array:
-    NORMALIZED_INDICES.append(normalize(axis, axis=0, norm="max"))
-# Combine the axes back into a single np array
-NORMALIZED_INDICES = np.array(NORMALIZED_INDICES)
+import constants
 
 
 def augment(image):
@@ -107,8 +94,9 @@ def resize(image, interpolation):
         iaa.CropToFixedSize(cropped_width, cropped_height, position='center'),
 
         # Resize to proper size
-        iaa.Resize({"width": DIMENSIONS[0],
-                    "height": DIMENSIONS[1]}, interpolation=interpolation)
+        iaa.Resize({"width": constants.DIMENSIONS[0],
+                    "height": constants.DIMENSIONS[1]},
+                   interpolation=interpolation)
     ])
 
     return seq.augment_image(image)
@@ -205,9 +193,6 @@ class MapillaryDataset(Dataset):
         # numpy image: H x W x C
         # torch image: C X H X W
         image = image.transpose((2, 0, 1))
-
-        if self.px_coordinates:
-            image = np.append(image, NORMALIZED_INDICES, axis=0)
 
         return torch.from_numpy(image).to(dtype=torch.float)
 

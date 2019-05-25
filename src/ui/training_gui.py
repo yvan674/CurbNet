@@ -124,6 +124,10 @@ class Status(tk.Frame):
                          "Rate: {:.3f} steps/s\n".format(rate),
                          "Time left: {}\n".format(time_left)]
 
+                if step == self.max_step:
+                    lines[5] = "Time left: -\n"
+                    lines.append("Finished training.\n")
+
                 status_file.writelines(lines)
 
     def update_status(self, message):

@@ -74,11 +74,13 @@ class TrainingCmd(TrainingUI):
                          "Rate: {:.3f} steps/s\n".format(rate),
                          "Time left: {}\n".format(time_left)]
 
+                if step == self.max_step:
+                    lines[5] = "Time left: -\n"
+                    lines.append("Finished training.\n")
+
                 status_file.writelines(lines)
 
-        if step == self.max_step:
-            with open(status_file_path, 'w') as status_file:
-                status_file.write("Finished training.")
+
 
         self._update_screen()
 

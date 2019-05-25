@@ -35,6 +35,7 @@ from utils.plotcsv import PlotCSV
 
 # network imports
 from network.parallelizer import Parllelizer as Network
+from network.curbnet_d import CurbNetD
 from network.curbnet_e import CurbNetE
 from network.curbnet_f import CurbNetF
 from network.curbnet_g import CurbNetG
@@ -43,9 +44,9 @@ from network.curbnet_g import CurbNetG
 
 
 class Trainer:
-    def __init__(self, lr: float=0.01, optimizer: str="sgd",
-                 loss_weights: list=None, cmd_line: bool=False,
-                 network: str="g") -> None:
+    def __init__(self, lr: float = 0.01, optimizer: str = "sgd",
+                 loss_weights: list = None, cmd_line: bool = False,
+                 network: str = "g") -> None:
         """Training class used to train the CurbNetG network.
 
         Args:
@@ -69,15 +70,13 @@ class Trainer:
             loss_weights = [0.00583, 0.49516, 0.49902]
 
         # Set up the different networks
-        if network == "e":
-            self.px_coordinates = False
+        if network == "d":
+            network = CurbNetD()
+        elif network == "e":
             network = CurbNetE()
         elif network == "f":
-            self.px_coordinates = True
             network = CurbNetF()
         elif network == "g":
-            # G is the only network so far working with pixel coordinates
-            self.px_coordinates = True
             network = CurbNetG()
 
         # Initialize the network
@@ -164,10 +163,9 @@ class Trainer:
         # Set up the status file
         self.status_file_path = path.join(plot_path, "status.txt")
 
-
         # Load the dataset
         start_time = time.time()
-        dataset = MapillaryDataset(data_path, augmentation, self.px_coordinates)
+        dataset = MapillaryDataset(data_path, augmentation)
         data_loader = DataLoader(dataset,
                                  batch_size,
                                  shuffle=True)
@@ -228,8 +226,6 @@ class Trainer:
                 self.optimizer.step()
 
                 counter += 1
-
-
 
                 # Calculate accuracy
                 accuracy = self._calculate_batch_accuracy(target_image,

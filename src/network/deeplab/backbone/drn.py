@@ -103,7 +103,8 @@ class DRN(nn.Module):
 
     def __init__(self, block, layers, arch='D',
                  channels=(16, 32, 64, 128, 256, 512, 512, 512),
-                 BatchNorm=None):
+                 BatchNorm=None,
+                 input_channels=3):
         super(DRN, self).__init__()
         self.inplanes = channels[0]
         self.out_dim = channels[-1]
@@ -374,8 +375,9 @@ def drn_d_40(BatchNorm, pretrained=True):
     return model
 
 
-def drn_d_54(BatchNorm, pretrained=True):
-    model = DRN(Bottleneck, [1, 1, 3, 4, 6, 3, 1, 1], arch='D', BatchNorm=BatchNorm)
+def drn_d_54(BatchNorm, input_channels, pretrained=True):
+    model = DRN(Bottleneck, [1, 1, 3, 4, 6, 3, 1, 1], arch='D',
+                BatchNorm=BatchNorm, input_channels=input_channels)
     if pretrained:
         pretrained = model_zoo.load_url(model_urls['drn-d-54'])
         del pretrained['fc.weight']

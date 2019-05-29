@@ -46,8 +46,7 @@ from network.curbnet_g import CurbNetG
 
 class Trainer:
     def __init__(self, lr: float = 0.01, optimizer: str = "sgd",
-                 loss_weights: list = None, cmd_line: bool = False,
-                 network: str = "g") -> None:
+                 loss_weights: list = None, cmd_line: bool = False) -> None:
         """Training class used to train the CurbNetG network.
 
         Args:
@@ -60,41 +59,22 @@ class Trainer:
             weight values for each class used by the loss function.
             cmd_line (bool): Whether or not to use the command line interface.
                              Defaults to False.
-            network (str): The network to be used. Defaults to GoogLeNet.
-            Possible options are:
-                - e: ENET based network.
-                - f: FCN based network.
-                - g: GoogLeNet based encoder network.
         """
         if loss_weights is None:
             # To avoid mutable default values
             loss_weights = [0.00583, 0.49516, 0.49902]
 
-        # Set up the different networks
-        if network == "d":
-            network = CurbNetD()
-        elif network == "e":
-            network = CurbNetE()
-        elif network == "f":
-            network = CurbNetF()
-        elif network == "g":
-            network = CurbNetG()
-
-        # Initialize the network
-        self.network = Network(network)
-
-        # Parameters
-        self.lr = lr,
-        self.optimizer = optimizer
-
         if torch.cuda.is_available():
             # Check if cuda is available and use it if it is
             self.device = torch.device("cuda")
-            self.network.cuda()
         else:
             self.device = torch.device("cpu")
             warnings.warn("CUDA compatible GPU not found. Running on CPU",
                           ResourceWarning)
+
+        # Parameters
+        self.lr = lr
+        self.optimizer = optimizer
 
         # Set the loss criterion according to the recommended for pixel-wise
         # classification. We use weights so that missing curbs
@@ -102,18 +82,6 @@ class Trainer:
         loss_weights = torch.tensor(loss_weights,
                                     dtype=torch.float).to(device=self.device)
         self.criterion = nn.CrossEntropyLoss(weight=loss_weights)
-
-        # Set the optimizer according to the arguments
-        if optimizer == "adam":
-            self.optimizer = torch.optim.Adam(self.network.parameters(), lr=lr)
-        elif optimizer == "sgd":
-            self.optimizer = torch.optim.SGD(self.network.parameters(), lr=lr)
-        else:
-            raise ValueError("Illegal optimizer value: only SGD and Adam "
-                             "optimizers are currently supported.")
-
-        # Set the network to train
-        self.network.train()
 
         # Create UI
         if cmd_line:
@@ -128,6 +96,52 @@ class Trainer:
 
         # Creates logging tracker
         self.tracker = PlotCSV()
+
+    def set_network(self, network: str="d", pretrained=False,
+                    px_coordinates=True):
+        """Sets the network to be trained.
+
+        Args:
+            network: The network to be used. Defaults to DeepLab v3+
+                Possible options are:
+                - d: DeepLab v3+ based network.
+                - e: ENET based network.
+                - f: FCN based network.
+                - g: GoogLeNet based encoder network.
+            pretrained: Whether the network should use pretrained weights, if
+                available.
+            px_coordinates: Whether or not to include the pixel coordinates in
+                the input for the network.
+        """
+        # Set up the different networks
+        if network == "d":
+            network = CurbNetD(pretrained=pretrained,
+                               px_coordinates=px_coordinates)
+        elif network == "e":
+            network = CurbNetE()
+        elif network == "f":
+            network = CurbNetF()
+        elif network == "g":
+            network = CurbNetG()
+
+        # Initialize the network as a parallelized network
+        self.network = Network(network)
+
+        self.network = self.network.to(device=self.device)
+
+        # Set the network to train
+        self.network.train()
+
+        # Set the optimizer according to the arguments
+        if self.optimizer == "adam":
+            self.optimizer = torch.optim.Adam(self.network.parameters(),
+                                              lr=self.lr)
+        elif self.optimizer == "sgd":
+            self.optimizer = torch.optim.SGD(self.network.parameters(),
+                                             lr=self.lr)
+        else:
+            raise ValueError("Illegal optimizer value: only SGD and Adam "
+                             "optimizers are currently supported.")
 
     def train(self, data_path, batch_size, num_epochs, plot_path, weights_path,
               augmentation=True):
@@ -146,6 +160,8 @@ class Trainer:
         Returns:
             None
         """
+        if self.network is None:
+            raise RuntimeError("No network has been set.")
         # Stat variables
         counter = 0
         rate = 0

@@ -110,6 +110,11 @@ def parse_arguments():
     training.add_argument('-l', '--loss-weights', type=float, nargs='+',
                           help='custom per class loss weights as a set of 3 '
                                'floats')
+    training.add_argument('--pretrained', action='store_true',
+                          help="uses a pretrained decoder network, if "
+                               "available")
+    training.add_argument('-x', '--px-coordinates', action='store_true',
+                          help="adds pixel coordinates to the network input.")
     training.add_argument('-p', '--plot', type=str, nargs='?',
                           help="sets the path for the loss and accuracy csv "
                                "file. If none is given, set to the current "
@@ -149,9 +154,10 @@ def main(arguments):
     if arguments.train:
         # Run in training mode
         trainer = Trainer(arguments.learning_rate, arguments.optimizer,
-                          arguments.loss_weights, arguments.cmd_line,
-                          arguments.network)
+                          arguments.loss_weights, arguments.cmd_line)
 
+        trainer.set_network(arguments.network, arguments.pretrained,
+                            arguments.px_coordinates)
         if arguments.cmd_line:
             curses.wrapper(trainer.train(arguments.train[0],
                                          arguments.batch_size, arguments.epochs,

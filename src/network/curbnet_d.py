@@ -20,9 +20,11 @@ from .deeplab.decoder import build_decoder
 from .deeplab.backbone import build_backbone
 from .preprocessing import Preprocessing
 
+
 class CurbNetD(nn.Module):
     def __init__(self, backbone='drn', output_stride=8, num_classes=3,
-                 sync_bn=True, freeze_bn=False):
+                 sync_bn=True, freeze_bn=False, px_coordinates=True,
+                 pretrained=False):
         super(CurbNetD, self).__init__()
 
         if sync_bn == True:
@@ -30,8 +32,15 @@ class CurbNetD(nn.Module):
         else:
             BatchNorm = nn.BatchNorm2d
 
+        if px_coordinates:
+            self.in_channels = 5
+        else:
+            self.in_channels = 3
+
+        self.px_coordinates = px_coordinates
+
         self.backbone = build_backbone(backbone, output_stride,
-                                       BatchNorm, False)
+                                       BatchNorm, pretrained, self.in_channels)
         self.aspp = build_aspp(backbone, output_stride, BatchNorm)
         self.decoder = build_decoder(num_classes, backbone, BatchNorm)
 
@@ -40,7 +49,8 @@ class CurbNetD(nn.Module):
 
     def forward(self, input: torch.Tensor):
         # Pre process to add pixel coordinates
-        x = Preprocessing.append_px_coordinates(input)
+        if self.px_coordinates:
+            x = Preprocessing.append_px_coordinates(input)
         x, low_level_feat = self.backbone(x)
         x = self.aspp(x)
         x = self.decoder(x, low_level_feat)

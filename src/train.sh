@@ -3,13 +3,13 @@
 # time.
 
 DATE=$(date +"%d-%m")
-WEIGHTS="/home/satyaway/Documents/Thesis/Weights/$DATE.pt"
+WEIGHTS="/home/satyaway/Documents/Thesis/Weights/deeplab.pth"
 DATA="/tmp/mapillary/"
 LR=0.005
-OPTIMIZER="sgd"
+OPTIMIZER="adam"
 BATCH=16
-EPOCH=26
+EPOCH=10
 PLOT="/home/satyaway/Documents/Thesis/Logs"
-NETWORK=f
+NETWORK=d
 
 python3 main.py ${WEIGHTS} -t ${DATA} -r ${LR} -o ${OPTIMIZER} -b ${BATCH} -e ${EPOCH} -a -p ${PLOT} -c -n ${NETWORK}

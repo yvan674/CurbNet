@@ -54,10 +54,10 @@ def augment(image):
                              per_channel=0.5)),
 
         # Brightness (by -X to Y of original value)
-        oc(iaa.Add((-40, 40), per_channel=0.5)),
+        oc(iaa.Add((-20, 20), per_channel=0.5)),
 
         # Brightness (X-Y% of original value)
-        st(iaa.Multiply((0.10, 2.5), per_channel=0.2)),
+        st(iaa.Multiply((0.5, 1.5), per_channel=0.2)),
 
         # Contrast
         rl(iaa.ContrastNormalization((0.5, 1.5), per_channel=0.5)),

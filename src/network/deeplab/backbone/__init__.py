@@ -1,5 +1,6 @@
 from . import drn
 
+
 def build_backbone(backbone, output_stride, BatchNorm, pretrained,
                    input_channels):
     if backbone == 'drn':

@@ -97,7 +97,7 @@ class Trainer:
         # Creates logging tracker
         self.tracker = PlotCSV()
 
-    def set_network(self, network: str="d", pretrained=False,
+    def set_network(self, network: str = "d", pretrained=False,
                     px_coordinates=True):
         """Sets the network to be trained.
 

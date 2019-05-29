@@ -46,7 +46,8 @@ from network.curbnet_g import CurbNetG
 
 class Trainer:
     def __init__(self, lr: float = 0.01, optimizer: str = "sgd",
-                 loss_weights: list = None, cmd_line: bool = False) -> None:
+                 loss_weights: list = None, cmd_line: bool = False,
+                 validation: bool = False) -> None:
         """Training class used to train the CurbNetG network.
 
         Args:
@@ -60,6 +61,8 @@ class Trainer:
             cmd_line (bool): Whether or not to use the command line interface.
                              Defaults to False.
         """
+        self.validation = validation
+        self.network = None
         if loss_weights is None:
             # To avoid mutable default values
             loss_weights = [0.00583, 0.49516, 0.49902]
@@ -81,7 +84,11 @@ class Trainer:
         # will be more heavily penalized
         loss_weights = torch.tensor(loss_weights,
                                     dtype=torch.float).to(device=self.device)
-        self.criterion = nn.CrossEntropyLoss(weight=loss_weights)
+
+        if not validation:
+            self.criterion = nn.CrossEntropyLoss(weight=loss_weights)
+        else:
+            self.criterion = None
 
         # Create UI
         if cmd_line:
@@ -129,19 +136,20 @@ class Trainer:
 
         self.network = self.network.to(device=self.device)
 
-        # Set the network to train
-        self.network.train()
+        # Set the network to train or to validation
+        self.network.train(not self.validation)
 
-        # Set the optimizer according to the arguments
-        if self.optimizer == "adam":
-            self.optimizer = torch.optim.Adam(self.network.parameters(),
-                                              lr=self.lr)
-        elif self.optimizer == "sgd":
-            self.optimizer = torch.optim.SGD(self.network.parameters(),
-                                             lr=self.lr)
-        else:
-            raise ValueError("Illegal optimizer value: only SGD and Adam "
-                             "optimizers are currently supported.")
+        if not self.validation:
+            # Set the optimizer according to the arguments if not validating
+            if self.optimizer == "adam":
+                self.optimizer = torch.optim.Adam(self.network.parameters(),
+                                                  lr=self.lr)
+            elif self.optimizer == "sgd":
+                self.optimizer = torch.optim.SGD(self.network.parameters(),
+                                                 lr=self.lr)
+            else:
+                raise ValueError("Illegal optimizer value: only SGD and Adam "
+                                 "optimizers are currently supported.")
 
     def train(self, data_path, batch_size, num_epochs, plot_path, weights_path,
               augmentation=True):
@@ -230,17 +238,19 @@ class Trainer:
                 # class and since we need it for crf as well
                 d_out_argmax = torch.argmax(detached_out, dim=1)
 
-                # Calculate loss, converting the tensor if necessary
-                loss = self.criterion(out, target_image.to(self.device,
-                                                           dtype=torch.long,
-                                                           non_blocking=True))
+                # Things to do if we're training and not validating
+                if not self.validation:
+                    # Calculate loss, converting the tensor if necessary
+                    loss = self.criterion(out, target_image.to(self.device,
+                                                               dtype=torch.long,
+                                                               non_blocking=True))
 
-                # Zero out the optimizer
-                self.optimizer.zero_grad()
+                    # Zero out the optimizer
+                    self.optimizer.zero_grad()
 
-                # Backprop and perform optimization
-                loss.backward()
-                self.optimizer.step()
+                    # Backprop and perform optimization
+                    loss.backward()
+                    self.optimizer.step()
 
                 counter += 1
 

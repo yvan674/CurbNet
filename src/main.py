@@ -12,18 +12,16 @@ optional arguments:
     -h, --help          show this help message and exit
     -c, --cmd-line      runs the program in command line mode using curses. Used
                         for remote training.
-    -n, --network       choose the network. Options are "e" for ENet, "f" for
-                        FCN, and "g" for GoogLeNet
 
 mode:
     mode to run the network in
 
     -t TRAIN, --train TRAIN
-                        sets to training mode and gives the path to the data
-                        directory
+                        sets to training mode and gives the path to the
+                        training data directory
     -v VALIDATE, --validate VALIDATE
-                        sets to validation mode and gives the path to the data
-                        directory
+                        sets to validation mode and gives the path to the
+                        validation data directory
     -i, --infer         runs the network for inference
 
 training arguments:
@@ -32,6 +30,16 @@ training arguments:
     -o [OPTIMIZER], --optimizer [OPTIMIZER]
                         sets the optimizer. Currently supported optimizers are
                         "adam" and "sgd"
+    -l LOSS_WEIGHTS [LOSS_WEIGHTS ...], --loss-weights LOSS_WEIGHTS
+                        custom per class loss weights as a set of 3 floats
+    --pretrained        uses a pretrained decoder network, if available
+    -x, --px-coordinates
+                        adds pixel coordinates to the network input
+    -p [PLOT], --plot [PLOT]
+                        sets the path for the loss and accuracy csv file. If
+                        none is given, set to the current working directory
+
+training and validation arguments:
     -b [BATCH_SIZE], --batch-size [BATCH_SIZE]
                         sets the batch size for the session
     -e [EPOCHS], --epochs [EPOCHS]
@@ -39,6 +47,11 @@ training arguments:
     -a, --augment       activates image augmentation for the session
     -l LOSS_WEIGHTS [LOSS_WEIGHTS ...], --loss-weights LOSS_WEIGHTS
                         custom per class loss weights as a set of 3 floats
+
+
+network arguments:
+    -n, --network       choose the network. Options are "d" for DeepLab,"e" for
+                        ENet, "f" for FCN, and "g" for GoogLeNet. Defaults to "d"
     --pretrained        uses a pretrained decoder network, if available
     -x, --px-coordinates
                         adds pixel coordinates to the network input
@@ -84,10 +97,10 @@ def parse_arguments():
     mutex = mode.add_mutually_exclusive_group(required=True)
     mutex.add_argument('-t', '--train', type=str, nargs=1,
                        help="sets to training mode and gives the path to "
-                            "the data directory")
+                            "the training data directory")
     mutex.add_argument('-v', '--validate', type=str, nargs=1,
                        help="sets to validation mode and gives the path to "
-                            "the data directory")
+                            "the validation data directory")
 
     mutex.add_argument('-i', '--infer', action='store_true',
                        help="runs the network for inference")
@@ -101,30 +114,35 @@ def parse_arguments():
                           default="adam",
                           help="sets the optimizer. Currently supported"
                                "optimizers are \"adam\" and \"sgd\"")
-    training.add_argument('-n', '--network', type=str, nargs='?', default="g",
-                          help="sets the network to be used. Supported options "
-                               "are \"e\", \"f\", and \"g\"")
-    training.add_argument('-b', '--batch-size', type=int, nargs='?', default=5,
-                          help="sets the batch size for the session")
-    training.add_argument('-e', '--epochs', type=int, nargs='?', default=1,
-                          help="sets the number of epochs for the session")
-    training.add_argument('-a', '--augment', action='store_true',
-                          help="activates image augmentation for the session")
     training.add_argument('-l', '--loss-weights', type=float, nargs='+',
                           help='custom per class loss weights as a set of 3 '
                                'floats')
-    training.add_argument('--pretrained', action='store_true',
-                          help="uses a pretrained decoder network, if "
-                               "available")
-    training.add_argument('-x', '--px-coordinates', action='store_true',
-                          help="adds pixel coordinates to the network input")
-    training.add_argument('-p', '--plot', type=str, nargs='?',
-                          help="sets the path for the loss and accuracy csv "
-                               "file. If none is given, set to the current "
-                               "working directory")
+
+    # Validation and training arguments
+    vt = parser.add_argument_group("validation and training arguments")
+    vt.add_argument('-b', '--batch-size', type=int, nargs='?', default=5,
+                          help="sets the batch size for the session")
+    vt.add_argument('-e', '--epochs', type=int, nargs='?', default=1,
+                          help="sets the number of epochs for the session")
+    vt.add_argument('-a', '--augment', action='store_true',
+                          help="activates image augmentation for the session")
+
+    # Network arguments
+    network = parser.add_argument_group("network arguments")
+    network.add_argument('-n', '--network', type=str, nargs='?', default="d",
+                         help="sets the network to be used. Supported options "
+                              "are \"e\", \"f\", and \"g\". Defaults to \"d\"")
+    network.add_argument('--pretrained', action='store_true',
+                         help="uses a pretrained decoder network, if "
+                              "available")
+    network.add_argument('-x', '--px-coordinates', action='store_true',
+                         help="adds pixel coordinates to the network input")
+    network.add_argument('-p', '--plot', type=str, nargs='?',
+                         help="sets the path for the loss and accuracy csv "
+                              "file. If none is given, set to the current "
+                              "working directory")
 
     # General arguments
-
     parser.add_argument('-c', '--cmd-line', action='store_true',
                         help="runs the program in command line mode using "
                              "curses. Used for remote training.")
@@ -152,8 +170,7 @@ def main(arguments):
     Args:
         arguments (argparse.Namespace): The arguments given by the user.
     """
-    # Print out the arguments for debug. Can be removed
-    # print("Arguments: {}".format(arguments))
+    # Get the trainer object ready
     if arguments.train:
         # Run in training mode
         trainer = Trainer(arguments.learning_rate, arguments.optimizer,
@@ -161,6 +178,15 @@ def main(arguments):
 
         trainer.set_network(arguments.network, arguments.pretrained,
                             arguments.px_coordinates)
+
+    elif arguments.validation:
+        # Run for validation
+        trainer = Trainer(cmd_line=arguments.cmd_line, validation=arguments.validation)
+        trainer.set_network(arguments.network, arguments.pretrained,
+                            arguments.px_coordinates)
+
+    # Run training or validation
+    if arguments.training or arguments.validation:
         if arguments.cmd_line:
             curses.wrapper(trainer.train(arguments.train[0],
                                          arguments.batch_size, arguments.epochs,
@@ -172,9 +198,11 @@ def main(arguments):
                           arguments.epochs, arguments.plot,
                           arguments.weights[0], arguments.augment)
 
+    elif arguments.infer:
+        raise NotImplementedError("Inference is not yet implemented.")
 
-        # Clean exit on completion
-        sys.exit()
+    # Clean exit on completion
+    sys.exit()
 
 
 def closing_functions():

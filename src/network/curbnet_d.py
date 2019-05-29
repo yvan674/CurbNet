@@ -50,8 +50,8 @@ class CurbNetD(nn.Module):
     def forward(self, input: torch.Tensor):
         # Pre process to add pixel coordinates
         if self.px_coordinates:
-            x = Preprocessing.append_px_coordinates(input)
-        x, low_level_feat = self.backbone(x)
+            input = Preprocessing.append_px_coordinates(input)
+        x, low_level_feat = self.backbone(input)
         x = self.aspp(x)
         x = self.decoder(x, low_level_feat)
         x = F.interpolate(x, size=input.size()[2:], mode='bilinear',

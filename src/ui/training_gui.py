@@ -115,16 +115,16 @@ class Status(tk.Frame):
         self.time_var.set("Time left: {}".format(time_left))
 
         # Now write the status file
-        if step % 10 == 0:
+        if step % 10 == 0 or (step==self.max_step and epoch == self.max_epoch):
             with open(status_file_path, 'w') as status_file:
                 lines = ["Step: {}\n".format(step),
                          "Epoch: {}\n".format(epoch),
-                         "Accuracy: {}\n".format(accuracy),
+                         "Accuracy: {:.2f}%\n".format(accuracy * 100),
                          "Loss: {:.3f}\n".format(loss),
                          "Rate: {:.3f} steps/s\n".format(rate),
                          "Time left: {}\n".format(time_left)]
 
-                if step == self.max_step:
+                if step == self.max_step and epoch == self.max_epoch:
                     lines[5] = "Time left: -\n"
                     lines.append("Finished training.\n")
 

@@ -39,6 +39,9 @@ training arguments:
     -a, --augment       activates image augmentation for the session
     -l LOSS_WEIGHTS [LOSS_WEIGHTS ...], --loss-weights LOSS_WEIGHTS
                         custom per class loss weights as a set of 3 floats
+    --pretrained        uses a pretrained decoder network, if available
+    -x, --px-coordinates
+                        adds pixel coordinates to the network input
     -p [PLOT], --plot [PLOT]
                         sets the path for the loss and accuracy csv file. If
                         none is given, set to the current working directory
@@ -114,7 +117,7 @@ def parse_arguments():
                           help="uses a pretrained decoder network, if "
                                "available")
     training.add_argument('-x', '--px-coordinates', action='store_true',
-                          help="adds pixel coordinates to the network input.")
+                          help="adds pixel coordinates to the network input")
     training.add_argument('-p', '--plot', type=str, nargs='?',
                           help="sets the path for the loss and accuracy csv "
                                "file. If none is given, set to the current "

@@ -3,15 +3,15 @@
 # time.
 
 DATE=$(date +"%d-%m")
-WEIGHTS="/home/satyaway/Documents/Thesis/Weights/deeplab-pretrained-no-px-sgd.pth"
+WEIGHTS="/home/satyaway/Documents/Thesis/Weights/deeplab30-may.pth"
 DATA="/tmp/mapillary/"
-LR=0.005
-OPTIMIZER="sgd"
-BATCH=16
-EPOCH=10
+LR=0.001
+OPTIMIZER="adam"
+BATCH=32
+EPOCH=12
 PLOT="/home/satyaway/Documents/Thesis/Logs"
 NETWORK=d
-PRETRAINED="--pretrained"
-PX_COORDINATES=''
+PRETRAINED=""
+PX_COORDINATES='-x'
 
 python3 main.py ${WEIGHTS} -t ${DATA} -r ${LR} -o ${OPTIMIZER} -b ${BATCH} -e ${EPOCH} -a -p ${PLOT} -c -n ${NETWORK} ${PRETRAINED} ${PX_COORDINATES}

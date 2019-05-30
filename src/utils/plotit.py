@@ -59,7 +59,6 @@ class PlotIt:
         color = 'tab:red'
         ax1.set_xlabel('step number')
         ax1.set_ylabel('loss', color=color)
-        ax1.plot(loss_data, color=color)
         ax1.tick_params(axis='y', labelcolor=color)
 
         # Instantiate a second axes that shares the x-axis
@@ -69,9 +68,12 @@ class PlotIt:
         # X label not necessary due to sharing it with ax1
         ax2.set_ylabel('accuracy',
                        color=color)
-        ax2.plot(acc_data, color=color)
+
         ax2.tick_params(axis='y', labelcolor=color)
 
+        # Plot in order
+        # ax2.plot(acc_data, color='tab:blue')
+        ax1.plot(loss_data, color='tab:red')
         # Tight layout so ax2 label isn't clipped
         fig.tight_layout()
 

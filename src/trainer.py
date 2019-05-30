@@ -85,10 +85,7 @@ class Trainer:
         loss_weights = torch.tensor(loss_weights,
                                     dtype=torch.float).to(device=self.device)
 
-        if not validation:
-            self.criterion = nn.CrossEntropyLoss(weight=loss_weights)
-        else:
-            self.criterion = None
+        self.criterion = nn.CrossEntropyLoss(weight=loss_weights)
 
         # Create UI
         if cmd_line:
@@ -238,13 +235,14 @@ class Trainer:
                 # class and since we need it for crf as well
                 d_out_argmax = torch.argmax(detached_out, dim=1)
 
+                # Calculate loss, converting the tensor if necessary
+                loss = self.criterion(out, target_image.to(self.device,
+                                                           dtype=torch.long,
+                                                           non_blocking=True))
+
+
                 # Things to do if we're training and not validating
                 if not self.validation:
-                    # Calculate loss, converting the tensor if necessary
-                    loss = self.criterion(out, target_image.to(self.device,
-                                                               dtype=torch.long,
-                                                               non_blocking=True))
-
                     # Zero out the optimizer
                     self.optimizer.zero_grad()
 

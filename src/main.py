@@ -114,9 +114,6 @@ def parse_arguments():
                           default="adam",
                           help="sets the optimizer. Currently supported"
                                "optimizers are \"adam\" and \"sgd\"")
-    training.add_argument('-l', '--loss-weights', type=float, nargs='+',
-                          help='custom per class loss weights as a set of 3 '
-                               'floats')
 
     # Validation and training arguments
     vt = parser.add_argument_group("validation and training arguments")
@@ -126,6 +123,8 @@ def parse_arguments():
                           help="sets the number of epochs for the session")
     vt.add_argument('-a', '--augment', action='store_true',
                           help="activates image augmentation for the session")
+    vt.add_argument('-l', '--loss-weights', type=float, nargs='+',
+                    help='custom per class loss weights as a set of 3 floats')
 
     # Network arguments
     network = parser.add_argument_group("network arguments")
@@ -178,23 +177,26 @@ def main(arguments):
 
         trainer.set_network(arguments.network, arguments.pretrained,
                             arguments.px_coordinates)
+        data = arguments.train[0]
 
-    elif arguments.validation:
+    elif arguments.validate:
         # Run for validation
-        trainer = Trainer(cmd_line=arguments.cmd_line, validation=arguments.validation)
+        trainer = Trainer(cmd_line=arguments.cmd_line,
+                          validation=arguments.validate)
         trainer.set_network(arguments.network, arguments.pretrained,
                             arguments.px_coordinates)
+        data = arguments.validate[0]
 
     # Run training or validation
-    if arguments.training or arguments.validation:
+    if arguments.train or arguments.validate:
         if arguments.cmd_line:
-            curses.wrapper(trainer.train(arguments.train[0],
+            curses.wrapper(trainer.train(data,
                                          arguments.batch_size, arguments.epochs,
                                          arguments.plot, arguments.weights[0],
                                          arguments.augment))
 
         else:
-            trainer.train(arguments.train[0], arguments.batch_size,
+            trainer.train(data, arguments.batch_size,
                           arguments.epochs, arguments.plot,
                           arguments.weights[0], arguments.augment)
 

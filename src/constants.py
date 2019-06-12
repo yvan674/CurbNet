@@ -8,7 +8,7 @@ from sklearn.preprocessing import normalize
 
 
 
-DIM_WIDTH = 400  # Ideally, this would be 640 if it could fit in the GPU memory
+DIM_WIDTH = 380  # Ideally, this would be 640 if it could fit in the GPU memory
 DIMENSIONS = (DIM_WIDTH, int(float(DIM_WIDTH) * .75))
 
 if torch.cuda.is_available():

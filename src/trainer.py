@@ -240,7 +240,7 @@ class Trainer:
                                                            dtype=torch.long,
                                                            non_blocking=True))
 
-
+                print(loss)
                 # Things to do if we're training and not validating
                 if not self.validation:
                     # Zero out the optimizer

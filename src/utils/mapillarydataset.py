@@ -218,4 +218,17 @@ class MapillaryDataset(Dataset):
         out_array[image == 2] = 1  # Label for curb
         out_array[image == 9] = 2  # Label for curb cut
 
+        # All road labels, including any markings
+        # 10: parking
+        # 13: road
+        # 14: service lane
+        # 23: Crosswalk
+        # 24: Marking
+        # 41: Manhole
+        # 43: Pothole
+        labels = [10, 13, 14, 23, 24, 41, 43]
+        for i in labels:
+            out_array[image == i] = 3
+
+
         return out_array

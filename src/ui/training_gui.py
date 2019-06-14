@@ -13,7 +13,8 @@ import tkinter as tk
 import numpy as np
 from PIL import ImageTk, Image
 import datetime
-from torch import argmax
+
+from scipy.ndimage.morphology import binary_dilation
 
 # matplotlib imports
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg

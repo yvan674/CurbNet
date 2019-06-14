@@ -32,6 +32,7 @@ from ui.training_gui import TrainingGUI
 from ui.training_cmd import TrainingCmd
 from utils.mapillarydataset import MapillaryDataset
 from utils.plotcsv import PlotCSV
+from network.mce_loss import MCELoss
 import constants
 
 # network imports
@@ -85,7 +86,8 @@ class Trainer:
         loss_weights = torch.tensor(loss_weights,
                                     dtype=torch.float).to(device=self.device)
 
-        self.criterion = nn.CrossEntropyLoss(weight=loss_weights)
+        self.criterion = MCELoss(weight_normal=loss_weights,
+                                 weight_penalized=3 * loss_weights)
 
         # Create UI
         if cmd_line:
@@ -240,7 +242,6 @@ class Trainer:
                                                            dtype=torch.long,
                                                            non_blocking=True))
 
-                print(loss)
                 # Things to do if we're training and not validating
                 if not self.validation:
                     # Zero out the optimizer

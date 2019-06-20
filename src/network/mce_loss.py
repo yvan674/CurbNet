@@ -89,19 +89,21 @@ class MCELoss(nn.CrossEntropyLoss):
         inverted_input_mask = inverted_input_mask.to(device=constants.DEVICE,
                                                      dtype=torch.uint8)
 
+        # Create a single length zero tensor once
+        zero = torch.zeros(1).to(device=constants.DEVICE)
+
         # The values within the mask are now selected as well as the inverse.
         # The loss is then calculated separately for those in the mask and not
         # in the mask.
-        perimeter_target = torch.masked_select(target, target_mask)
-        perimeter_predicted = torch.masked_select(input, input_mask).reshape(
-            [perimeter_target.shape[0], 3]
-        )
+        # We use torch.where to preserve the shape of the mask
 
-        other_target = torch.masked_select(target, inverted_target_mask)
-        other_predicted = torch.masked_select(input,
-                                              inverted_input_mask).reshape(
-            [other_target.shape[0], 3]
-        )
+        perimeter_target = torch.where(target_mask, target, zero.long())
+        perimeter_predicted = torch.where(input_mask, input, zero)
+
+        other_target = torch.where(inverted_target_mask, target, zero.long())
+        other_predicted = torch.where(inverted_input_mask, input, zero)
+
+
         perimeter_loss = F.cross_entropy(perimeter_predicted, perimeter_target,
                                          weight=self.weight,
                                          ignore_index=self.ignore_index,

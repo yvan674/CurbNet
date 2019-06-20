@@ -33,7 +33,6 @@ from ui.training_cmd import TrainingCmd
 from utils.mapillarydataset import MapillaryDataset
 from utils.plotcsv import PlotCSV
 from network.mce_loss import MCELoss
-import constants
 
 # network imports
 from network.parallelizer import Parllelizer as Network
@@ -87,7 +86,8 @@ class Trainer:
                                     dtype=torch.float).to(device=self.device)
 
         self.criterion = MCELoss(weight_normal=loss_weights,
-                                 weight_penalized=3 * loss_weights)
+                                 weight_penalized=1 * loss_weights)
+        # self.criterion = nn.CrossEntropyLoss(loss_weights)
 
         # Create UI
         if cmd_line:
@@ -236,6 +236,13 @@ class Trainer:
                 # Create an argmax version here to avoid making it in the GUI
                 # class and since we need it for crf as well
                 d_out_argmax = torch.argmax(detached_out, dim=1)
+
+                # FIXME
+                # def remove_road_mask(tensor):
+                #     tensor[tensor == 3] = 0
+                #     return tensor
+                #
+                # target_image = remove_road_mask(target_image)
 
                 # Calculate loss, converting the tensor if necessary
                 loss = self.criterion(out, target_image.to(self.device,

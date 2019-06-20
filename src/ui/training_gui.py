@@ -22,6 +22,7 @@ from matplotlib.figure import Figure
 from matplotlib.ticker import FormatStrFormatter
 
 from ui.training_ui import TrainingUI
+import constants
 
 
 class Status(tk.Frame):
@@ -273,6 +274,27 @@ class ImageFrame(tk.Frame):
         out[image == 1] = np.array([255, 0, 0])
         out[image == 2] = np.array([0, 255, 0])
 
+        # Only the the perimeter check if it is the input image
+        if True == False:
+            # Extract the road mask from the target
+            mask = np.zeros(image.shape)
+            mask[image == 3] = 1
+            b_size = int(constants.DIM_WIDTH * 0.05)
+
+            # Create b
+            b = np.ones((b_size, b_size))
+
+            # Calculate the road perimeter mask
+            # After testing, element-wise is significantly faster than a single
+            # statement for some reason.
+            target_mask = binary_dilation(mask, b)
+
+            # Remove the road so we get only the perimeter
+            target_mask[image == 3] = 0
+            inverted_mask = np.zeros(target_mask.shape)
+            inverted_mask[target_mask == 0] = 1
+
+            out[inverted_mask == 1] = np.array([0, 0, 255])
         return out
 
     @staticmethod

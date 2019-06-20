@@ -25,7 +25,7 @@ class MCELoss(nn.CrossEntropyLoss):
                  reduction='mean'):
         """Cross Entropy loss with a masked applied for different weights."""
         super(MCELoss, self).__init__(weight_normal, size_average, reduce,
-                                      reduction)
+                                               reduction)
         self.ignore_index = ignore_index
         self.register_buffer('weight_penalized', weight_penalized)
 
@@ -44,9 +44,31 @@ class MCELoss(nn.CrossEntropyLoss):
                 classes. E.g. given 3 classes (0, 1, 2), class (3) should be the
                 road mask.
         """
-        # Create a mask, that's really the entire image
-        target_mask = torch.ones(target.shape).to(dtype=torch.uint8,
-                                                  device=constants.DEVICE)
+        # Extract the road mask from the target
+        mask = torch.zeros(target.shape, dtype=torch.uint8,
+                           device=constants.DEVICE)
+        mask[target == 3] = 1.
+
+        # Create b
+        b = np.ones((self.b_size, self.b_size))
+
+        # Calculate the road perimeter mask
+        # After testing, element-wise is significantly faster than a single
+        # statement for some reason.
+        target_mask = np.zeros(target.shape)
+        mask = mask.detach().cpu().numpy()
+
+        for i in range(target_mask.shape[0]):
+            target_mask[i] = binary_dilation(mask[i], b)
+
+        target_mask = torch.from_numpy(target_mask).to(dtype=torch.uint8,
+                                                       device=constants.DEVICE)
+        # Remove the road so we get only the perimeter
+        target_mask[target == 3] = 0
+
+        # Turn road back into other for loss classification
+        target[target == 3] = 0
+
         # Prepare the mask for the 3 channel input by copying it basically
         # Assuming that the batch is relatively small so this shouldn't take
         # much time even if it is a nested for loop
@@ -55,30 +77,48 @@ class MCELoss(nn.CrossEntropyLoss):
             for j in range(input.shape[1]):
                 input_mask[i, j] = target_mask[i]
 
+        # Get the inverted mask as well
+        inverted_target_mask = self.flip_tensor(target_mask)
+        inverted_input_mask = self.flip_tensor(input_mask)
+
         # Send all the masks to the proper device
         target_mask = target_mask.to(device=constants.DEVICE, dtype=torch.uint8)
         input_mask = input_mask.to(device=constants.DEVICE, dtype=torch.uint8)
+        inverted_target_mask = inverted_target_mask.to(device=constants.DEVICE,
+                                                       dtype=torch.uint8)
+        inverted_input_mask = inverted_input_mask.to(device=constants.DEVICE,
+                                                     dtype=torch.uint8)
+
+        # Create a single length zero tensor once
+        zero = torch.zeros(1).to(device=constants.DEVICE)
 
         # The values within the mask are now selected as well as the inverse.
         # The loss is then calculated separately for those in the mask and not
         # in the mask.
-        perimeter_target = torch.masked_select(target, target_mask).\
-            reshape(target.shape)
+        # We use torch.where to preserve the shape of the mask
 
-        # Set roads to 0
-        perimeter_target[perimeter_target == 3] = 0
-        perimeter_predicted = torch.masked_select(input, input_mask).\
-            reshape(input.shape)
+        perimeter_target = torch.where(target_mask, target, zero.long())
+        perimeter_predicted = torch.where(input_mask, input, zero)
 
-        return F.cross_entropy(perimeter_predicted, perimeter_target,
-                               weight=self.weight,
-                               ignore_index=self.ignore_index,
-                               reduction=self.reduction)
+        other_target = torch.where(inverted_target_mask, target, zero.long())
+        other_predicted = torch.where(inverted_input_mask, input, zero)
+
+
+        perimeter_loss = F.cross_entropy(perimeter_predicted, perimeter_target,
+                                         weight=self.weight,
+                                         ignore_index=self.ignore_index,
+                                         reduction=self.reduction)
+        other_loss = F.cross_entropy(other_predicted, other_target,
+                                     weight=self.weight_penalized,
+                                     ignore_index=self.ignore_index,
+                                     reduction=self.reduction)
+        return perimeter_loss + other_loss
 
     @staticmethod
     def flip_tensor(tensor):
         """Flips values of 0 and 1 in a given tensor."""
         flipped = tensor.clone()
-        flipped[tensor == 0] = 1
-        flipped[tensor == 1] = 0
+        flipped[tensor==0] = 1
+        flipped[tensor==1] = 0
         return flipped
+

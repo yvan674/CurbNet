@@ -122,7 +122,6 @@ class MapillaryDataset(Dataset):
                 # Close the images
                 image_file.close()
                 label_file.close()
-            print(self.loaded_labels[0])
 
     def __len__(self):
         """Returns the number of items in the dataset.

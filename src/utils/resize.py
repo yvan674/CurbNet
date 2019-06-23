@@ -71,7 +71,6 @@ def process_folder(folder_path):
     """
     total_files = 0
     files_processed = 0
-    start_time = time()
 
     resized_folder_path = folder_path + "_resized"
 
@@ -90,6 +89,7 @@ def process_folder(folder_path):
             total_files += 1
 
     with open(join(folder_path, "viable.txt"), "r") as viable_file:
+        start_time = time()
         for line in viable_file:
             line = line.rstrip()
             # Get image file names
@@ -113,7 +113,7 @@ def process_folder(folder_path):
             files_processed += 1
             if files_processed % 10 == 0:
                 # Calculate time taken for per file for the last 10 files
-                rate = 10 / time() - start_time
+                rate = 10 / (time() - start_time)
 
                 # Calculate time left
                 files_left = total_files - files_processed

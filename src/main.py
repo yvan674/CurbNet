@@ -211,7 +211,7 @@ def main(arguments):
                           arguments.epochs, arguments.plot,
                           arguments.weights[0], arguments.augment)
     finally:
-        if 'stdscr' in locals():
+        if stdscr is not None:
             curses.echo()
             curses.nocbreak()
             curses.endwin()

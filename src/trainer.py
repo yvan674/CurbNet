@@ -191,6 +191,7 @@ class Trainer:
 
         # Load the dataset
         start_time = time.time()
+        self._update_status("Loading dataset.")
         dataset = MapillaryDataset(data_path, augmentation)
         data_loader = DataLoader(dataset,
                                  batch_size,

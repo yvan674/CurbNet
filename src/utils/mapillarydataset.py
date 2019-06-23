@@ -12,7 +12,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 from imgaug import augmenters as iaa
-from os.path import join
+from os.path import join, exists
 from PIL import Image
 from skimage import io
 import constants
@@ -68,45 +68,6 @@ def augment(image):
     return seq.augment_image(image)
 
 
-def resize(image, interpolation):
-    """Resizes a given input image to DIMENSIONS
-
-    Args:
-        image (imageio.core.util.Array): The image to be resized.
-        interpolation (str): Sampling when resizing. Either 'cubic' or
-                             'nearest'.
-
-    Returns:
-        imageio.core.util.Array: The resized image.
-    """
-    # If image is already the right size, don't do anything.
-    if image.shape[0] == constants.DIMENSIONS[1] \
-            and image.shape[1] == constants.DIMENSIONS[0]:
-        return image
-
-    # Calculate what the cropped size should be based on dimensions
-    if 4 * image.shape[1] >= 3 * image.shape[0]:
-        # the height is the smaller element
-        cropped_height = image.shape[0]
-        cropped_width = int(image.shape[0] * 1.33333333333333)
-    else:
-        cropped_height = int(image.shape[1] * .75)
-        cropped_width = image.shape[1]
-
-    # Define the transformations
-    seq = iaa.Sequential([
-        # Crop to aspect ratio
-        iaa.CropToFixedSize(cropped_width, cropped_height, position='center'),
-
-        # Resize to proper size
-        iaa.Resize({"width": constants.DIMENSIONS[0],
-                    "height": constants.DIMENSIONS[1]},
-                   interpolation=interpolation)
-    ])
-
-    return seq.augment_image(image)
-
-
 class MapillaryDataset(Dataset):
     def __init__(self, path, with_aug):
         """Dataset object that contains the mapillary dataset.
@@ -117,26 +78,43 @@ class MapillaryDataset(Dataset):
         segmentation.
 
         Args:
-            path (string): The path to the specific mapillary dataset subfolder.
+            path (string): The path to the specific mapillary dataset.
             with_aug (bool): Whether or not to use image augmentation.
-            with_px_coordinates (bool): Whether or not the pixel coordinates
-                should also be returned in the tensor.
         """
         super().__init__()
 
+        self.resized_available = False
+        # Set mode (i.e. if small files available, load all images to memory)
+        if exists(path + "_resized"):
+            self.path = path + "_resized"
+            self.resized_available = True
+        else:
+            self.path = path
+
         # Save the args
-        self.path = path
         self.with_aug = with_aug
         self.images_dir = join(self.path, "images")
         self.seg_dir = join(self.path, "labels")
         self.pan_dir = join(self.path, "panoptic")
 
         self.images = []
+        self.loaded_images = None
+        self.loaded_labels = None
 
         # Read viability list
         with open(join(path, "viable.txt"), mode='r') as viability:
             for line in viability:
                 self.images.append(line[:-1])
+
+        if self.resized_available:
+            # If resized folder available, to load images into memory
+            self.loaded_images = []
+            self.loaded_labels = []
+            for image in self.images:
+                self.loaded_images.append(io.imread(join(self.images_dir,
+                                                         image + ".jpg")))
+                self.loaded_labels.append(Image.open(join(self.seg_dir,
+                                                          image + ".png")))
 
     def __len__(self):
         """Returns the number of items in the dataset.
@@ -159,12 +137,20 @@ class MapillaryDataset(Dataset):
             dict: A sample with keys (raw, segmented), raw having the image as a
             tensor and segmented having the image as a numpy array.
         """
-        raw = self._process_raw(io.imread(join(self.images_dir,
-                                               self.images[idx] + ".jpg")))
+        if self.resized_available:
+            raw = self._process_raw(self.loaded_images[idx])
+            segmented = np.array(self.loaded_labels[idx])
+            segmented = self._process_segmented(segmented)
 
-        segmented = Image.open(join(self.seg_dir, self.images[idx] + ".png"))
-        segmented = np.array(segmented)
-        segmented = self._process_segmented(segmented)
+        else:
+            # Otherwise loaded them from the hard drive
+            raw = self._process_raw(io.imread(join(self.images_dir,
+                                                   self.images[idx] + ".jpg")))
+
+            segmented = Image.open(join(self.seg_dir,
+                                        self.images[idx] + ".png"))
+            segmented = np.array(segmented)
+            segmented = self._process_segmented(segmented)
 
         # Turn the selected file into a dict
         out = {
@@ -187,7 +173,7 @@ class MapillaryDataset(Dataset):
             torch.Tensor: The image as a torch tensor.
         """
         # Crop the image to 4:3 ratio
-        image = resize(image, "cubic")
+        image = self._resize(image, "cubic")
 
         if self.with_aug:
             # apply image augmentation sequential
@@ -200,8 +186,7 @@ class MapillaryDataset(Dataset):
 
         return torch.from_numpy(image).to(dtype=torch.float)
 
-    @staticmethod
-    def _process_segmented(image):
+    def _process_segmented(self, image):
         """Processes segmentation image to classes from a given config file.
 
         Each pixel in the image should be given a label that corresponds to if
@@ -215,7 +200,7 @@ class MapillaryDataset(Dataset):
             np.array: An array of the images with one-hot labelling.
         """
         # First resize the image
-        image = resize(image, "nearest")
+        image = self._resize(image, "nearest")
 
         # Create an out array
         out_array = np.zeros((image.shape[0], image.shape[1]), dtype=np.uint8)
@@ -236,3 +221,43 @@ class MapillaryDataset(Dataset):
             out_array[image == i] = 3
 
         return out_array
+
+    @staticmethod
+    def _resize(image, interpolation):
+        """Resizes a given input image to DIMENSIONS
+
+        Args:
+            image (imageio.core.util.Array): The image to be resized.
+            interpolation (str): Sampling when resizing. Either 'cubic' or
+                                 'nearest'.
+
+        Returns:
+            imageio.core.util.Array: The resized image.
+        """
+        # If image is already the right size, don't do anything.
+        if image.shape[0] == constants.DIMENSIONS[1] \
+                and image.shape[1] == constants.DIMENSIONS[0]:
+            return image
+
+        # Calculate what the cropped size should be based on dimensions
+        if 4 * image.shape[1] >= 3 * image.shape[0]:
+            # the height is the smaller element
+            cropped_height = image.shape[0]
+            cropped_width = int(image.shape[0] * 1.33333333333333)
+        else:
+            cropped_height = int(image.shape[1] * .75)
+            cropped_width = image.shape[1]
+
+        # Define the transformations
+        seq = iaa.Sequential([
+            # Crop to aspect ratio
+            iaa.CropToFixedSize(cropped_width, cropped_height,
+                                position='center'),
+
+            # Resize to proper size
+            iaa.Resize({"width": constants.DIMENSIONS[0],
+                        "height": constants.DIMENSIONS[1]},
+                       interpolation=interpolation)
+        ])
+
+        return seq.augment_image(image)

@@ -10,6 +10,8 @@ from PIL import Image
 import numpy as np
 import os
 import argparse
+from time import time
+from datetime import timedelta
 
 
 def process_folder(path):
@@ -18,6 +20,8 @@ def process_folder(path):
     Args:
         path (str): The path to the subfolder.
     """
+    start_time = time()  # Timer for time left measurement
+
     labels_dir = os.path.join(path, "labels")
     images = os.listdir(labels_dir)
     output_file_path = os.path.join(path, "viable.txt")
@@ -36,7 +40,13 @@ def process_folder(path):
             pruned_list.append(os.path.splitext(image)[0])
 
         if idx % 10 == 0:
-            print("Processing image {} of {}".format(idx, total))
+            # Calculate time left
+            rate = idx / time() - start_time
+            files_left = total - idx
+            time_left = int(files_left / rate)
+            time_left = timedelta(seconds=time_left)
+            print("Processing image {} of {}. Time left: {}".format(idx, total,
+                                                                    time_left))
 
     # Check for correctness
     # if not len(pruned_list) == 15159:

@@ -79,6 +79,11 @@ def resize(image, interpolation):
     Returns:
         imageio.core.util.Array: The resized image.
     """
+    # If image is already the right size, don't do anything.
+    if image.shape[0] == constants.DIMENSIONS[1] \
+            and image.shape[1] == constants.DIMENSIONS[0]:
+        return image
+
     # Calculate what the cropped size should be based on dimensions
     if 4 * image.shape[1] >= 3 * image.shape[0]:
         # the height is the smaller element
@@ -229,6 +234,5 @@ class MapillaryDataset(Dataset):
         labels = [10, 13, 14, 23, 24, 41, 43]
         for i in labels:
             out_array[image == i] = 3
-
 
         return out_array

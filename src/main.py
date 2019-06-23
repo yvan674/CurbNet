@@ -213,6 +213,7 @@ def closing_functions():
         curses.endwin()
     except:
         pass
+    print("User exited program. Killing process.")
     sys.exit()
 
 atexit.register(closing_functions)

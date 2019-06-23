@@ -215,7 +215,7 @@ def main(arguments):
             curses.echo()
             curses.nocbreak()
             curses.endwin()
-        print("User exited program. Killing process.")
+        print("Killing process.")
 
 
 if __name__ == "__main__":

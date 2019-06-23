@@ -113,7 +113,7 @@ def process_folder(folder_path):
             files_processed += 1
             if files_processed % 10 == 0:
                 # Calculate time taken for per file for the last 10 files
-                rate = 10 / (time() - start_time)
+                rate = files_processed / (time() - start_time)
 
                 # Calculate time left
                 files_left = total_files - files_processed
@@ -126,7 +126,6 @@ def process_folder(folder_path):
                     total_files,
                     time_left)
                 )
-                start_time = time()  # Reset timer
 
     print("{} of {} files processed. Program completed.".format(files_processed,
                                                                 total_files))

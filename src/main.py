@@ -202,8 +202,6 @@ def main(arguments):
 
     elif arguments.infer:
         raise NotImplementedError("Inference is not yet implemented.")
-
-    # Clean exit on completion
     sys.exit()
 
 
@@ -213,6 +211,8 @@ def closing_functions():
         curses.endwin()
     except:
         pass
+
+    print(sys.stderr)
     print("User exited program. Killing process.")
     sys.exit()
 

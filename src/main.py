@@ -66,10 +66,8 @@ import argparse
 from trainer import Trainer
 from os import getcwd
 from os.path import join
-import sys
 from platform import system
 import warnings
-import atexit
 try:
     import curses
 except ImportError:
@@ -171,57 +169,54 @@ def main(arguments):
     """
     # Get the curses window ready, if necessary.
     stdscr = None
-    if arguments.cmd_line:
-        stdscr = curses.initscr()
-        curses.noecho()
-        curses.cbreak()
-
-        try:
-            curses.start_color()
-        except:
-            pass
-    # Get the trainer object ready
-    if arguments.train:
-        # Run in training mode
-        trainer = Trainer(arguments.learning_rate, arguments.optimizer,
-                          arguments.loss_weights, stdscr)
-
-        trainer.set_network(arguments.network, arguments.pretrained,
-                            arguments.px_coordinates)
-        data = arguments.train[0]
-
-    elif arguments.validate:
-        # Run for validation
-        trainer = Trainer(cmd_line=stdscr,
-                          validation=arguments.validate)
-        trainer.set_network(arguments.network, arguments.pretrained,
-                            arguments.px_coordinates)
-        data = arguments.validate[0]
-
-    elif arguments.infer:
-        raise NotImplementedError("Inference is not yet implemented.")
-
-    else:
-        raise ValueError("Must run in one of the possible modes.")
-
-
-    # Run training or validation
-    if arguments.train or arguments.validate:
-        trainer.train(data, arguments.batch_size,
-                      arguments.epochs, arguments.plot,
-                      arguments.weights[0], arguments.augment)
-
-
-def closing_functions():
     try:
-        curses.echo()
-        curses.nocbreak()
-        curses.endwin()
-    except:
-        pass
-    print("User exited program. Killing process.")
+        if arguments.cmd_line:
+            stdscr = curses.initscr()
+            curses.noecho()
+            curses.cbreak()
+            stdscr.keypad(1)
 
-atexit.register(closing_functions)
+            try:
+                curses.start_color()
+            except:
+                pass
+        # Get the trainer object ready
+        if arguments.train:
+            # Run in training mode
+            trainer = Trainer(arguments.learning_rate, arguments.optimizer,
+                              arguments.loss_weights, stdscr)
+
+            trainer.set_network(arguments.network, arguments.pretrained,
+                                arguments.px_coordinates)
+            data = arguments.train[0]
+
+        elif arguments.validate:
+            # Run for validation
+            trainer = Trainer(cmd_line=stdscr,
+                              validation=arguments.validate)
+            trainer.set_network(arguments.network, arguments.pretrained,
+                                arguments.px_coordinates)
+            data = arguments.validate[0]
+
+        elif arguments.infer:
+            raise NotImplementedError("Inference is not yet implemented.")
+
+        else:
+            raise ValueError("Must run in one of the possible modes.")
+
+
+        # Run training or validation
+        if arguments.train or arguments.validate:
+            trainer.train(data, arguments.batch_size,
+                          arguments.epochs, arguments.plot,
+                          arguments.weights[0], arguments.augment)
+    finally:
+        if 'stdscr' in locals():
+            curses.echo()
+            curses.nocbreak()
+            curses.endwin()
+        print("User exited program. Killing process.")
+
 
 if __name__ == "__main__":
     arguments = parse_arguments()

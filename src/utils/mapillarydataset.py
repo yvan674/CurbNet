@@ -111,10 +111,18 @@ class MapillaryDataset(Dataset):
             self.loaded_images = []
             self.loaded_labels = []
             for image in self.images:
-                self.loaded_images.append(io.imread(join(self.images_dir,
-                                                         image + ".jpg")))
-                self.loaded_labels.append(Image.open(join(self.seg_dir,
-                                                          image + ".png")))
+                # Open the images
+                image_file = Image.open(join(self.images_dir, image + ".jpg"))
+                label_file = Image.open(join(self.seg_dir, image + ".png"))
+
+                # Load them to memory
+                self.loaded_images.append(np.array(image_file))
+                self.loaded_labels.append(np.array(label_file))
+
+                # Close the images
+                image_file.close()
+                label_file.close()
+            print(self.loaded_labels[0])
 
     def __len__(self):
         """Returns the number of items in the dataset.
@@ -139,13 +147,13 @@ class MapillaryDataset(Dataset):
         """
         if self.resized_available:
             raw = self._process_raw(self.loaded_images[idx])
-            segmented = np.array(self.loaded_labels[idx])
-            segmented = self._process_segmented(segmented)
+            segmented = self._process_segmented(self.loaded_labels[idx])
 
         else:
-            # Otherwise loaded them from the hard drive
-            raw = self._process_raw(io.imread(join(self.images_dir,
-                                                   self.images[idx] + ".jpg")))
+            # Otherwise load them from the hard drive
+            raw = Image.open(join(self.images_dir, self.images[idx] + ".jpg"))
+            raw = np.array(raw)
+            raw = self._process_raw(raw)
 
             segmented = Image.open(join(self.seg_dir,
                                         self.images[idx] + ".png"))
@@ -166,8 +174,8 @@ class MapillaryDataset(Dataset):
         learn from pixel coordinates.
 
         Args:
-            image (imageio.core.util.Array): The image to be turned into a
-            tensor.
+            image (numpy.array): The image to be turned into a tensor as a numpy
+                array.
 
         Returns:
             torch.Tensor: The image as a torch tensor.
@@ -194,7 +202,7 @@ class MapillaryDataset(Dataset):
         2 is curb cut.
 
         Args:
-            image (np.array): The image to be processed.
+            image (np.array): The image to be processed as a numpy array.
 
         Returns:
             np.array: An array of the images with one-hot labelling.

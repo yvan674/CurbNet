@@ -206,15 +206,12 @@ def main(arguments):
 
 
 def closing_functions():
-    try:
-        curses.echo()
-        curses.endwin()
-    except:
-        pass
-
-    print(sys.stderr)
+    # try:
+    #     curses.echo()
+    #     curses.endwin()
+    # except:
+    #     pass
     print("User exited program. Killing process.")
-    sys.exit()
 
 atexit.register(closing_functions)
 

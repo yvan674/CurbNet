@@ -47,7 +47,7 @@ from network.curbnet_g import CurbNetG
 
 class Trainer:
     def __init__(self, lr: float = 0.01, optimizer: str = "sgd",
-                 loss_weights: list = None, cmd_line: bool = False,
+                 loss_weights: list = None, cmd_line=None,
                  validation: bool = False) -> None:
         """Training class used to train the CurbNetG network.
 
@@ -59,8 +59,8 @@ class Trainer:
                 - Adam: Adaptive moment estimation.
             loss_weights (list): A list of floats with length 3 that are the
             weight values for each class used by the loss function.
-            cmd_line (bool): Whether or not to use the command line interface.
-                             Defaults to False.
+            cmd_line (curses.window): Whether or not to use the command line
+                interface. Defaults to None.
         """
         self.validation = validation
         self.network = None
@@ -93,7 +93,7 @@ class Trainer:
 
         # Create UI
         if cmd_line:
-            self.ui = TrainingCmd()
+            self.ui = TrainingCmd(cmd_line)
         else:
             self.ui = TrainingGUI()
 

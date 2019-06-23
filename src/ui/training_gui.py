@@ -252,7 +252,7 @@ class ImageFrame(tk.Frame):
         img_array = self._overlay_image(input_image, img_array)
 
         img_array = Image.fromarray(img_array)
-        img_array = img_array._resize((400, 300), Image.NEAREST)
+        img_array = img_array.resize((400, 300), Image.NEAREST)
         self.img = ImageTk.PhotoImage(image=img_array)
         self.canvas.itemconfig(self.canvas_img, image=self.img)
 

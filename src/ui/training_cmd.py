@@ -15,11 +15,15 @@ except ImportError:
 
 
 class TrainingCmd(TrainingUI):
-    def __init__(self):
-        """Initializes a curses based training UI."""
+    def __init__(self, stdscr):
+        """Initializes a curses based training UI.
+        
+        Args:
+            stdscr (curses.window): The curses window to write to.
+        """
         self.max_step = 0
         self.max_epoch = 0
-        self.stdscr = curses.initscr()
+        self.stdscr = stdscr
         self.stdscr.clear()
 
         # String variables

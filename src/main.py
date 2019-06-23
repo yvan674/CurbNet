@@ -169,11 +169,22 @@ def main(arguments):
     Args:
         arguments (argparse.Namespace): The arguments given by the user.
     """
+    # Get the curses window ready, if necessary.
+    stdscr = None
+    if arguments.cmd_line:
+        stdscr = curses.initscr()
+        curses.noecho()
+        curses.cbreak()
+
+        try:
+            curses.start_color()
+        except:
+            pass
     # Get the trainer object ready
     if arguments.train:
         # Run in training mode
         trainer = Trainer(arguments.learning_rate, arguments.optimizer,
-                          arguments.loss_weights, arguments.cmd_line)
+                          arguments.loss_weights, stdscr)
 
         trainer.set_network(arguments.network, arguments.pretrained,
                             arguments.px_coordinates)
@@ -181,48 +192,40 @@ def main(arguments):
 
     elif arguments.validate:
         # Run for validation
-        trainer = Trainer(cmd_line=arguments.cmd_line,
+        trainer = Trainer(cmd_line=stdscr,
                           validation=arguments.validate)
         trainer.set_network(arguments.network, arguments.pretrained,
                             arguments.px_coordinates)
         data = arguments.validate[0]
 
-    # Run training or validation
-    if arguments.train or arguments.validate:
-        if arguments.cmd_line:
-            curses.wrapper(trainer.train(data,
-                                         arguments.batch_size, arguments.epochs,
-                                         arguments.plot, arguments.weights[0],
-                                         arguments.augment))
-
-        else:
-            trainer.train(data, arguments.batch_size,
-                          arguments.epochs, arguments.plot,
-                          arguments.weights[0], arguments.augment)
-
     elif arguments.infer:
         raise NotImplementedError("Inference is not yet implemented.")
-    sys.exit()
+
+    else:
+        raise ValueError("Must run in one of the possible modes.")
+
+
+    # Run training or validation
+    if arguments.train or arguments.validate:
+        trainer.train(data, arguments.batch_size,
+                      arguments.epochs, arguments.plot,
+                      arguments.weights[0], arguments.augment)
 
 
 def closing_functions():
-    # try:
-    #     curses.echo()
-    #     curses.endwin()
-    # except:
-    #     pass
+    try:
+        curses.echo()
+        curses.nocbreak()
+        curses.endwin()
+    except:
+        pass
     print("User exited program. Killing process.")
 
 atexit.register(closing_functions)
 
 if __name__ == "__main__":
     arguments = parse_arguments()
-
-    if arguments.cmd_line:
+    try:
         main(arguments)
-
-    else:
-        try:
-            main(arguments)
-        except KeyboardInterrupt:
-            print("User exited program. Killing process.")
+    except KeyboardInterrupt:
+        print("User exited program. Killing process.")

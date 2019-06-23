@@ -7,7 +7,7 @@ a batch of 32 in the GPU memory.
 Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
-import constants
+from .. import constants
 import PIL.Image as Image
 from os.path import join, exists
 from os import mkdir

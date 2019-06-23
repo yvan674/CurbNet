@@ -51,7 +51,8 @@ training and validation arguments:
 
 network arguments:
     -n, --network       choose the network. Options are "d" for DeepLab,"e" for
-                        ENet, "f" for FCN, and "g" for GoogLeNet. Defaults to "d"
+                        ENet, "f" for FCN, and "g" for GoogLeNet. Defaults to
+                        "d"
     --pretrained        uses a pretrained decoder network, if available
     -x, --px-coordinates
                         adds pixel coordinates to the network input
@@ -203,7 +204,6 @@ def main(arguments):
 
         else:
             raise ValueError("Must run in one of the possible modes.")
-
 
         # Run training or validation
         if arguments.train or arguments.validate:

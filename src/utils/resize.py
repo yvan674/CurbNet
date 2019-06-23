@@ -7,7 +7,6 @@ a batch of 32 in the GPU memory.
 Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
-import constants
 import PIL.Image as Image
 from os.path import join, exists
 from os import mkdir
@@ -16,8 +15,8 @@ from time import time
 from datetime import timedelta
 
 
-WIDTH = constants.DIMENSIONS[0]
-HEIGHT = constants.DIMENSIONS[1]
+WIDTH = 360
+HEIGHT = int(float(WIDTH) * .75)
 
 
 def crop_and_resize(image, sampling=Image.BICUBIC):

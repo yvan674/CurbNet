@@ -196,7 +196,7 @@ class Trainer:
                                  shuffle=True)
 
         self._update_status("Dataset loaded. ({} ms)".format(
-            int(time.time() - start_time) * 1000))
+            int(time.time() - start_time * 1000)))
 
         # Load the state dictionary
         start_time = time.time()

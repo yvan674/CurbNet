@@ -31,15 +31,15 @@ def augment(image):
     # Define the probabilities
     def rl(aug):
         """Defines the "rarely" probability value."""
-        return iaa.Sometimes(0.09, aug)
+        return iaa.Sometimes(0.03, aug)
 
     def oc(aug):
         """Defines the "occasionally" probability value."""
-        return iaa.Sometimes(0.3, aug)
+        return iaa.Sometimes(0.1, aug)
 
     def st(aug):
         """Defines the "sometimes" probability value."""
-        return iaa.Sometimes(0.4, aug)
+        return iaa.Sometimes(0.2, aug)
 
     # set up the sequential augmentation
     seq = iaa.Sequential([

@@ -143,7 +143,8 @@ class RegularBottleneck(nn.Module):
 
         # Extension branch - 1x1 convolution, followed by a regular, dilated or
         # asymmetric convolution, followed by another 1x1 convolution, and,
-        # finally, a regularizer (spatial dropout). Number of channels is constant.
+        # finally, a regularizer (spatial dropout). Number of channels is
+        # constant.
 
         # 1x1 projection convolution
         self.ext_conv1 = nn.Sequential(

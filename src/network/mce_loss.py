@@ -25,7 +25,7 @@ class MCELoss(nn.CrossEntropyLoss):
                  reduction='mean'):
         """Cross Entropy loss with a masked applied for different weights."""
         super(MCELoss, self).__init__(weight_normal, size_average, reduce,
-                                               reduction)
+                                      reduction)
         self.ignore_index = ignore_index
         self.register_buffer('weight_penalized', weight_penalized)
 
@@ -103,7 +103,6 @@ class MCELoss(nn.CrossEntropyLoss):
         other_target = torch.where(inverted_target_mask, target, zero.long())
         other_predicted = torch.where(inverted_input_mask, input, zero)
 
-
         perimeter_loss = F.cross_entropy(perimeter_predicted, perimeter_target,
                                          weight=self.weight,
                                          ignore_index=self.ignore_index,
@@ -118,7 +117,6 @@ class MCELoss(nn.CrossEntropyLoss):
     def flip_tensor(tensor):
         """Flips values of 0 and 1 in a given tensor."""
         flipped = tensor.clone()
-        flipped[tensor==0] = 1
-        flipped[tensor==1] = 0
+        flipped[tensor == 0] = 1
+        flipped[tensor == 1] = 0
         return flipped
-

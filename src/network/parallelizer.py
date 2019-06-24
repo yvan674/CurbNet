@@ -21,7 +21,6 @@ class Parllelizer(nn.Module):
         self.parallelized = network
         self.parallelized = nn.DataParallel(self.parallelized)
 
-
     def forward(self, x):
         """Runs the CurbNetG network in parallel.
 

@@ -15,6 +15,7 @@ import torch
 INDICES = torch.zeros((1, 2, constants.DIMENSIONS[1], constants.DIMENSIONS[0]))\
     .to(device=constants.DEVICE)
 
+
 def change_indices_batch_size(batch_size):
     # First create a new tensor with a "batch size" of whatever is needed, with
     # 2 channels (x, y coordinates), and a size equivalent to the input tensor)
@@ -24,6 +25,7 @@ def change_indices_batch_size(batch_size):
     for i in range(batch_size):
         # Then fill it with the normalized indices from constants
         INDICES[i] = constants.NORMALIZED_INDICES
+
 
 # Initialize INDICES with 1 item batch size
 change_indices_batch_size(1)

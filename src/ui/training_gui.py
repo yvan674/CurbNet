@@ -117,7 +117,8 @@ class Status(tk.Frame):
         self.time_var.set("Time left: {}".format(time_left))
 
         # Now write the status file
-        if step % 10 == 0 or (step==self.max_step and epoch == self.max_epoch):
+        if step % 10 == 0 or (step == self.max_step
+                              and epoch == self.max_epoch):
             with open(status_file_path, 'w') as status_file:
                 lines = ["Step: {}/{}\n".format(step, self.max_step),
                          "Epoch: {}/{}\n".format(epoch, self.max_epoch),

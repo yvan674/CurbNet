@@ -89,8 +89,6 @@ class Trainer:
         self.criterion = MCELoss(weight_normal=loss_weights,
                                  weight_penalized=3 * loss_weights)
 
-        self.criterion = nn.CrossEntropyLoss(loss_weights)
-
         # Create UI
         if cmd_line:
             self.ui = TrainingCmd(cmd_line)

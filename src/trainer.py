@@ -89,8 +89,6 @@ class Trainer:
                                  weight_penalized=1 * loss_weights)
         # self.criterion = nn.CrossEntropyLoss(loss_weights)
 
-        self.criterion = nn.CrossEntropyLoss(loss_weights)
-
         # Create UI
         if cmd_line:
             self.ui = TrainingCmd(cmd_line)

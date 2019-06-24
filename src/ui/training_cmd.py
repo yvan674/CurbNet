@@ -21,26 +21,19 @@ class TrainingCmd(TrainingUI):
         Args:
             stdscr (curses.window): The curses window to write to.
         """
+        # set max variables
         self.max_step = 0
         self.max_epoch = 0
+
+        # Setup the stdscr
         self.stdscr = stdscr
-        self.stdscr.clear()
-        self.stdscr.refresh()
 
-        # Calculate box positioning to center of window
-        height, width = stdscr.getmaxyx()
-        if width < 60 or height < 7:
-            left = 0
-            top = 0
-        else:
-            left = int((width - 64) / 2)
-            top = int((height - 7) / 2)
+        # Set variables for window height and width
+        self.height = 0
+        self.width = 0
+        self.window = None
 
-        # Create box and title
-        self.window = curses.newwin(8, 64, top, left)
-        self.window.box()
-        self.window.addstr(0, 2, "CurbNet Training")
-        self.window.refresh()
+        self._create_box()
 
         # String variables
         self.step_var = ""
@@ -63,7 +56,6 @@ class TrainingCmd(TrainingUI):
                           second.
             status_file_path (str): The path to save the status file to.
         """
-        # Calculate time left
         # Calculate time left
         if rate == 0:
             time_left = "NaN"
@@ -124,6 +116,10 @@ class TrainingCmd(TrainingUI):
 
     def _update_screen(self):
         """Updates the screen with the current string variables."""
+        # Check if the window has changed size and if yes, resize the window.
+        if curses.is_term_resized(self.height, self.width):
+            self._create_box()
+
         # Clear only the top part of the screen
         for i in range(2, 6):
             for j in range(1, 61):
@@ -137,4 +133,22 @@ class TrainingCmd(TrainingUI):
         self.window.addstr(4, 2, self.rate_var)
         self.window.addstr(4, 32, self.time_var)
         self.window.addstr(6, 2, self.status_var)
+        self.window.refresh()
+
+    def _create_box(self):
+        """Creates the boxed window for displaying information."""
+        self.height, self.width = self.stdscr.getmaxyx()
+        if self.width < 60 or self.height < 7:
+            left = 0
+            top = 0
+        else:
+            left = int((self.width - 64) / 2)
+            top = int((self.height - 7) / 2)
+
+        # Create box and title
+        self.window = curses.newwin(8, 64, top, left)
+        self.window.box()
+        self.window.addstr(0, 2, "CurbNet Training")
+        self.stdscr.clear()
+        self.stdscr.refresh()
         self.window.refresh()

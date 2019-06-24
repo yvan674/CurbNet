@@ -17,8 +17,8 @@ def crf(generated_batch):
 
     for item in generated_batch:
         # Get unary potentials
-        U = unary_from_labels(item, 3, gt_prob=0.7, zero_unsure=False)
-        d.setUnaryEnergy(U)
+        u = unary_from_labels(item, 3, gt_prob=0.7, zero_unsure=False)
+        d.setUnaryEnergy(u)
 
         # Add color independent term
         features = create_pairwise_gaussian(sdims=(3, 3), shape=shape[:2])

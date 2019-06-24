@@ -3,9 +3,9 @@
 # time.
 
 DATE=$(date +"%d-%m")
-WEIGHTS="/home/satyaway/Documents/Thesis/Weights/mce-14-jun.pth"
-DATA="/tmp/mapillary-vistas-dataset_public_v1.1/training"
-LR=0.0005
+WEIGHTS="/home/satyaway/Documents/Thesis/Weights/24-jun.pth"
+DATA="/tmp/mapillary-resized/training"
+LR=0.0002
 OPTIMIZER="adam"
 BATCH=32
 EPOCH=10

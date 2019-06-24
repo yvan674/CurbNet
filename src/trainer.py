@@ -196,14 +196,14 @@ class Trainer:
                                  shuffle=True)
 
         self._update_status("Dataset loaded. ({} ms)".format(
-            int(time.time() - start_time * 1000)))
+            int((time.time() - start_time) * 1000)))
 
         # Load the state dictionary
         start_time = time.time()
         if path.isfile(weights_path):
             self.network.load_state_dict(torch.load(weights_path))
             self._update_status("Loaded weights into state dictionary. ({} ms)"
-                                .format(int(time.time() - start_time) * 1000))
+                                .format(int((time.time() - start_time) * 1000)))
         else:
             self._update_status("Warning: Weights do not exist. "
                                 "Running with random weights.")

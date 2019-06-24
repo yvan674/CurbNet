@@ -25,6 +25,22 @@ class TrainingCmd(TrainingUI):
         self.max_epoch = 0
         self.stdscr = stdscr
         self.stdscr.clear()
+        self.stdscr.refresh()
+
+        # Calculate box positioning to center of window
+        height, width = stdscr.getmaxyx()
+        if width < 60 or height < 7:
+            left = 0
+            top = 0
+        else:
+            left = int((width - 64) / 2)
+            top = int((height - 7) / 2)
+
+        # Create box and title
+        self.window = curses.newwin(8, 64, top, left)
+        self.window.box()
+        self.window.addstr(0, 2, "CurbNet Training")
+        self.window.refresh()
 
         # String variables
         self.step_var = ""
@@ -85,8 +101,6 @@ class TrainingCmd(TrainingUI):
 
                 status_file.writelines(lines)
 
-
-
         self._update_screen()
 
     def update_status(self, message):
@@ -111,18 +125,16 @@ class TrainingCmd(TrainingUI):
     def _update_screen(self):
         """Updates the screen with the current string variables."""
         # Clear only the top part of the screen
-        for i in range(4):
-            self.stdscr.addstr(i, 0,
-                               "                              "
-                               "                              "
-                               "                              ")
-        self.stdscr.addstr(0, 0, self.step_var)
-        self.stdscr.addstr(0, 30, self.epoch_var)
+        for i in range(2, 6):
+            for j in range(1, 61):
+                self.window.addstr(i, j, " ")
+        self.window.addstr(2, 2, self.step_var)
+        self.window.addstr(2, 32, self.epoch_var)
 
-        self.stdscr.addstr(1, 0, self.loss_var)
-        self.stdscr.addstr(1, 30, self.acc_var)
+        self.window.addstr(3, 2, self.loss_var)
+        self.window.addstr(3, 32, self.acc_var)
 
-        self.stdscr.addstr(2, 0, self.rate_var)
-        self.stdscr.addstr(2, 30, self.time_var)
-        self.stdscr.addstr(3, 0, self.status_var)
-        self.stdscr.refresh()
+        self.window.addstr(4, 2, self.rate_var)
+        self.window.addstr(4, 32, self.time_var)
+        self.window.addstr(6, 2, self.status_var)
+        self.window.refresh()

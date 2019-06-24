@@ -175,12 +175,7 @@ def main(arguments):
             stdscr = curses.initscr()
             curses.noecho()
             curses.cbreak()
-            stdscr.keypad(1)
 
-            try:
-                curses.start_color()
-            except:
-                pass
         # Get the trainer object ready
         if arguments.train:
             # Run in training mode
@@ -212,6 +207,7 @@ def main(arguments):
                           arguments.weights[0], arguments.augment)
     finally:
         if stdscr is not None:
+            stdscr.clear()
             curses.echo()
             curses.nocbreak()
             curses.endwin()

@@ -32,7 +32,7 @@ class TrainingCmd(TrainingUI):
         self.height = 0
         self.width = 0
         self.window_width= 64
-        self.window_height = 10
+        self.window_height = 11
         self.window = None
 
         self._create_box()

@@ -146,7 +146,7 @@ class TrainingCmd(TrainingUI):
     def _create_box(self):
         """Creates the boxed window for displaying information."""
         self.height, self.width = self.stdscr.getmaxyx()
-        if self.width < 60 or self.height < 7:
+        if self.width < self.window_width or self.height < self.window_height:
             left = 0
             top = 0
         else:

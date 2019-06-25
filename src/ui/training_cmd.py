@@ -17,7 +17,7 @@ except ImportError:
 class TrainingCmd(TrainingUI):
     def __init__(self, stdscr):
         """Initializes a curses based training UI.
-        
+
         Args:
             stdscr (curses.window): The curses window to write to.
         """
@@ -25,13 +25,13 @@ class TrainingCmd(TrainingUI):
         self.max_step = 0
         self.max_epoch = 0
 
-        # Setup the stdscr
+        # Set the stdscr
         self.stdscr = stdscr
 
         # Set variables for window height and width
         self.height = 0
         self.width = 0
-        self.window_width= 64
+        self.window_width = 64
         self.window_height = 11
         self.window = None
 
@@ -128,7 +128,7 @@ class TrainingCmd(TrainingUI):
         if curses.is_term_resized(self.height, self.width):
             self._create_box()
 
-        # Clear only the top part of the screen
+        # Clear the window
         for i in range(2, self.window_height - 1):
             for j in range(1, self.window_width - 1):
                 self.window.addstr(i, j, " ")
@@ -141,6 +141,8 @@ class TrainingCmd(TrainingUI):
         self.window.addstr(4, 2, self.rate_var)
         self.window.addstr(4, 32, self.time_var)
         self.window.addstr(8, 2, self.status_var)
+
+        self._draw_progress_bar()
         self.window.refresh()
 
     def _create_box(self):
@@ -154,7 +156,7 @@ class TrainingCmd(TrainingUI):
             top = int((self.height - self.window_height) / 2)
 
         # Create box and title
-        self.window = curses.newwin(self.window_height, self.window_height,
+        self.window = curses.newwin(self.window_height, self.window_width,
                                     top, left)
         self.window.box()
         self.window.addstr(0, 2, "CurbNet Training")

@@ -67,6 +67,9 @@ class Trainer:
         if loss_weights is None:
             # To avoid mutable default values
             loss_weights = [0.00583, 0.49516, 0.49902]
+            # Now normalize loss weights to account for 3x multiplication of
+            # penalized weights
+            loss_weights = [weight / 4 for weight in loss_weights]
 
         if torch.cuda.is_available():
             # Check if cuda is available and use it if it is

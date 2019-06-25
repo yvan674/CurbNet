@@ -175,6 +175,7 @@ def main(arguments):
             stdscr = curses.initscr()
             curses.noecho()
             curses.cbreak()
+            curses.curs_set(0)
 
         # Get the trainer object ready
         if arguments.train:
@@ -210,8 +211,8 @@ def main(arguments):
             stdscr.clear()
             curses.echo()
             curses.nocbreak()
+            curses.curs_set(1)
             curses.endwin()
-        print("Killing process.")
 
 
 if __name__ == "__main__":

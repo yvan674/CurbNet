@@ -296,7 +296,12 @@ class Trainer:
         # Now save the loss and accuracy file
         self.tracker.close()
 
-        if not self.cmd_line:
+        if self.cmd_line:
+            # Keep command line window open
+            self.cmd_line.getch()
+
+        else:
+            # Keep TK window open
             self.ui.mainloop()
 
     def _calculate_batch_accuracy(self, ground_truth, predicted, batch_size):

@@ -121,7 +121,7 @@ class TrainingCmd(TrainingUI):
             self._create_box()
 
         # Clear only the top part of the screen
-        for i in range(2, 6):
+        for i in range(2, 7):
             for j in range(1, 61):
                 self.window.addstr(i, j, " ")
         self.window.addstr(2, 2, self.step_var)

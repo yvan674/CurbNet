@@ -208,8 +208,7 @@ class Trainer:
             self._update_status("Loaded weights into state dictionary. ({} ms)"
                                 .format(int((time.time() - start_time) * 1000)))
         else:
-            self._update_status("Warning: Weights do not exist. "
-                                "Running with random weights.")
+            self._update_status("Warning: Weights do not exist yet.")
 
         # Start training
         start_time = time.time()

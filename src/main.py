@@ -175,7 +175,10 @@ def main(arguments):
             stdscr = curses.initscr()
             curses.noecho()
             curses.cbreak()
-            curses.curs_set(0)
+            try:
+                curses.curs_set(0)
+            except:
+                pass
 
         # Get the trainer object ready
         if arguments.train:
@@ -211,7 +214,10 @@ def main(arguments):
             stdscr.clear()
             curses.echo()
             curses.nocbreak()
-            curses.curs_set(1)
+            try:
+                curses.curs_set(1)
+            except:
+                pass
             curses.endwin()
 
 

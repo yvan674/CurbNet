@@ -38,12 +38,12 @@ class TrainingCmd(TrainingUI):
         self._create_box()
 
         # String variables
-        self.step_var = ""
-        self.epoch_var = ""
-        self.loss_var = ""
-        self.acc_var = ""
-        self.rate_var = ""
-        self.time_var = ""
+        self.step_var = "Step:"
+        self.epoch_var = "Epoch:"
+        self.loss_var = "Loss:"
+        self.acc_var = "Accuracy:"
+        self.rate_var = "Rate:"
+        self.time_var = "Time left:"
         self.status_var = ""
 
         self.progress_val = 0.

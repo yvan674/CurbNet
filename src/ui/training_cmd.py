@@ -131,7 +131,12 @@ class TrainingCmd(TrainingUI):
         # Clear the window
         for i in range(2, self.window_height - 1):
             for j in range(1, self.window_width - 1):
-                self.window.addstr(i, j, " ")
+                try:
+                    self.window.addstr(i, j, " ")
+                except:
+                    # To deal with when the window isn't big enough or when
+                    # the window goes off screen
+                    pass
         self.window.addstr(2, 2, self.step_var)
         self.window.addstr(2, 32, self.epoch_var)
 

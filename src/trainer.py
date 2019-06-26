@@ -68,7 +68,8 @@ class Trainer:
             loss_weights = [0.00583, 0.49516, 0.49902]
             # Now normalize loss weights to account for 3x multiplication of
             # penalized weights
-            loss_weights = [weight / 4 for weight in loss_weights]
+            # This was removed because I think it may have caused nan errors
+            # loss_weights = [weight / 4 for weight in loss_weights]
 
         if torch.cuda.is_available():
             # Check if cuda is available and use it if it is

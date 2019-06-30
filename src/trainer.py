@@ -239,7 +239,8 @@ class Trainer:
                 # Start post processing
                 # Create an argmax version here to avoid making it in the GUI
                 # class and since we need it for crf as well
-                d_out_argmax = torch.argmax(detached_out, dim=1)
+                # TODO This is unimplemented
+                # out_argmax= torch.argmax(detached_out, dim=1)
 
                 # Calculate loss, converting the tensor if necessary
                 loss = self.criterion(out, target_image.to(self.device,
@@ -276,9 +277,12 @@ class Trainer:
                                     status_file_path=self.status_file_path)
 
                 if not self.cmd_line:
-                    self.ui.update_image(target=target_image[0],
-                                         generated=d_out_argmax[0],
-                                         input_image=raw_image[0])
+                    # Do processing to make the target_image into one-hot
+                    # encoding
+                    self.ui.update_image(
+                        target=self._target_to_one_hot(target_image[0]),
+                        generated=detached_out,
+                        input_image=raw_image[0])
 
                 # Write to the plot file every step
                 self.tracker.write_data({"loss": loss_value,
@@ -383,3 +387,11 @@ class Trainer:
         message = "[{}] {}".format(strftime("%H:%M:%S", localtime()), message)
         self.tracker.write_log(message)
         self.ui.update_status(message)
+
+    @staticmethod
+    def _target_to_one_hot(target_tensor):
+        """Converts target to a one_hot tensor, also removing road class."""
+        t0 = target_tensor[0]
+        t0[t0 == 3] = 0
+        one_hot = torch.zeros(t0.shape[0], t0.shape[1], 3)
+        return one_hot.scatter_(2, t0, 1)

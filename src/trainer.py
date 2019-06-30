@@ -146,7 +146,8 @@ class Trainer:
             # Set the optimizer according to the arguments if not validating
             if self.optimizer == "adam":
                 self.optimizer = torch.optim.Adam(self.network.parameters(),
-                                                  lr=self.lr)
+                                                  lr=self.lr,
+                                                  eps=0.1)
             elif self.optimizer == "sgd":
                 self.optimizer = torch.optim.SGD(self.network.parameters(),
                                                  lr=self.lr)

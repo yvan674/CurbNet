@@ -3,12 +3,12 @@
 # time.
 
 DATE=$(date +"%d-%m")
-WEIGHTS="/home/satyaway/Documents/Thesis/Weights/24-jun.pth"
+WEIGHTS="/home/satyaway/Documents/Thesis/Weights/with-eps.pth"
 DATA="/tmp/mapillary-resized/training"
 LR=0.0002
 OPTIMIZER="adam"
 BATCH=32
-EPOCH=10
+EPOCH=15
 PLOT="/home/satyaway/Documents/Thesis/Logs"
 NETWORK=d
 PRETRAINED=""

@@ -25,9 +25,6 @@ class PlotCSV:
         self.csv_writer = None
         self.configured = False
 
-        # Create a queue of lines to be written to avoid hdd writes every line
-        self.queued_lines = []
-
     def configure(self, parameters):
         """Configures the parameters for the module.
 
@@ -72,27 +69,28 @@ class PlotCSV:
         self.csv_file = open(self.file_path, 'a', newline='')
         # Create the writer for the csv
         self.csv_writer = csv.DictWriter(self.csv_file, dialect=csv.excel,
-                                         fieldnames=["loss", "accuracy"],
+                                         fieldnames=["loss", "accuracy",
+                                                     "validation loss"],
                                          restval="", extrasaction="ignore")
 
         self.csv_writer.writeheader()
         self.configured = True
 
     def write_data(self, data):
-        """Queues data for writing to the CSV file.
+        """Writes data to the CSV file.
+
+        The data should be written only at the end of every epoch so the given
+        list will be quite large. As soon as the list is received, the CSV file
+        is updated.
 
         Args:
-            data (dict): Data to be written to the CSV file.
+            data (list): List of dictionaries of the data to be written to the
+                CSV file.
         """
         if not self.configured:
             raise Exception("PlotCSV has not been properly configured.")
 
-        self.queued_lines.append(data)
-
-        # Writes every 10 lines to reduce hdd dependency time
-        if len(self.queued_lines) == 10:
-            self.csv_writer.writerows(self.queued_lines)
-            self.queued_lines = []
+        self.csv_writer.writerows(data)
 
     def write_log(self, message):
         """Writes a message to the log.

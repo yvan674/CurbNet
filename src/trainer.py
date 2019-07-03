@@ -222,6 +222,9 @@ class Trainer:
             # Figure out number of max steps for info displays
             self.ui.set_max_values(len(training_loader), num_epochs)
 
+            csv_data = []  # Reset the csv data list at every epoch start
+
+            # Step iterations for training
             for data in enumerate(training_loader):
                 # Grab the raw and target images
                 raw_image = data[1]["raw"]
@@ -287,23 +290,20 @@ class Trainer:
                         input_image=raw_image[0])
 
                 # Write to the plot file every step
-                self.tracker.write_data({"loss": loss_value,
-                                         "accuracy": accuracy})
+                csv_data.append({"loss": loss_value,
+                                 "accuracy": accuracy,
+                                 "validation loss": ""})
 
             # Do validation
-            self._update_status("Started epoch {} validation." \
+            self._update_status("Started validation for epoch {}"
                                 .format(epoch + 1))
             # Set to evaluation mode
             self.network.eval()
-            sum_validation_acc = 0
-            validation_iterations = 10
+            sum_validation_loss = 0
+            validation_iterations = 10  # hard coded 10 iterations
 
             # Actually do the validation
             for data in enumerate(validation_loader):
-                if data[0] >= validation_iterations:
-                    # Only do 320 images for validation
-                    break
-
                 out = self.network(data[1]["raw"].to(self.device,
                                                      non_blocking=True))
 
@@ -313,24 +313,43 @@ class Trainer:
                 target_image = data[1]["segmented"]
                 target_image[target_image == 3] = 0  # Get rid of roads
 
-                detached_out = out.cpu().detach()
-                acc = self._calculate_batch_accuracy(target_image,
-                                                     detached_out,
-                                                     batch_size)
+                loss = self.criterion(out,
+                                      target_image.to(self.device,
+                                                      dtype=torch.long,
+                                                      non_blocking=True))
 
-                sum_validation_acc += acc
+                sum_validation_loss += loss
+
+                counter += 1
+
+                accuracy = self._calculate_batch_accuracy(target_image,
+                                                          out.cpu().detach(),
+                                                          batch_size)
+
+                rate = float(counter) / (time.time() - start_time)
 
                 self.ui.update_data(step=data[0] + 1,
                                     epoch = epoch + 1,
-                                    accuracy=acc,
-                                    loss=0,
-                                    rate=0,  # FIXME
+                                    accuracy=accuracy,
+                                    loss=loss.item(),
+                                    rate=rate,
                                     status_file_path=self.status_file_path)
 
-                # Write to the plot file
-                self.tracker.write_data({})
+                if data[0] + 1 == validation_iterations:
+                    # Only do 10 steps for validation
+                    # This is at the end to prevent any performance loss from
+                    # loading unnecessary data
+                    break
 
+            # Write validation loss
+            validation_loss = sum_validation_loss / float(validation_iterations)
+            csv_data[-1]["validation loss"] = validation_loss
 
+            self.ui.update_status("Finished validation with an average {:.3f} "
+                                  "loss.".format(validation_loss))
+
+            # Write csv data
+            self.tracker.write_data(csv_data)
 
             # Save the weights every epoch
             torch.save({

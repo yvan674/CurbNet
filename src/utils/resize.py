@@ -70,7 +70,6 @@ def process_folder(folder_path):
         none
     """
     total_files = 0
-    files_processed = 0
 
     resized_folder_path = folder_path + "_resized"
 
@@ -90,7 +89,7 @@ def process_folder(folder_path):
 
     with open(join(folder_path, "viable.txt"), "r") as viable_file:
         start_time = time()
-        for line in viable_file:
+        for idx, line in enumerate(viable_file):
             line = line.rstrip()
             # Get image file names
             image_path = join(folder_path, "images", line + ".jpg")
@@ -110,24 +109,23 @@ def process_folder(folder_path):
             resized_image.save(resized_image_path, image.format)
             resized_label.save(resized_label_path, label.format)
 
-            files_processed += 1
-            if files_processed % 10 == 0:
+            if idx % 10 == 0 and idx != 0:
                 # Calculate time taken for per file for the last x files
-                rate = files_processed / (time() - start_time)
+                rate = idx / (time() - start_time)
 
                 # Calculate time left
-                files_left = total_files - files_processed
+                files_left = total_files - idx
                 time_left = int(files_left / rate)
                 time_left = timedelta(seconds=time_left)
 
                 # Print progress every 10 files
                 print("{} of {} files processed. Time left: {}".format(
-                    files_processed,
+                    idx + 1,
                     total_files,
                     time_left)
                 )
 
-    print("{} of {} files processed. Program completed.".format(files_processed,
+    print("{} of {} files processed. Program completed.".format(idx + 1,
                                                                 total_files))
 
 

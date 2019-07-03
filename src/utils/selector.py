@@ -39,9 +39,9 @@ def process_folder(path):
         if np.count_nonzero(img == 2):
             pruned_list.append(os.path.splitext(image)[0])
 
-        if idx % 10 == 0:
+        if idx % 10 == 0 and idx != 0:
             # Calculate time left
-            rate = idx / time() - start_time
+            rate = float(idx) / (time() - start_time)
             files_left = total - idx
             time_left = int(files_left / rate)
             time_left = timedelta(seconds=time_left)

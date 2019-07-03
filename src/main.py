@@ -18,7 +18,7 @@ mode:
 
     -t TRAIN, --train TRAIN
                         sets to training mode and gives the path to the
-                        training data directory
+                        data directory
     -v VALIDATE, --validate VALIDATE
                         sets to validation mode and gives the path to the
                         validation data directory
@@ -96,7 +96,7 @@ def parse_arguments():
     mutex = mode.add_mutually_exclusive_group(required=True)
     mutex.add_argument('-t', '--train', type=str, nargs=1,
                        help="sets to training mode and gives the path to "
-                            "the training data directory")
+                            "the data directory")
     mutex.add_argument('-v', '--validate', type=str, nargs=1,
                        help="sets to validation mode and gives the path to "
                             "the validation data directory")

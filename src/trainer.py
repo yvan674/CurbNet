@@ -159,14 +159,16 @@ class Trainer:
         """Start training the network.
 
         Args:
-            data_path (str): Path to the specific dataset directory.
+            data_path (str): Path to the dataset directory. This should be, for
+                example, the mapillary directory, not the training or validation
+                directory.
             batch_size (int): Number of images to run per batch.
             num_epochs (int): Number of epochs to run the trainer for.
             plot_path (str): Path to save the loss plot. This should be a
-                             directory.
+                directory.
             weights_path (str): The path to the weights.
             augmentation (bool): Whether or not to use augmentation. Defaults to
-                                 True.
+                True.
 
         Returns:
             None
@@ -192,21 +194,22 @@ class Trainer:
         self.status_file_path = path.join(plot_path, "status.txt")
 
         # Load the dataset
-        start_time = time.time()
-        self._update_status("Loading dataset.")
-        dataset = MapillaryDataset(data_path, augmentation)
-        data_loader = DataLoader(dataset,
-                                 batch_size,
-                                 shuffle=True)
+        training_loader = self._load_dataset(path.join(data_path, "training"),
+                                             augmentation,
+                                             batch_size)
+        validation_loader = self._load_dataset(path.join(data_path,
+                                                         "validation"),
+                                               augmentation,
+                                               batch_size)
 
-        self._update_status("Dataset loaded. ({} ms)".format(
-            int((time.time() - start_time) * 1000)))
 
         # Load the state dictionary
         start_time = time.time()
         if path.isfile(weights_path):
-            self.network.load_state_dict(torch.load(weights_path))
-            self._update_status("Loaded weights into state dictionary. ({} ms)"
+            checkpoint = torch.load(weights_path)
+            self.network.load_state_dict(checkpoint['model_state_dict'])
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            self._update_status("Loaded model and optimizer weights. ({} ms)"
                                 .format(int((time.time() - start_time) * 1000)))
         else:
             self._update_status("Warning: Weights do not exist yet.")
@@ -218,9 +221,9 @@ class Trainer:
                             .format(torch.cuda.device_count()))
         for epoch in range(num_epochs):
             # Figure out number of max steps for info displays
-            self.ui.set_max_values(len(data_loader), num_epochs)
+            self.ui.set_max_values(len(training_loader), num_epochs)
 
-            for data in enumerate(data_loader):
+            for data in enumerate(training_loader):
                 # Grab the raw and target images
                 raw_image = data[1]["raw"]
                 target_image = data[1]["segmented"]
@@ -242,12 +245,7 @@ class Trainer:
                 # TODO This is unimplemented
                 # out_argmax= torch.argmax(detached_out, dim=1)
 
-                # FIXME
-                # def remove_road_mask(tensor):
-                #     tensor[tensor == 3] = 0
-                #     return tensor
-                #
-                # target_image = remove_road_mask(target_image)
+                target_image[target_image == 3] = 0
 
                 # Calculate loss, converting the tensor if necessary
                 loss = self.criterion(out, target_image.to(self.device,
@@ -270,9 +268,7 @@ class Trainer:
                                                           detached_out,
                                                           batch_size)
 
-                # Calculate time per step every 2 steps
-                if counter % 2 == 0:
-                    rate = float(counter) / (time.time() - start_time)
+                rate = float(counter) / (time.time() - start_time)
 
                 loss_value = loss.item()
 
@@ -295,9 +291,53 @@ class Trainer:
                 self.tracker.write_data({"loss": loss_value,
                                          "accuracy": accuracy})
 
-        # Save the weights
-        torch.save(self.network.state_dict(),
-                   weights_path)
+            # Do validation
+            self._update_status("Started epoch {} validation." \
+                                .format(epoch + 1))
+            # Set to evaluation mode
+            self.network.eval()
+            sum_validation_acc = 0
+            validation_iterations = 10
+
+            # Actually do the validation
+            for data in enumerate(validation_loader):
+                if data[0] >= validation_iterations:
+                    # Only do 320 images for validation
+                    break
+
+                out = self.network(data[1]["raw"].to(self.device,
+                                                     non_blocking=True))
+
+                if out is None:
+                    raise ValueError("forward() has not been run properly.")
+
+                target_image = data[1]["segmented"]
+                target_image[target_image == 3] = 0  # Get rid of roads
+
+                detached_out = out.cpu().detach()
+                acc = self._calculate_batch_accuracy(target_image,
+                                                     detached_out,
+                                                     batch_size)
+
+                sum_validation_acc += acc
+
+                self.ui.update_data(step=data[0] + 1,
+                                    epoch = epoch + 1,
+                                    accuracy=acc,
+                                    loss=0,
+                                    rate=0,  # FIXME
+                                    status_file_path=self.status_file_path)
+
+                # Write to the plot file
+                self.tracker.write_data({})
+
+
+
+            # Save the weights every epoch
+            torch.save({
+                'model_state_dict': self.network.state_dict(),
+                'optimizer_state_dict':self.optimizer.state_dict()},
+                       weights_path)
 
         torch.cuda.empty_cache()
 
@@ -399,6 +439,40 @@ class Trainer:
     def _target_to_one_hot(target_tensor):
         """Converts target to a one_hot tensor, also removing road class."""
         t0 = target_tensor[0]
-        t0[t0 == 3] = 0
         one_hot = torch.zeros(t0.shape[0], t0.shape[1], 3)
         return one_hot.scatter_(2, t0, 1)
+
+    def _load_dataset(self, data_path, augmentation, batch_size):
+        """Loads a dataset and creates the data loader.
+
+        Args:
+            path (str): The path of the mapillary folder.
+            augmentation (bool): Augment the images or not.
+            batch_size (int): Size of each batch
+
+        Returns:
+            torch.utils.data.DataLoader: The data loader for the dataset
+        """
+        if path.split(data_path)[1] == "":
+            # Deal with edge case where there's a "/" at the end of the path.
+            data_path = path.split(data_path)[0]
+
+        if path.split(data_path)[1].endswith("training"):
+            dataset_name = "training dataset"
+        else:
+            dataset_name = "validation dataset"
+
+        start_time = time.time()
+        self._update_status("Loading {}.".format(dataset_name))
+        dataset = MapillaryDataset(path.join(data_path, "training"),
+                                            augmentation)
+        data_loader = DataLoader(dataset,
+                                     batch_size,
+                                     shuffle=True)
+
+        self._update_status("{} loaded. ({} ms)".format(
+            dataset_name.capitalize(),
+            int((time.time() - start_time) * 1000)))
+
+        return data_loader
+

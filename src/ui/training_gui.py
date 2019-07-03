@@ -8,13 +8,15 @@ session, and a plot of the current loss vs accuracy of the network.
 
 Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
+
+References:
+    Blending modes implementation:
+        <https://github.com/flrs/blend_modes/>
 """
 import tkinter as tk
 import numpy as np
 from PIL import ImageTk, Image
 import datetime
-
-from scipy.ndimage.morphology import binary_dilation
 
 # matplotlib imports
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -255,7 +257,7 @@ class ImageFrame(tk.Frame):
                 straight from the dataloader.
         """
         img_array = self._class_to_image_array(segmentation)
-        img_array = self._overlay_image(input_image, img_array)
+        img_array = self._screen_image(input_image, img_array)
 
         img_array = Image.fromarray(img_array)
         img_array = img_array.resize((400, 300), Image.NEAREST)
@@ -274,42 +276,108 @@ class ImageFrame(tk.Frame):
                                   shape [H, W]
 
         Returns:
-            (np.array) in the form [H, W, Color], Color value being [0, 255].
+            (np.array) in the form [H, W, Color].
         """
         image = image.numpy()
-        image = image * 255
+
         return image.astype('uint8')
 
-    @staticmethod
-    def _overlay_image(input_image, segmentation):
+    def _screen_image(self, input_image, segmentation):
         """Overlays the segmentation on top of the input image.
 
-        This uses the overlay blend mode, taken from the wiki page at
-        <https://en.wikipedia.org/wiki/Blend_modes#Overlay>
+        This uses the screen blend mode
+        <https://en.wikipedia.org/wiki/Blend_modes#Screen>. The python
+        implementation is from <https://github.com/flrs/blend_modes/>
 
         Args:
             input_image (torch.Tensor): The input image as a tensor. This is
-                expected to be in the range [0, 255].
+                expected to be in the range [0, 1].
             segmentation (numpy.array): Segmentation as a numpy array. This is
-                expected to be in the range [0, 255].
+                expected to be in the range [0, 1].
 
         Returns:
             numpy.array: The overlaid image as a numpy array.
         """
-        # First prepare base layer by turning it into numpy and transposing it.
-        base = np.transpose(input_image.numpy(), (1, 2, 0))
-        # Rename the segmentation var
-        top = segmentation
+        # First prepare base layer by turning it into numpy and rescaling it to
+        # the range [0, 1].
+        input_image = input_image.numpy().astype(float)
 
-        # Generate the boolean mask and output layer
-        mask = input_image >= 127
-        out = np.zeros_like(base)
+        # Then give it an alpha layer. Hacky but I'm too tired to think.
+        base = np.full((4, input_image.shape[1], input_image.shape[2]), 1.)
+        base[0:3] = input_image / 255
 
-        # Now blend
-        out[~mask] = (2 * base * top)[~mask]
-        out[mask] = (255 - 2 * (255 - out) * (255 - top))[mask]
+        # Finally tranpose it to [H x W x C]
+        base = np.transpose(base, (1, 2, 0))
 
-        return out.astype('uint8')
+        # Rename the segmentation var and transpose if necessary to [C x H x W]
+        segmentation = segmentation.astype(float)
+        if segmentation.shape[0] != 3:
+            segmentation = np.transpose(segmentation, (2, 0, 1))
+
+        if segmentation.max() == 255.:
+            segmentation = segmentation / 255.
+
+        # Process segmentation
+        # Make shape in the form [C x H x W] where C is RGBA and a filled array
+        rgba_shape = (4, segmentation.shape[1], segmentation.shape[2])
+        filled_array = np.full((rgba_shape[1], rgba_shape[2]), 1.)
+
+        # First make the red layer, aka curbs
+        red = np.zeros(rgba_shape)
+        red[0] = filled_array
+        red[3] = segmentation[1]
+        # And transpose it
+        red = np.transpose(red, (1, 2, 0))
+
+        # Then make the green layer, aka curb cuts
+        green = np.zeros(rgba_shape)
+        green[1] = filled_array
+        green[3] = segmentation[2]
+        # And transpose it
+        green = np.transpose(green, (1, 2, 0))
+
+        # Now we have base, red, red alpha, green, green alpha. Time to blend.
+        out = self._screen(base, red, 1.)
+        out = self._screen(out, green, .75)  # 1. is too bright so we use .75
+        return (out * 255).astype('uint8')
+
+    @staticmethod
+    def _screen(base, top, alpha):
+        """Apply screen blending mode of a layer on an image.
+
+        Args:
+          base(3-dimensional numpy array of floats (r/g/b/a) in range
+          0-255.0): Image to be blended upon
+          top(3-dimensional numpy array of floats (r/g/b/a) in range
+          0.0-255.0): Layer to be blended with image
+          alpha(float): Desired opacity of layer for blending
+
+        Returns:
+          3-dimensional numpy array of floats (r/g/b/a) in range 0.0-255.0:
+          Blended image
+        """
+        def _compose_alpha(img_in, img_layer, opacity):
+            """Calculate alpha composition ratio between two images."""
+            comp_alpha = np.minimum(img_in[:, :, 3],
+                                    img_layer[:, :, 3]) * opacity
+            new_alpha = img_in[:, :, 3] + (1.0 - img_in[:, :, 3]) * comp_alpha
+            np.seterr(divide='ignore', invalid='ignore')
+            alpha_ratio = comp_alpha / new_alpha
+            alpha_ratio[alpha_ratio == np.NAN] = 0.0
+
+            return alpha_ratio
+
+        ratio = _compose_alpha(base, top, alpha)
+
+        comp = 1.0 - (1.0 - base[:, :, :3]) * (1.0 - top[:, :, :3])
+
+        ratio_rs = np.reshape(np.repeat(ratio, 3),
+                              [comp.shape[0], comp.shape[1], comp.shape[2]])
+        img_out = comp * ratio_rs + base[:, :, :3] * (1.0 - ratio_rs)
+        img_out = np.nan_to_num(np.dstack(
+            (img_out, base[:, :, 3])))  # add alpha channel and replace nans
+
+        return img_out
 
 
 class TrainingGUI(TrainingUI):

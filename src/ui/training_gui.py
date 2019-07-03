@@ -22,7 +22,6 @@ from matplotlib.figure import Figure
 from matplotlib.ticker import FormatStrFormatter
 
 from ui.training_ui import TrainingUI
-import constants
 
 
 class Status(tk.Frame):
@@ -248,7 +247,13 @@ class ImageFrame(tk.Frame):
         self.canvas.pack()
 
     def update_image(self, segmentation, input_image):
-        """Updates the image that is to be displayed."""
+        """Updates the image that is to be displayed.
+
+        Args:
+            segmentation (torch.Tensor): The segmentation in one-hot encoding.
+            input_image (torch.Tensor): The original image as a torch tensor
+                straight from the dataloader.
+        """
         img_array = self._class_to_image_array(segmentation)
         img_array = self._overlay_image(input_image, img_array)
 
@@ -261,58 +266,50 @@ class ImageFrame(tk.Frame):
     def _class_to_image_array(image):
         """Converts the ground truth segmentation to an image array.
 
+        This is its own function due to an older version requiring that the
+        input images be in indexed instead of one-hot encoding.
+
         Args:
             image (torch.Tensor): tensor array of classes in each pixel in the
                                   shape [H, W]
 
         Returns:
-            (np.array) in the form [H, W, Color]
+            (np.array) in the form [H, W, Color], Color value being [0, 255].
         """
         image = image.numpy()
-        out = np.zeros((image.shape[0], image.shape[1], 3), dtype=np.uint8)
-
-        # Color code the output
-        out[image == 1] = np.array([255, 0, 0])
-        out[image == 2] = np.array([0, 255, 0])
-
-        # Only the the perimeter check if it is the input image
-        if True == False:
-            # Extract the road mask from the target
-            mask = np.zeros(image.shape)
-            mask[image == 3] = 1
-            b_size = int(constants.DIM_WIDTH * 0.05)
-
-            # Create b
-            b = np.ones((b_size, b_size))
-
-            # Calculate the road perimeter mask
-            # After testing, element-wise is significantly faster than a single
-            # statement for some reason.
-            target_mask = binary_dilation(mask, b)
-
-            # Remove the road so we get only the perimeter
-            target_mask[image == 3] = 0
-            inverted_mask = np.zeros(target_mask.shape)
-            inverted_mask[target_mask == 0] = 1
-
-            out[inverted_mask == 1] = np.array([0, 0, 255])
-        return out
+        image = image * 255
+        return image.astype('uint8')
 
     @staticmethod
     def _overlay_image(input_image, segmentation):
         """Overlays the segmentation on top of the input image.
 
+        This uses the overlay blend mode, taken from the wiki page at
+        <https://en.wikipedia.org/wiki/Blend_modes#Overlay>
+
         Args:
-            input_image (torch.Tensor): The input image as a tensor.
-            segmentation (numpy.array): Segmentation as a numpy array.
+            input_image (torch.Tensor): The input image as a tensor. This is
+                expected to be in the range [0, 255].
+            segmentation (numpy.array): Segmentation as a numpy array. This is
+                expected to be in the range [0, 255].
 
         Returns:
             numpy.array: The overlaid image as a numpy array.
         """
-        input_image = input_image.numpy()
-        output = np.transpose(input_image, (1, 2, 0))
-        output = np.maximum(output, segmentation)
-        return output.astype('uint8')
+        # First prepare base layer by turning it into numpy and transposing it.
+        base = np.transpose(input_image.numpy(), (1, 2, 0))
+        # Rename the segmentation var
+        top = segmentation
+
+        # Generate the boolean mask and output layer
+        mask = input_image >= 127
+        out = np.zeros_like(base)
+
+        # Now blend
+        out[~mask] = (2 * base * top)[~mask]
+        out[mask] = (255 - 2 * (255 - out) * (255 - top))[mask]
+
+        return out.astype('uint8')
 
 
 class TrainingGUI(TrainingUI):

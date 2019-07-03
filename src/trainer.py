@@ -286,7 +286,7 @@ class Trainer:
                     # encoding
                     self.ui.update_image(
                         target=self._target_to_one_hot(target_image[0]),
-                        generated=detached_out,
+                        generated=detached_out[0],
                         input_image=raw_image[0])
 
                 # Write to the plot file every step
@@ -455,10 +455,17 @@ class Trainer:
 
     @staticmethod
     def _target_to_one_hot(target_tensor):
-        """Converts target to a one_hot tensor, also removing road class."""
-        t0 = target_tensor[0]
-        one_hot = torch.zeros(t0.shape[0], t0.shape[1], 3)
-        return one_hot.scatter_(2, t0, 1)
+        """Converts target to a one_hot tensor, also removing road class.
+
+        Args:
+            target_tensor (torch.Tensor*): The tensor to be changed into one-hot
+                encoding. If taken from a batch, this should be a single image
+                and not the whole batch.
+        """
+        target_tensor = target_tensor.unsqueeze(2)
+        one_hot = torch.zeros(target_tensor.shape[0], target_tensor.shape[1], 3)
+        one_hot = one_hot.scatter_(2, target_tensor.to(dtype=torch.long), 1)
+        return one_hot
 
     def _load_dataset(self, data_path, augmentation, batch_size):
         """Loads a dataset and creates the data loader.
@@ -482,8 +489,7 @@ class Trainer:
 
         start_time = time.time()
         self._update_status("Loading {}.".format(dataset_name))
-        dataset = MapillaryDataset(path.join(data_path, "training"),
-                                            augmentation)
+        dataset = MapillaryDataset(data_path, augmentation)
         data_loader = DataLoader(dataset,
                                      batch_size,
                                      shuffle=True)

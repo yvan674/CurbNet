@@ -220,7 +220,8 @@ class Trainer:
                             .format(torch.cuda.device_count()))
         for epoch in range(num_epochs):
             # Figure out number of max steps for info displays
-            self.ui.set_max_values(len(training_loader), num_epochs)
+            max_steps = len(training_loader)
+            self.ui.set_max_values(max_steps, num_epochs)
 
             csv_data = []  # Reset the csv data list at every epoch start
 
@@ -294,6 +295,16 @@ class Trainer:
                                  "accuracy": accuracy,
                                  "validation loss": ""})
 
+                # Remove unnecessary tensors to save memory
+                del out
+                del detached_out
+                del target_image
+                del raw_image
+                del data
+
+            # Empty cache first
+            torch.cuda.empty_cache()
+
             # Do validation
             self._update_status("Started validation for epoch {}"
                                 .format(epoch + 1))
@@ -333,7 +344,8 @@ class Trainer:
                                     accuracy=accuracy,
                                     loss=loss.item(),
                                     rate=rate,
-                                    status_file_path=self.status_file_path)
+                                    status_file_path=self.status_file_path,
+                                    validation=True)
 
                 if data[0] + 1 == validation_iterations:
                     # Only do 10 steps for validation
@@ -356,8 +368,6 @@ class Trainer:
                 'model_state_dict': self.network.state_dict(),
                 'optimizer_state_dict':self.optimizer.state_dict()},
                        weights_path)
-
-        torch.cuda.empty_cache()
 
         self._update_status(
             "Finished training in {}.".format(datetime.timedelta(

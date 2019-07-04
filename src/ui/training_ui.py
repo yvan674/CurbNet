@@ -12,7 +12,8 @@ from abc import ABC, abstractmethod
 
 class TrainingUI(ABC):
     @abstractmethod
-    def update_data(self, step, epoch, accuracy, loss, rate, status_file_path):
+    def update_data(self, step, epoch, accuracy, loss, rate, status_file_path,
+                    validation=False):
         """Updates the strings within the UI.
 
         Args:
@@ -23,6 +24,8 @@ class TrainingUI(ABC):
             rate (float): The rate the network is running at in steps per
                           second.
             status_file_path (str): The path to save the status file to.
+            validation (bool): The state of the training, if it is in validation
+                or in training where False means training. Defaults to False.
         """
         pass
 

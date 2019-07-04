@@ -76,7 +76,8 @@ class Status(tk.Frame):
                            columnspan=2, padx=5, pady=5)
             counter += 1
 
-    def update_data(self, step, epoch, accuracy, loss, rate, status_file_path):
+    def update_data(self, step, epoch, accuracy, loss, rate, status_file_path,
+                    validation=False):
         """Updates the string-based information within the GUI.
 
         The information displayed by the GUI should be updated after every step
@@ -90,6 +91,8 @@ class Status(tk.Frame):
             rate (float): The rate the network is running at in steps per
                           second.
             status_file_path (str): The path to save the status file to.
+            validation (bool): The state of the training, if it is in validation
+                or in training where False means training. Defaults to False.
         """
         # Row 0 labels
         self.step_var.set("Step: {}/{}".format(step, self.max_step))
@@ -107,8 +110,14 @@ class Status(tk.Frame):
             time_left = "NaN"
         else:
             steps_total = float((self.max_step * self.max_epoch))
-            steps_done_this_epoch = float(step + 1)
+            # Add the validation steps
+            steps_total += float(10 * self.max_epoch)
+
+            steps_done_this_epoch = float(step + 1
+                                          + (validation * self.max_step))
+
             steps_times_epochs_done = float(self.max_step * (epoch - 1))
+
             steps_left = (steps_total - steps_done_this_epoch
                           - steps_times_epochs_done)
 
@@ -256,31 +265,12 @@ class ImageFrame(tk.Frame):
             input_image (torch.Tensor): The original image as a torch tensor
                 straight from the dataloader.
         """
-        img_array = self._class_to_image_array(segmentation)
-        img_array = self._screen_image(input_image, img_array)
+        img_array = self._screen_image(input_image, segmentation.numpy())
 
         img_array = Image.fromarray(img_array)
         img_array = img_array.resize((400, 300), Image.NEAREST)
         self.img = ImageTk.PhotoImage(image=img_array)
         self.canvas.itemconfig(self.canvas_img, image=self.img)
-
-    @staticmethod
-    def _class_to_image_array(image):
-        """Converts the ground truth segmentation to an image array.
-
-        This is its own function due to an older version requiring that the
-        input images be in indexed instead of one-hot encoding.
-
-        Args:
-            image (torch.Tensor): tensor array of classes in each pixel in the
-                                  shape [H, W]
-
-        Returns:
-            (np.array) in the form [H, W, Color].
-        """
-        image = image.numpy()
-
-        return image.astype('uint8')
 
     def _screen_image(self, input_image, segmentation):
         """Overlays the segmentation on top of the input image.
@@ -422,10 +412,11 @@ class TrainingGUI(TrainingUI):
         # Finally, lift the window to the top
         self._lift()
 
-    def update_data(self, step, epoch, accuracy, loss, rate, status_file_path):
+    def update_data(self, step, epoch, accuracy, loss, rate, status_file_path,
+                    validation=False):
         """Updates the string-based data in the GUI."""
         self.widgets[3].update_data(step, epoch, accuracy, loss, rate,
-                                    status_file_path)
+                                    status_file_path, validation)
         self.widgets[1].update_data(loss, accuracy)
         self._update()
 

@@ -48,7 +48,8 @@ class TrainingCmd(TrainingUI):
 
         self.progress_val = 0.
 
-    def update_data(self, step, epoch, accuracy, loss, rate, status_file_path):
+    def update_data(self, step, epoch, accuracy, loss, rate, status_file_path,
+                    validation=False):
         """Updates the strings within the UI.
 
         Args:
@@ -59,10 +60,15 @@ class TrainingCmd(TrainingUI):
             rate (float): The rate the network is running at in steps per
                           second.
             status_file_path (str): The path to save the status file to.
+            validation (bool): The state of the training, if it is in validation
+                or in training where False means training. Defaults to False.
         """
         # Calculate time left
         steps_total = float((self.max_step * self.max_epoch))
-        steps_done_this_epoch = float(step + 1)
+        # Add the validation steps
+        steps_total += float(10 * self.max_epoch)
+        steps_done_this_epoch = float(step + 1
+                                      + (validation * self.max_step))
         steps_times_epochs_done = float(self.max_step * (epoch - 1))
         running_step_count = steps_done_this_epoch + steps_times_epochs_done
         steps_left = (steps_total - running_step_count)

@@ -364,7 +364,10 @@ class Trainer:
 
                 # Delete stuff to save memory
                 del out
-                del out_image
+                try:
+                    del out_image
+                except NameError or UnboundLocalError:
+                    pass
                 del target_image
                 del data
                 del loss

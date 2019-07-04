@@ -331,7 +331,7 @@ class Trainer:
                                                       dtype=torch.long,
                                                       non_blocking=True))
 
-                sum_validation_loss += loss
+                sum_validation_loss += loss.item
 
                 counter += 1
 
@@ -344,7 +344,7 @@ class Trainer:
                 self.ui.update_data(step=data[0] + 1,
                                     epoch = epoch + 1,
                                     accuracy=accuracy,
-                                    loss=loss.item(),
+                                    loss=loss,
                                     rate=rate,
                                     status_file_path=self.status_file_path,
                                     validation=True)
@@ -353,7 +353,15 @@ class Trainer:
                     # Only do 10 steps for validation
                     # This is at the end to prevent any performance loss from
                     # loading unnecessary data
+                    del out
+                    del target_image
+                    del data
                     break
+
+                # Delete stuff to save memory
+                del out
+                del target_image
+                del data
 
             # Write validation loss
             validation_loss = sum_validation_loss / float(validation_iterations)

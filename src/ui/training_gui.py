@@ -417,7 +417,8 @@ class TrainingGUI(TrainingUI):
         """Updates the string-based data in the GUI."""
         self.widgets[3].update_data(step, epoch, accuracy, loss, rate,
                                     status_file_path, validation)
-        self.widgets[1].update_data(loss, accuracy)
+        if not validation:
+            self.widgets[1].update_data(loss, accuracy)
         self._update()
 
     def update_status(self, message):

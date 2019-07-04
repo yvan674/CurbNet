@@ -210,6 +210,7 @@ class Trainer:
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             self._update_status("Loaded model and optimizer weights. ({} ms)"
                                 .format(int((time.time() - start_time) * 1000)))
+            del checkpoint  # Free up memory
         else:
             self._update_status("Warning: Weights do not exist yet.")
 
@@ -245,7 +246,7 @@ class Trainer:
                 # Start post processing
                 # Create an argmax version here to avoid making it in the GUI
                 # class and since we need it for multiple things
-                out_argmax = torch.argmax(detached_out, dim=0)
+                out_argmax = torch.argmax(detached_out, dim=1)
                 out_image = self._process_out_for_gui(detached_out[0],
                                                       out_argmax[0])
 
@@ -314,6 +315,7 @@ class Trainer:
             self.network.eval()
             sum_validation_loss = 0
             validation_iterations = 10  # hard coded 10 iterations
+            num_validation_steps = 0
 
             # Actually do the validation
             for data in enumerate(validation_loader):
@@ -331,9 +333,10 @@ class Trainer:
                                                       dtype=torch.long,
                                                       non_blocking=True))
 
-                sum_validation_loss += loss.item
+                sum_validation_loss += loss.item()
 
                 counter += 1
+                num_validation_steps += 1
 
                 accuracy = self._calculate_batch_accuracy(target_image,
                                                           out.cpu().detach(),
@@ -356,20 +359,26 @@ class Trainer:
                     del out
                     del target_image
                     del data
+                    del loss
                     break
 
                 # Delete stuff to save memory
                 del out
+                del out_image
                 del target_image
                 del data
+                del loss
+                torch.cuda.empty_cache()
 
             # Write validation loss
-            validation_loss = sum_validation_loss / float(validation_iterations)
+            validation_loss = sum_validation_loss / float(num_validation_steps)
             csv_data[-1]["validation loss"] = validation_loss
 
-            self.ui.update_status("Finished validation with an average {:.3f} "
+            self._update_status("Finished validation with {:.3f} "
                                   "loss.".format(validation_loss))
 
+            # Put network back to training mode
+            self.network.train(not self.validation)
             # Write csv data
             self.tracker.write_data(csv_data)
 
@@ -439,9 +448,6 @@ class Trainer:
         # First turn the arrays into numpy arrays for processing
         ground_truth = ground_truth.numpy()
         predicted = predicted.numpy()
-
-        # Then get the arg max value from the prediction
-        predicted = predicted.transpose((1, 2, 0))
 
         # Calculate union
         union = np.count_nonzero(np.maximum(ground_truth, predicted))
@@ -538,13 +544,17 @@ class Trainer:
             torch.Tensor*: The tensor, processed as explained above.
         """
         out = torch.zeros_like(image)
-        for i in range(2):
-            mask = argmax == i + 1
-            out[i] = torch.where(mask, image[i + 1], out[i])
+        # Create a curbs mask
+        mask = argmax == 1
+        # Fill red with those in the mask
+        out[0] = torch.where(mask, image[1], out[2])
 
-        try:
-            del mask  # To save memory
-        except NameError:
-            pass
+        # Create a curb cuts mask
+        mask = argmax == 2
+        # Fill green with those in the mask
+        out[1] = torch.where(mask, image[2], out[2])
+
+        # Memory saving
+        del mask
 
         return out

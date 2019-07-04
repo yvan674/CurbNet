@@ -105,8 +105,6 @@ class PlotCSV:
 
     def close(self):
         """Writes any last lines, closes open files, and shows the plot."""
-        # Deal with the csv file
-        self.csv_writer.writerows(self.queued_lines)
         self.csv_file.close()
 
         # Deal with the log file

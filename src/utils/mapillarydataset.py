@@ -11,10 +11,10 @@ Authors:
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+from torchvision.transforms import Normalize
 from imgaug import augmenters as iaa
 from os.path import join, exists
 from PIL import Image
-from skimage import io
 import constants
 
 
@@ -158,6 +158,9 @@ class MapillaryDataset(Dataset):
                                         self.images[idx] + ".png"))
             segmented = np.array(segmented)
             segmented = self._process_segmented(segmented)
+
+        normalize = Normalize(constants.MEAN, constants.STD)
+        raw = normalize(raw)
 
         # Turn the selected file into a dict
         out = {

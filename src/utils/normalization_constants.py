@@ -14,6 +14,7 @@ from os.path import join
 from utils.mapillarydataset import MapillaryDataset
 from torch.utils.data.dataloader import DataLoader
 
+
 def process_folder(path, batch_size=32):
     """Computes the mean and standard deviation for images in a folder.
 
@@ -47,10 +48,15 @@ def process_folder(path, batch_size=32):
     # Now output the constants
     fp = join(path, "normalization_constants.txt")
     with open(fp, "w") as file:
-        file.writelines(["{}\n".format(mean),
-                         "{}\n".format(std)])
+        file.writelines(["{}\n".format(mean[0]),
+                         "{}\n".format(mean[1]),
+                         "{}\n".format(mean[2]),
+                         "{}\n".format(std[0]),
+                         "{}\n".format(std[1]),
+                         "{}\n".format(std[2])])
 
     print("Results written to {}".format(fp))
+
 
 def parse_arguments():
     """Parses arguments."""

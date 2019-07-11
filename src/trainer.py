@@ -15,6 +15,7 @@ Authors:
 # Torch imports
 import torch
 from torch.utils.data.dataloader import DataLoader
+from torchvision.transforms import Normalize
 
 # numpy
 import numpy as np
@@ -32,7 +33,8 @@ from ui.training_cmd import TrainingCmd
 from utils.mapillarydataset import MapillaryDataset
 from utils.plotcsv import PlotCSV
 from network.mce_loss import MCELoss
-from constants import VALIDATION_STEPS
+from constants import VALIDATION_STEPS, MEAN, STD
+from utils.unnormalize import UnNormalize
 
 # network imports
 from network.parallelizer import Parllelizer as Network
@@ -210,7 +212,8 @@ class Trainer:
         else:
             self._update_status("Warning: Weights do not exist yet.")
 
-
+        # Create unnorm transform
+        unnorm = UnNormalize(MEAN, STD)
         # Start training
         start_time = time.time()
         absolute_start_time = time.time()
@@ -244,8 +247,6 @@ class Trainer:
                 # Create an argmax version here to avoid making it in the GUI
                 # class and since we need it for multiple things
                 out_argmax = torch.argmax(detached_out, dim=1)
-                out_image = self._process_out_for_gui(detached_out[0],
-                                                      out_argmax[0])
 
                 target_image[target_image == 3] = 0
 
@@ -284,10 +285,12 @@ class Trainer:
                 if not self.cmd_line:
                     # Do processing to make the target_image into one-hot
                     # encoding
+                    out_image = self._process_out_for_gui(detached_out[0],
+                                                          out_argmax[0])
                     self.ui.update_image(
                         target=self._target_to_one_hot(target_image[0]),
                         generated=out_image,
-                        input_image=raw_image[0])
+                        input_image=unnorm(raw_image[0]))
 
                 # Write to the plot file every step
                 csv_data.append({"loss": loss_value,
@@ -334,6 +337,8 @@ class Trainer:
                 counter += 1
                 num_validation_steps += 1
 
+                detached_out = out.cput().detach()
+
                 accuracy = self._calculate_batch_accuracy(target_image,
                                                           out.cpu().detach(),
                                                           batch_size)
@@ -347,6 +352,18 @@ class Trainer:
                                     rate=rate,
                                     status_file_path=self.status_file_path,
                                     validation=True)
+                if not self.cmd_line:
+                    # Do processing to make the images into one-hot
+                    # encoding
+                    out_argmax = torch.argmax(detached_out, dim=1)
+                    out_image = self._process_out_for_gui(detached_out[0],
+                                                          out_argmax[0])
+
+                    target_image[target_image == 3] = 0
+                    self.ui.update_image(
+                        target=self._target_to_one_hot(target_image[0]),
+                        generated=out_image,
+                        input_image=unnorm(data[1]["raw"][0]))
 
                 if data[0] + 1 == VALIDATION_STEPS:
                     # Only do 10 steps for validation

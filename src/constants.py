@@ -7,6 +7,7 @@ import torch
 from sklearn.preprocessing import normalize
 
 
+
 DIM_WIDTH = 360  # Ideally, this would be 640 if it could fit in the GPU memory
 DIMENSIONS = (DIM_WIDTH, int(float(DIM_WIDTH) * .75))
 
@@ -27,3 +28,7 @@ NORMALIZED_INDICES = torch.from_numpy(np.array(NORMALIZED_INDICES))\
 
 # Validation steps
 VALIDATION_STEPS = 10
+
+# Normalization Constants
+MEAN = [106.0858154296875, 114.56893920898438, 116.83195495605469]
+STD = [61.87657928466797, 64.92855072021484, 70.99645233154297]

@@ -12,7 +12,7 @@ Authors:
 import argparse
 import matplotlib.pyplot as plt
 import tkinter as tk
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilenames
 import csv
 import numpy as np
 
@@ -50,10 +50,15 @@ class PlotIt:
         if plot_location is None:
             root = tk.Tk()
             root.withdraw()
-            file_name = askopenfilename()
+            file_names = askopenfilenames(filetypes=[('CSV files', '*.csv')])
+            file_names = root.tk.splitlist(file_names)
             root.destroy()
         else:
-            file_name = plot_location
+            file_names = plot_location
+
+        if file_names == "":
+            print("No file selected. Exiting program.")
+            return
 
         loss_data = []
         acc_data = []
@@ -62,28 +67,35 @@ class PlotIt:
         validation_index = []
 
         # Read csv data
-        with open(file_name, "r") as csv_file:
-            # Get csv as a list to iterate through
-            data = list(csv.reader(csv_file))
+        index_counter = 0
+        for file in file_names:
+            with open(file, "r") as csv_file:
+                # Get csv as a list to iterate through
+                data = list(csv.reader(csv_file))
 
-            if len(data[0]) == 3:
-                # If data has 3 columns, i.e. has validation loss
-                has_validation_loss = True
-                for i in range(1, len(data)):
-                    # using for i in range since we want the index
-                    loss_data.append(float(data[i][0]))
-                    acc_data.append(float(data[i][1]))
-                    if data[i][2] != '':
-                        # If the data has a validation loss value in that row
-                        validation_loss.append(data[i][2])
-                        validation_index.append(i)
+                if len(data[0]) == 3:
+                    # If data has 3 columns, i.e. has validation loss
+                    has_validation_loss = True
+                    for i in range(1, len(data)):
+                        # using for i in range since we want the index
+                        loss_data.append(float(data[i][0]))
+                        acc_data.append(float(data[i][1]))
+                        if data[i][2] != '':
+                            # If the data has a validation loss value in that
+                            # row
+                            validation_loss.append(float(data[i][2]))
+                            validation_index.append(index_counter)
+                        index_counter += 1
 
-            elif len(data[0]) == 2:
-                # Data doesn't have validity loss. Do it the old fashion way.
-                # Skip first row.
-                for row in data[1:]:
-                    loss_data.append(float(row[0]))
-                    acc_data.append(float(row[1]))
+                elif len(data[0]) == 2:
+                    # Data doesn't have validity loss. Do it the old fashion
+                    # way
+                    # Skip first row
+                    for row in data[1:]:
+                        loss_data.append(float(row[0]))
+                        acc_data.append(float(row[1]))
+                        index_counter += 1
+
 
         # Calculate their moving averages, ma = moving average
         ma_loss, ma_loss_idx = self._calculate_moving_average(loss_data, period)
@@ -93,7 +105,7 @@ class PlotIt:
         ma_acc = np.array(ma_acc)
         ma_acc = ma_acc * 100
         # Instantiate the subplots
-        fig, loss_axis = plt.subplots()
+        fig, loss_axis = plt.subplots(sharey="col")
 
         # Set window title
         fig.canvas.set_window_title('Loss and Accuracy Plot')
@@ -127,6 +139,7 @@ class PlotIt:
         lines = [acc_line, loss_line]
         labels = ["Accuracy", "Training Loss"]
 
+        # Add validation loss to legend if the data has validation loss
         if has_validation_loss:
             validation_color = 'tab:green'
             validation_line, = loss_axis.plot(validation_index,

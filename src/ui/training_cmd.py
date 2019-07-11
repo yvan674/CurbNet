@@ -8,6 +8,7 @@ Author:
 """
 from ui.training_ui import TrainingUI
 import datetime
+from constants import VALIDATION_STEPS
 try:
     import curses
 except ImportError:
@@ -101,7 +102,8 @@ class TrainingCmd(TrainingUI):
                          "Rate: {:.3f} steps/s\n".format(rate),
                          "Time left: {}\n".format(time_left)]
 
-                if step == self.max_step and epoch == self.max_epoch:
+                if step == VALIDATION_STEPS and epoch == self.max_epoch\
+                    and validation:
                     lines[5] = "Time left: -\n"
                     lines.append("Finished training.\n")
 

@@ -14,7 +14,6 @@ Authors:
 """
 # Torch imports
 import torch
-import torch.nn as nn
 from torch.utils.data.dataloader import DataLoader
 
 # numpy
@@ -33,6 +32,7 @@ from ui.training_cmd import TrainingCmd
 from utils.mapillarydataset import MapillaryDataset
 from utils.plotcsv import PlotCSV
 from network.mce_loss import MCELoss
+from constants import VALIDATION_STEPS
 
 # network imports
 from network.parallelizer import Parllelizer as Network
@@ -40,8 +40,6 @@ from network.curbnet_d import CurbNetD
 from network.curbnet_e import CurbNetE
 from network.curbnet_f import CurbNetF
 from network.curbnet_g import CurbNetG
-
-# import network.postprocessing as post
 
 
 class Trainer:
@@ -176,7 +174,6 @@ class Trainer:
             raise RuntimeError("No network has been set.")
         # Stat variables
         counter = 0
-        rate = 0
 
         self.tracker.configure({
             "plot path": plot_path,
@@ -200,7 +197,6 @@ class Trainer:
                                                          "validation"),
                                                augmentation,
                                                batch_size)
-
 
         # Load the state dictionary
         start_time = time.time()
@@ -314,7 +310,6 @@ class Trainer:
             # Set to evaluation mode
             self.network.eval()
             sum_validation_loss = 0
-            validation_iterations = 10  # hard coded 10 iterations
             num_validation_steps = 0
 
             # Actually do the validation
@@ -345,14 +340,14 @@ class Trainer:
                 rate = float(counter) / (time.time() - start_time)
 
                 self.ui.update_data(step=data[0] + 1,
-                                    epoch = epoch + 1,
+                                    epoch=epoch + 1,
                                     accuracy=accuracy,
                                     loss=loss,
                                     rate=rate,
                                     status_file_path=self.status_file_path,
                                     validation=True)
 
-                if data[0] + 1 == validation_iterations:
+                if data[0] + 1 == VALIDATION_STEPS:
                     # Only do 10 steps for validation
                     # This is at the end to prevent any performance loss from
                     # loading unnecessary data
@@ -378,7 +373,7 @@ class Trainer:
             csv_data[-1]["validation loss"] = validation_loss
 
             self._update_status("Finished validation with {:.3f} "
-                                  "loss.".format(validation_loss))
+                                "loss.".format(validation_loss))
 
             # Put network back to training mode
             self.network.train(not self.validation)
@@ -388,8 +383,8 @@ class Trainer:
             # Save the weights every epoch
             torch.save({
                 'model_state_dict': self.network.state_dict(),
-                'optimizer_state_dict':self.optimizer.state_dict()},
-                       weights_path)
+                'optimizer_state_dict': self.optimizer.state_dict()},
+                weights_path)
 
         self._update_status(
             "Finished training in {}.".format(datetime.timedelta(
@@ -500,7 +495,7 @@ class Trainer:
         """Loads a dataset and creates the data loader.
 
         Args:
-            path (str): The path of the mapillary folder.
+            data_path (str): The path of the mapillary folder.
             augmentation (bool): Augment the images or not.
             batch_size (int): Size of each batch
 
@@ -520,8 +515,8 @@ class Trainer:
         self._update_status("Loading {}.".format(dataset_name))
         dataset = MapillaryDataset(data_path, augmentation)
         data_loader = DataLoader(dataset,
-                                     batch_size,
-                                     shuffle=True)
+                                 batch_size,
+                                 shuffle=True)
 
         self._update_status("{} loaded. ({} ms)".format(
             dataset_name.capitalize(),

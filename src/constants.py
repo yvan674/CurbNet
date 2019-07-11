@@ -24,3 +24,6 @@ for axis in index_array:
 # Combine the axes back into a single np array
 NORMALIZED_INDICES = torch.from_numpy(np.array(NORMALIZED_INDICES))\
     .to(dtype=torch.float, device=DEVICE)
+
+# Validation steps
+VALIDATION_STEPS = 10

@@ -24,6 +24,7 @@ from matplotlib.figure import Figure
 from matplotlib.ticker import FormatStrFormatter
 
 from ui.training_ui import TrainingUI
+from constants import VALIDATION_STEPS
 
 
 class Status(tk.Frame):
@@ -127,8 +128,9 @@ class Status(tk.Frame):
         self.time_var.set("Time left: {}".format(time_left))
 
         # Now write the status file
-        if step % 10 == 0 or (step == self.max_step
-                              and epoch == self.max_epoch):
+        if step % 10 == 0 or (step == VALIDATION_STEPS
+                              and epoch == self.max_epoch
+                              and validation):
             with open(status_file_path, 'w') as status_file:
                 lines = ["Step: {}/{}\n".format(step, self.max_step),
                          "Epoch: {}/{}\n".format(epoch, self.max_epoch),
@@ -137,7 +139,8 @@ class Status(tk.Frame):
                          "Rate: {:.3f} steps/s\n".format(rate),
                          "Time left: {}\n".format(time_left)]
 
-                if step == self.max_step and epoch == self.max_epoch:
+                if step == VALIDATION_STEPS and epoch == self.max_epoch\
+                        and validation:
                     lines[5] = "Time left: -\n"
                     lines.append("Finished training.\n")
 

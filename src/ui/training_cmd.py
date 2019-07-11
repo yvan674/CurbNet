@@ -72,7 +72,7 @@ class TrainingCmd(TrainingUI):
         self.step_var = "Step: {} / {}".format(step, self.max_step)
         self.epoch_var = "Epoch: {}/ {}".format(epoch, self.max_epoch)
         self.loss_var = "Loss: {:.3f}".format(loss)
-        self.acc_var = "Accuracy: {:.3f}%".format(accuracy)
+        self.acc_var = "Accuracy: {:.3f}%".format(accuracy * 100.)
         self.rate_var = "Rate: {:.3f} Steps/s".format(rate)
         self.time_var = "Time left: {}".format(time_left)
 

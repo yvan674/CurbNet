@@ -9,6 +9,7 @@ Author:
 from ui.training_ui import TrainingUI
 import datetime
 from constants import VALIDATION_STEPS
+from ui.data_processor import process_data
 try:
     import curses
 except ImportError:
@@ -64,21 +65,9 @@ class TrainingCmd(TrainingUI):
             validation (bool): The state of the training, if it is in validation
                 or in training where False means training. Defaults to False.
         """
-        # Calculate time left
-        steps_total = float((self.max_step * self.max_epoch))
-        # Add the validation steps
-        steps_total += float(10 * self.max_epoch)
-        steps_done_this_epoch = float(step + 1
-                                      + (validation * self.max_step))
-        steps_times_epochs_done = float(self.max_step * (epoch - 1))
-        running_step_count = steps_done_this_epoch + steps_times_epochs_done
-        steps_left = (steps_total - running_step_count)
-
-        if rate == 0:
-            time_left = "NaN"
-        else:
-            time_left = int(steps_left / rate)
-            time_left = str(datetime.timedelta(seconds=time_left))
+        time_left, running_step_count, steps_total = process_data(
+            step, epoch, accuracy, loss, rate, status_file_path, validation,
+            self.max_step, self.max_epoch, VALIDATION_STEPS)
 
         self.step_var = "Step: {} / {}".format(step, self.max_step)
         self.epoch_var = "Epoch: {}/ {}".format(epoch, self.max_epoch)
@@ -90,24 +79,6 @@ class TrainingCmd(TrainingUI):
         # Progress value
         self.progress_val = float((float(running_step_count)
                                    / float(steps_total)))
-
-        # Now write the status file
-        if step % 10 == 0 or (
-                step == self.max_step and epoch == self.max_epoch):
-            with open(status_file_path, 'w') as status_file:
-                lines = ["Step: {}/{}\n".format(step, self.max_step),
-                         "Epoch: {}/{}\n".format(epoch, self.max_epoch),
-                         "Accuracy: {:.2f}%\n".format(accuracy * 100),
-                         "Loss: {:.3f}\n".format(loss),
-                         "Rate: {:.3f} steps/s\n".format(rate),
-                         "Time left: {}\n".format(time_left)]
-
-                if step == VALIDATION_STEPS and epoch == self.max_epoch\
-                    and validation:
-                    lines[5] = "Time left: -\n"
-                    lines.append("Finished training.\n")
-
-                status_file.writelines(lines)
 
         self._update_screen()
 

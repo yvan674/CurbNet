@@ -24,6 +24,7 @@ from matplotlib.figure import Figure
 from matplotlib.ticker import FormatStrFormatter
 
 from ui.training_ui import TrainingUI
+from ui.data_processor import process_data
 from constants import VALIDATION_STEPS
 
 
@@ -95,6 +96,13 @@ class Status(tk.Frame):
             validation (bool): The state of the training, if it is in validation
                 or in training where False means training. Defaults to False.
         """
+        # Calculate time left and write to the status file
+        time_left, _, _ = process_data(step, epoch, accuracy, loss, rate,
+                                       status_file_path, validation,
+                                       self.max_step, self.max_epoch,
+                                       VALIDATION_STEPS)
+        del _  # Cleaning up
+
         # Row 0 labels
         self.step_var.set("Step: {}/{}".format(step, self.max_step))
         self.epoch_var.set("Epoch: {}/{}".format(epoch, self.max_epoch))
@@ -106,45 +114,7 @@ class Status(tk.Frame):
         # Row 2 labels
         self.rate_var.set("Rate: {:.3f} steps/sec".format(rate))
 
-        # Calculate time left
-        if rate == 0:
-            time_left = "NaN"
-        else:
-            steps_total = float((self.max_step * self.max_epoch))
-            # Add the validation steps
-            steps_total += float(10 * self.max_epoch)
-
-            steps_done_this_epoch = float(step + 1
-                                          + (validation * self.max_step))
-
-            steps_times_epochs_done = float(self.max_step * (epoch - 1))
-
-            steps_left = (steps_total - steps_done_this_epoch
-                          - steps_times_epochs_done)
-
-            time_left = int(steps_left / rate)
-            time_left = str(datetime.timedelta(seconds=time_left))
-
         self.time_var.set("Time left: {}".format(time_left))
-
-        # Now write the status file
-        if step % 10 == 0 or (step == VALIDATION_STEPS
-                              and epoch == self.max_epoch
-                              and validation):
-            with open(status_file_path, 'w') as status_file:
-                lines = ["Step: {}/{}\n".format(step, self.max_step),
-                         "Epoch: {}/{}\n".format(epoch, self.max_epoch),
-                         "Accuracy: {:.2f}%\n".format(accuracy * 100),
-                         "Loss: {:.3f}\n".format(loss),
-                         "Rate: {:.3f} steps/s\n".format(rate),
-                         "Time left: {}\n".format(time_left)]
-
-                if step == VALIDATION_STEPS and epoch == self.max_epoch\
-                        and validation:
-                    lines[5] = "Time left: -\n"
-                    lines.append("Finished training.\n")
-
-                status_file.writelines(lines)
 
     def update_status(self, message):
         """Updates the status message within the GUI.

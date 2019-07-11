@@ -210,36 +210,6 @@ class Trainer:
         else:
             self._update_status("Warning: Weights do not exist yet.")
 
-        # Compute batch mean and std
-        start_time = time.time()
-        mean = 0.
-        std = 0.
-        total = float(len(training_loader.dataset))
-        self._update_status("Computing mean and standard deviation.")
-        for data in enumerate(training_loader):
-            batch_samples = data[1]["raw"].size(0)
-            images = data[1]["raw"].view(batch_samples,
-                                         data[1]["raw"].size(1), -1)
-            mean += images.mean(2).sum(0)
-            std += images.std(2).sum(0)
-
-        mean /= total
-        std /= total
-
-        # Clean up
-        try:
-            del data
-        except NameError or UnboundLocalError:
-            pass
-        try:
-            del images
-        except NameError or UnboundLocalError:
-            pass
-        del total
-
-        self._update_status("Done computing in {}\n    mean: {}\n    std:   {}"
-                            .format(int((time.time() - start_time) * 1000),
-                                    mean, std))
 
         # Start training
         start_time = time.time()

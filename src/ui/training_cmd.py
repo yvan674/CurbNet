@@ -8,7 +8,6 @@ Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
 from ui.training_ui import TrainingUI
-import datetime
 from constants import VALIDATION_STEPS
 from ui.data_processor import process_data
 try:

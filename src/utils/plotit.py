@@ -22,13 +22,22 @@ def parse_args():
     description = "Plots loss data from DriveNet"
     parser = argparse.ArgumentParser(description=description)
 
+    parser.add_argument('-l', '--loss', action='store_false',
+                        help='do not display the loss')
+    parser.add_argument('-a', '--accuracy', action='store_false',
+                        help='do not display the accuracy')
+    parser.add_argument('-v', '--validation-loss', action='store_false',
+                        help='do not display the validation loss')
     parser.add_argument('path', metavar='P', type=str, nargs='?',
                         help='path of the loss data to be plotted.')
+    parser.add_argument('period', metavar='T', type=int, nargs='?',
+                        help='period of the moving average calculation')
     return parser.parse_args()
 
 
 class PlotIt:
-    def __init__(self, plot_location=None, period=100):
+    def __init__(self, loss_bool, accuracy_bool, validation_bool,
+                 plot_location=None, period=100):
         """Generates plot of loss function from .csv file.
 
         The plot gives the moving average over a number of iterations of both
@@ -41,6 +50,9 @@ class PlotIt:
         validation loss.
 
         Args:
+            loss_bool (bool): Whether or not to plot the loss.
+            accuracy_bool (bool): Whether or not to plot the accuracy.
+            validation_bool (bool): Whether or not to plot the validation loss.
             plot_location (str): The path of the loss file to be plotted. Is
                 none is given, then a file selector window will open. Defaults
                 to None.
@@ -126,21 +138,25 @@ class PlotIt:
         # X label not necessary due to sharing it with loss_axis
         acc_axis.set_ylabel('accuracy (%)')
 
-        # Plot in order
-        acc_line, = acc_axis.plot(ma_acc_idx,
-                                  ma_acc,
-                                  color=acc_color)
-        loss_line, = loss_axis.plot(ma_loss_idx,
-                                    ma_loss,
-                                    color=loss_color)
-
-
         # Set up legend
-        lines = [acc_line, loss_line]
-        labels = ["Accuracy", "Training Loss"]
+        lines = []
+        labels = []
+        # Plot in order
+        if accuracy_bool:
+            acc_line, = acc_axis.plot(ma_acc_idx,
+                                      ma_acc,
+                                      color=acc_color)
+            lines.append(acc_line)
+            labels.append("Accuracy")
+        if loss_bool:
+            loss_line, = loss_axis.plot(ma_loss_idx,
+                                        ma_loss,
+                                        color=loss_color)
+            lines.append(loss_line)
+            labels.append("Training Loss")
 
         # Add validation loss to legend if the data has validation loss
-        if has_validation_loss:
+        if has_validation_loss and validation_bool:
             validation_color = 'tab:green'
             validation_line, = loss_axis.plot(validation_index,
                                               validation_loss,
@@ -202,5 +218,6 @@ class PlotIt:
 
 if __name__ == "__main__":
     print("hi im nina")
-    arguments = parse_args()
-    PlotIt(arguments.path)
+    args = parse_args()
+    PlotIt(args.loss, args.accuracy, args.validation_loss, args.path,
+           args.period)

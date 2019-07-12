@@ -50,15 +50,17 @@ class Trainer:
         """Training class used to train the CurbNetG network.
 
         Args:
-            lr (float): Learning rate of the network
-            optimizer (str): The optimizer to be used. Defaults to sgd.
+            lr: Learning rate of the network
+            optimizer: The optimizer to be used. Defaults to sgd.
             Possible optimizers are:
                 - sgd: Stochastic Gradient Descent.
                 - Adam: Adaptive moment estimation.
-            loss_weights (list): A list of floats with length 3 that are the
-            weight values for each class used by the loss function.
-            cmd_line (curses.window): Whether or not to use the command line
+            loss_weights: A list of floats with length 3 that are the
+                weight values for each class used by the loss function.
+            cmd_line: Whether or not to use the command line
                 interface. Defaults to None.
+            silent: Whether or not to immediately quit upon completion. Defaults
+                to false.
         """
         self.validation = validation
         self.network = None
@@ -156,7 +158,7 @@ class Trainer:
                                  "optimizers are currently supported.")
 
     def train(self, data_path, batch_size, num_epochs, plot_path, weights_path,
-              augmentation=True):
+              augmentation = True, silent = False):
         """Start training the network.
 
         Args:
@@ -170,6 +172,8 @@ class Trainer:
             weights_path (str): The path to the weights.
             augmentation (bool): Whether or not to use augmentation. Defaults to
                 True.
+            silent (bool): Whether or not to immediately quit after finishing.
+                Immediately quits if True. Defaults to False.
 
         Returns:
             None
@@ -363,10 +367,6 @@ class Trainer:
 
                 # Delete stuff to save memory
                 del out
-                try:
-                    del out_image
-                except NameError or UnboundLocalError:
-                    pass
                 del target_image
                 del data
                 del loss
@@ -397,16 +397,17 @@ class Trainer:
         # Now save the loss and accuracy file
         self.tracker.close()
 
-        if self.cmd_line:
-            # Keep command line window open
-            key = self.cmd_line.getch()
-            if key == ord('q'):
-                self.cmd_line.clear()
-                return
+        if not silent:
+            if self.cmd_line:
+                # Keep command line window open
+                key = self.cmd_line.getch()
+                if key == ord('q'):
+                    self.cmd_line.clear()
+                    return
 
-        else:
-            # Keep TK window open
-            self.ui.mainloop()
+            else:
+                # Keep TK window open
+                self.ui.mainloop()
 
     def _calculate_batch_accuracy(self, ground_truth, predicted, batch_size):
         """Calculates accuracy of the batch using intersection over union.

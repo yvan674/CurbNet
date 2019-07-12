@@ -334,7 +334,7 @@ class Trainer:
                 counter += 1
                 num_validation_steps += 1
 
-                detached_out = out.cput().detach()
+                detached_out = out.cpu().detach()
 
                 accuracy = self._calculate_batch_accuracy(target_image,
                                                           out.cpu().detach(),

@@ -261,13 +261,15 @@ class ImageFrame(tk.Frame):
         Returns:
             numpy.array: The overlaid image as a numpy array.
         """
+        red_boost = 0.
+        green_boost = 0.
         # First prepare base layer by turning it into numpy and rescaling it to
         # the range [0, 1].
         input_image = input_image.numpy().astype(float)
 
         # Then give it an alpha layer. Hacky but I'm too tired to think.
         base = np.full((4, input_image.shape[1], input_image.shape[2]), 1.)
-        base[0:3] = input_image / 255
+        base[0:3] = input_image / 255.
 
         # Finally tranpose it to [H x W x C]
         base = np.transpose(base, (1, 2, 0))
@@ -288,6 +290,9 @@ class ImageFrame(tk.Frame):
         # First make the red layer, aka curbs
         red = np.zeros(rgba_shape)
         red[0] = filled_array
+        mask = segmentation[1] != 0
+        # Boost the signal
+        segmentation[1][mask] = segmentation[1][mask] + red_boost
         red[3] = segmentation[1]
         # And transpose it
         red = np.transpose(red, (1, 2, 0))
@@ -295,14 +300,20 @@ class ImageFrame(tk.Frame):
         # Then make the green layer, aka curb cuts
         green = np.zeros(rgba_shape)
         green[1] = filled_array
+        mask = segmentation[2] != 0
+        # Boost the signal
+        segmentation[2][mask] = segmentation[2][mask] + green_boost
         green[3] = segmentation[2]
         # And transpose it
         green = np.transpose(green, (1, 2, 0))
 
+        # Cleanup
+        del mask
+
         # Now we have base, red, red alpha, green, green alpha. Time to blend.
         out = self._screen(base, red, 1.)
         out = self._screen(out, green, .75)  # 1. is too bright so we use .75
-        return (out * 255).astype('uint8')
+        return (np.clip(out, None, 1.) * 255).astype('uint8')
 
     @staticmethod
     def _screen(base, top, alpha):

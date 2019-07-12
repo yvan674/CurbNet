@@ -15,7 +15,6 @@ Authors:
 # Torch imports
 import torch
 from torch.utils.data.dataloader import DataLoader
-from torchvision.transforms import Normalize
 
 # numpy
 import numpy as np
@@ -105,6 +104,9 @@ class Trainer:
 
         # Creates logging tracker
         self.tracker = PlotCSV()
+
+        # Create unnorm transform
+        self.unnorm = UnNormalize(MEAN, STD)
 
     def set_network(self, network: str = "d", pretrained=False,
                     px_coordinates=True):
@@ -212,8 +214,6 @@ class Trainer:
         else:
             self._update_status("Warning: Weights do not exist yet.")
 
-        # Create unnorm transform
-        unnorm = UnNormalize(MEAN, STD)
         # Start training
         start_time = time.time()
         absolute_start_time = time.time()
@@ -282,15 +282,8 @@ class Trainer:
                                     rate=rate,
                                     status_file_path=self.status_file_path)
 
-                if not self.cmd_line:
-                    # Do processing to make the target_image into one-hot
-                    # encoding
-                    out_image = self._process_out_for_gui(detached_out[0],
-                                                          out_argmax[0])
-                    self.ui.update_image(
-                        target=self._target_to_one_hot(target_image[0]),
-                        generated=out_image,
-                        input_image=unnorm(raw_image[0]))
+                self._update_gui_image(detached_out[0], out_argmax[0],
+                                       target_image[0], raw_image[0])
 
                 # Write to the plot file every step
                 csv_data.append({"loss": loss_value,
@@ -352,18 +345,11 @@ class Trainer:
                                     rate=rate,
                                     status_file_path=self.status_file_path,
                                     validation=True)
-                if not self.cmd_line:
-                    # Do processing to make the images into one-hot
-                    # encoding
-                    out_argmax = torch.argmax(detached_out, dim=1)
-                    out_image = self._process_out_for_gui(detached_out[0],
-                                                          out_argmax[0])
 
-                    target_image[target_image == 3] = 0
-                    self.ui.update_image(
-                        target=self._target_to_one_hot(target_image[0]),
-                        generated=out_image,
-                        input_image=unnorm(data[1]["raw"][0]))
+                self._update_gui_image(detached_out[0],
+                                       torch.argmax(detached_out[0], dim=1),
+                                       target_image[0],
+                                       data[1]["raw"][0])
 
                 if data[0] + 1 == VALIDATION_STEPS:
                     # Only do 10 steps for validation
@@ -413,7 +399,10 @@ class Trainer:
 
         if self.cmd_line:
             # Keep command line window open
-            self.cmd_line.getch()
+            key = self.cmd_line.getch()
+            if key == ord('q'):
+                self.cmd_line.clear()
+                return
 
         else:
             # Keep TK window open
@@ -542,8 +531,21 @@ class Trainer:
 
         return data_loader
 
+    def _update_gui_image(self, predicted, predicted_argmax, target, raw):
+        """Updates the GUI with the new set of images."""
+        if not self.cmd_line:
+            # Do processing to make the target_image into one-hot
+            # encoding
+            target = self._target_to_one_hot(target)
+            predicted = self._process_out_for_gui(predicted, predicted_argmax)
+
+            self.ui.update_image(
+                target=target,
+                generated=predicted,
+                input_image=self.unnorm(raw))
+
     @staticmethod
-    def _process_out_for_gui(image, argmax):
+    def _process_out_for_gui(prediction, argmax):
         """Processes out for GUI by selecting only max values.
 
         Since the GUI should only show colors for max values, if we feed the
@@ -553,22 +555,23 @@ class Trainer:
         [0.2, 0.5, 0.1], then we turn that into [0., 0.5, 0.]
 
         Args:
-             image (torch.Tensor*): The image tensor in the form [C x H x W].
+             prediction (torch.Tensor*): The output tensor from the network
+                in the form [C x H x W].
              argmax (torch.Tensor*): The indices of the maximum values.
 
         Returns:
             torch.Tensor*: The tensor, processed as explained above.
         """
-        out = torch.zeros_like(image)
+        out = torch.zeros_like(prediction)
         # Create a curbs mask
         mask = argmax == 1
         # Fill red with those in the mask
-        out[0] = torch.where(mask, image[1], out[2])
+        out[0] = torch.where(mask, prediction[1], out[2])
 
         # Create a curb cuts mask
         mask = argmax == 2
         # Fill green with those in the mask
-        out[1] = torch.where(mask, image[2], out[2])
+        out[1] = torch.where(mask, prediction[2], out[2])
 
         # Memory saving
         del mask

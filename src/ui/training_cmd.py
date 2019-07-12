@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Training Command Line.
 
 Enables training through a command-line interface. This allows for training to

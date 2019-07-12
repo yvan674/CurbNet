@@ -34,7 +34,8 @@ def process_data(step, epoch, accuracy, loss, rate, status_file_path,
         steps_done_this_epoch = float(step + 1
                                       + (validation * max_step))
 
-        steps_times_epochs_done = float(max_step * (epoch - 1))
+        steps_times_epochs_done = float(max_step * (epoch - 1)
+                                        + validation_steps * (epoch - 1))
 
         running_step_count = steps_done_this_epoch + steps_times_epochs_done
 

@@ -94,4 +94,4 @@ def run_training(arguments):
             with open(join(getcwd(), "traceback.txt"), mode="w") as file:
                 traceback.print_exc(file=file)
 
-            Slacker.send_message("Exception encountered", exception_encountered)
+            Slacker.send_code("Exception encountered", exception_encountered)

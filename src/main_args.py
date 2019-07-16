@@ -134,9 +134,6 @@ def parse_arguments():
     parser.add_argument('-c', '--cmd-line', action='store_true',
                         help="runs the program in command line mode using "
                              "curses. Used for remote training.")
-    parser.add_argument('-e', '--email', type=str, nargs='?',
-                        help="email address to send errors to if an error "
-                             "occurs")
 
     arguments = parser.parse_args()
 

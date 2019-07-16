@@ -17,6 +17,8 @@ import tkinter as tk
 import numpy as np
 from PIL import ImageTk, Image
 import sys
+import traceback
+
 # matplotlib imports
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -433,6 +435,7 @@ class TrainingGUI(TrainingUI):
             self.root.update_idletasks()
         except tk.TclError:
             # Enable safe exit
+            traceback.clear_frames(sys.exc_info()[2])
             sys.exit()
 
     def _lift(self):

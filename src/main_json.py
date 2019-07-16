@@ -75,8 +75,7 @@ def parse_json(file_path):
            'px_coordinates': True,
            'augment': True,
            'cmd_line': False,
-           'plot': join(getcwd(), "plot"),
-           'email': None}
+           'plot': join(getcwd(), "plot")}
 
     out[json_config['mode']] = json_config['data path']
 
@@ -107,9 +106,6 @@ def parse_json(file_path):
                       "working directory.", UserWarning)
     else:
         out['plot'] = json_config['plot']
-
-    if "email" in json_config:
-        out['email'] = json_config['email']
 
     return out
 

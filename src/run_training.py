@@ -8,6 +8,9 @@ Author:
 from platform import system
 from trainer import Trainer
 from utils.slacker import Slacker
+
+from os import getcwd
+from os.path import join
 import warnings
 import traceback
 
@@ -30,9 +33,6 @@ def run_training(arguments):
     """
     # Get the curses window ready by setting it to None
     stdscr = None
-
-    # Setup email for alerts
-    email_address = arguments['email']
 
     try:
         if arguments["cmd_line"]:
@@ -85,6 +85,13 @@ def run_training(arguments):
                 pass
             curses.endwin()
 
-        print("I died.")
-        exception_encountered = traceback.format_exc()
-        Slacker.send_message("Exception encountered", exception_encountered)
+        exception_encountered = traceback.format_exc(0)
+        if "SystemExit" in exception_encountered:
+             return
+
+        else:
+            print("I Died")
+            with open(join(getcwd(), "traceback.txt"), mode="w") as file:
+                traceback.print_exc(file=file)
+
+            Slacker.send_message("Exception encountered", exception_encountered)

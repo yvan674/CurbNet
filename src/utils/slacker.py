@@ -21,6 +21,7 @@ class Slacker:
             message (str): The message body.
         """
         bot_token = "xoxb-698100624807-696255003584-ek6Oqxm6c5ugHZRwuJhFKSCN"
+        message = "```\n{}\n```".format(message)
 
         blocks = [
                 {
@@ -35,7 +36,7 @@ class Slacker:
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": "```" + message + "```"
+                        "text": message
                     }
                 }
             ]

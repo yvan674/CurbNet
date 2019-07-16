@@ -1,0 +1,10 @@
+{
+    "weights": "/home/satyaway/Documents/Thesis/Weights/regularized.pth",
+    "mode": "train",
+    "data path": "/tmp/mapillary-resized/",
+    "batch_size": 32,
+    "epochs": 10,
+    "learning_rate": 0.0002,
+    "command line": false,
+    "plot": "/home/satyaway/Documents/Thesis/Logs"
+}

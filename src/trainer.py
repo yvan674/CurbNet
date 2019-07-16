@@ -66,7 +66,7 @@ class Trainer:
         self.network = None
         if loss_weights is None:
             # To avoid mutable default values
-            loss_weights = [0.00583, 0.49516, 0.49902]
+            loss_weights = [0.005, 0.3000, 0.695]
             # Now normalize loss weights to account for 3x multiplication of
             # penalized weights
             # This was removed because I think it may have caused nan errors

@@ -36,8 +36,8 @@ def parse_args():
 
 
 class PlotIt:
-    def __init__(self, loss_bool, accuracy_bool, validation_bool,
-                 plot_location=None, period=100):
+    def __init__(self, period, loss_bool=True, accuracy_bool=True,
+                 validation_bool=True, plot_location=None):
         """Generates plot of loss function from .csv file.
 
         The plot gives the moving average over a number of iterations of both
@@ -50,15 +50,20 @@ class PlotIt:
         validation loss.
 
         Args:
-            loss_bool (bool): Whether or not to plot the loss.
-            accuracy_bool (bool): Whether or not to plot the accuracy.
+            period (int): The period of the moving average calculation. Defaults
+                to 100.
+            loss_bool (bool): Whether or not to plot the loss. Defaults to True.
+            accuracy_bool (bool): Whether or not to plot the accuracy. Defaults
+                to True.
             validation_bool (bool): Whether or not to plot the validation loss.
+                Defaults to True.
             plot_location (str): The path of the loss file to be plotted. Is
                 none is given, then a file selector window will open. Defaults
                 to None.
-            period (int): The period of the moving average calculation. Defaults
-                to 10.
         """
+        if period is None or period == "":
+            period = 100
+
         if plot_location is None:
             root = tk.Tk()
             root.withdraw()
@@ -66,7 +71,10 @@ class PlotIt:
             file_names = root.tk.splitlist(file_names)
             root.destroy()
         else:
-            file_names = plot_location
+            if type(plot_location) != list:
+                file_names = [plot_location]
+            else:
+                file_names = plot_location
 
         if file_names == "":
             print("No file selected. Exiting program.")
@@ -219,5 +227,5 @@ class PlotIt:
 if __name__ == "__main__":
     print("hi im nina")
     args = parse_args()
-    PlotIt(args.loss, args.accuracy, args.validation_loss, args.path,
-           args.period)
+    PlotIt(args.period, args.loss, args.accuracy, args.validation_loss,
+           args.path)

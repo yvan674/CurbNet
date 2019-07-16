@@ -16,8 +16,7 @@ References:
 import tkinter as tk
 import numpy as np
 from PIL import ImageTk, Image
-import datetime
-
+import sys
 # matplotlib imports
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -363,6 +362,9 @@ class TrainingGUI(TrainingUI):
         self.root.configure(background="#282c34")
         self.root.resizable(False, False)
 
+        # Enable safe exit
+        # self.root.protocol("WM_DELETE_WINDOW", self.exit_program)
+
         # Configure the grid and geometry
         # ----------------------------------------------------------
         # |                            |                           |
@@ -422,7 +424,16 @@ class TrainingGUI(TrainingUI):
     def _update(self):
         """Internal update call that shortens 2 lines to one."""
         self.root.update()
-        self.root.update_idletasks()
+
+        # Since we can only detect if the root has been destroyed after
+        # update(), then we have to use a try except block to make sure that we
+        # don't try to update idle tasks after root has been destroyed and to
+        # instead just kill the process.
+        try:
+            self.root.update_idletasks()
+        except tk.TclError:
+            # Enable safe exit
+            sys.exit()
 
     def _lift(self):
         """Brings the tkinter window to the front.

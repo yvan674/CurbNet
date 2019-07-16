@@ -10,7 +10,6 @@ try:
 except ImportError:
     slack = None
 import os
-import datetime
 
 
 class Slacker:
@@ -90,26 +89,3 @@ class Slacker:
             channel="#general",
             blocks=blocks,
         )
-
-
-if __name__ == '__main__':
-    time_left = datetime.timedelta(days=2)
-    finish_at = datetime.datetime.now() + time_left
-    finish_at = finish_at.strftime("%a, %d %b, %I:%M:%S %p")
-
-    lines = ["Step: {}/{}\n".format(5, 472),
-             "Epoch: {}/{}\n".format(2, 200),
-             "Accuracy: {:.2f}%\n".format(.88521 * 100),
-             "Loss: {:.3f}\n".format(.2125),
-             "Rate: {:.3f} steps/s\n".format(8.2574),
-             "Time left: {}\n".format(str(time_left)),
-             "Finishes at: {}\n".format(finish_at)
-             ]
-
-    output_text = ""
-    for line in lines:
-        output_text += line
-
-    print(output_text)
-    Slacker.send_message(output_text,
-                         "Update: Finished epoch {}".format(1))

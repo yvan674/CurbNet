@@ -86,7 +86,8 @@ def run_training(arguments):
             curses.endwin()
 
         exception_encountered = traceback.format_exc(0)
-        if "SystemExit" in exception_encountered:
+        if "SystemExit" in exception_encountered \
+                or "KeyboardInterrupt" in exception_encountered:
              return
 
         else:

@@ -1,8 +1,8 @@
 {
-    "weights": "/home/satyaway/Documents/Thesis/Weights/regularized.pth",
+    "weights": "/home/satyaway/Documents/Thesis/Weights/16-Jul.pth",
     "mode": "train",
     "data path": "/tmp/mapillary-resized/",
-    "batch_size": 32,
+    "batch size": 32,
     "epochs": 50,
     "learning_rate": 0.0002,
     "command line": true,

@@ -7,7 +7,7 @@ Author:
 """
 from platform import system
 from trainer import Trainer
-import email
+from utils.slacker import Slacker
 import warnings
 import traceback
 
@@ -87,4 +87,4 @@ def run_training(arguments):
 
         print("I died.")
         exception_encountered = traceback.format_exc()
-
+        Slacker.send_message("Exception encountered", exception_encountered)

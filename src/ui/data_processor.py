@@ -7,6 +7,7 @@ Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
 import datetime
+from utils.slacker import Slacker
 
 
 def process_data(step, epoch, accuracy, loss, rate, status_file_path,
@@ -62,12 +63,21 @@ def process_data(step, epoch, accuracy, loss, rate, status_file_path,
                      ]
 
             if step == validation_steps and epoch == max_epoch and validation:
+                finish_at = datetime.datetime.now()
+                finish_at = finish_at.strftime("%a, %d %b, %I:%M:%S %p")
                 lines[5] = "Time left: -\n"
-                lines[6] = "Finished at: {}"
+                lines[6] = "Finished at: {}".format(finish_at)
                 lines.append("Finished training.\n")
+
+                message = "".join(lines)
+                Slacker.send_message(message, "Finished Training")
 
             status_file.writelines(lines)
 
-    if
+        if epoch % 10 == 0:
+            message = "".join(lines)
+
+            Slacker.send_message(message,
+                                 "Update: Finished epoch {}".format(epoch))
 
     return time_left, running_step_count, steps_total

@@ -61,7 +61,7 @@ def parse_json(file_path):
         raise ValueError("JSON configuration file incomplete.")
 
     # noinspection PyDictCreation
-    out = {"weights": [json_config["weights"]],
+    out = {"weights": json_config["weights"],
            'train': None,
            'validate': None,
            'infer': None,

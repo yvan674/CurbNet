@@ -566,13 +566,13 @@ class Trainer:
         out = torch.zeros_like(prediction)
         # Create a curbs mask
         mask = argmax == 1
-        # Fill red with those in the mask
-        out[0] = torch.where(mask, prediction[1], out[2])
+        # Fill seg 1 (curbs) with those in the mask
+        out[1] = torch.where(mask, prediction[1], out[2])
 
         # Create a curb cuts mask
         mask = argmax == 2
-        # Fill green with those in the mask
-        out[1] = torch.where(mask, prediction[2], out[2])
+        # Fill seg 2 (curb cuts) with those in the mask
+        out[2] = torch.where(mask, prediction[2], out[2])
 
         # Memory saving
         del mask

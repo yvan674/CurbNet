@@ -5,10 +5,11 @@ Creates messages to send to a slack bot when something is amiss.
 Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
-import slack
+try:
+    import slack
+except ImportError:
+    slack = None
 import os
-import ssl as ssl_lib
-import certifi
 
 
 class Slacker:
@@ -20,7 +21,11 @@ class Slacker:
             subject (str): The subject header.
             message (str): The message body.
         """
-        bot_token = "xoxb-698100624807-696255003584-ek6Oqxm6c5ugHZRwuJhFKSCN"
+        try:
+            bot_token = os.environ["SLACK_API_TOKEN"]
+        except KeyError:
+            return
+
         message = "```\n{}\n```".format(message)
 
         blocks = [

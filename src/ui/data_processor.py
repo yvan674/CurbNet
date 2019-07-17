@@ -76,7 +76,7 @@ def process_data(step, epoch, accuracy, loss, rate, status_file_path,
 
             status_file.writelines(lines)
 
-        if epoch % 10 == 0 and step == max_step:
+        if epoch % 10 == 0 and validation and step == validation_steps:
             message = "".join(lines)
 
             Slacker.send_message(message,

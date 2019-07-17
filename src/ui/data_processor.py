@@ -48,6 +48,8 @@ def process_data(step, epoch, accuracy, loss, rate, status_file_path,
         finish_at = datetime.datetime.now() + time_left
         finish_at = finish_at.strftime("%a, %d %b, %I:%M:%S %p")
 
+        max_step = validation_steps if validation else max_step
+
     # Now write the status file
     if step % 10 == 0 or (step == validation_steps
                           and epoch == max_epoch

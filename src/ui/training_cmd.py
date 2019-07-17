@@ -69,7 +69,9 @@ class TrainingCmd(TrainingUI):
             step, epoch, accuracy, loss, rate, status_file_path, validation,
             self.max_step, self.max_epoch, VALIDATION_STEPS)
 
-        self.step_var = "Step: {} / {}".format(step, self.max_step)
+        max_step = VALIDATION_STEPS if validation else self.max_step
+
+        self.step_var = "Step: {} / {}".format(step, max_step)
         self.epoch_var = "Epoch: {}/ {}".format(epoch, self.max_epoch)
         self.loss_var = "Loss: {:.3f}".format(loss)
         self.acc_var = "Accuracy: {:.3f}%".format(accuracy * 100.)

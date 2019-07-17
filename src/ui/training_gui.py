@@ -104,8 +104,9 @@ class Status(tk.Frame):
                                        VALIDATION_STEPS)
         del _  # Cleaning up
 
+        max_step = VALIDATION_STEPS if validation else self.max_step
         # Row 0 labels
-        self.step_var.set("Step: {}/{}".format(step, self.max_step))
+        self.step_var.set("Step: {}/{}".format(step, max_step))
         self.epoch_var.set("Epoch: {}/{}".format(epoch, self.max_epoch))
 
         # Row 1 labels

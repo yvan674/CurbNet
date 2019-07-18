@@ -15,16 +15,18 @@ import os
 import pickle
 
 import hpbandster.core.nameserver as hpns
-import hpbandster.core.result as hpres
 
 from hpbandster.optimizers import BOHB as BOHB
 from bohb.search_worker import SearchWorker
+
+import logging
+logging.basicConfig(level=logging.WARNING)
 
 def parse_args():
     """Parses command line arguments."""
     description = "runs a BOHB search for hyperparameters"
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('data_path', metvar='D', type=str,
+    parser.add_argument('data_path', metavar='D', type=str,
                         help='path to the data folder')
     parser.add_argument('output_dir', metavar='O', type=str,
                         help='directory for the result output')
@@ -39,6 +41,7 @@ def parse_args():
 
 def run_optimization(args):
     """Runs the optimization process."""
+    print("Starting optimization run.")
     date_time = datetime.datetime.now().strftime('%Y-%m-%d-%H_%M_%S')
 
     # First start nameserver
@@ -46,7 +49,7 @@ def run_optimization(args):
     NS.start()
 
     # Then start worker
-    w = SearchWorker(args.data_path, sleep_interval=0, nameserver='127.0.0.1',
+    w = SearchWorker(args.data_path, nameserver='127.0.0.1',
                      run_id=date_time)
     w.run(background=True)
 
@@ -57,21 +60,24 @@ def run_optimization(args):
                 min_budget=args.min_budget,
                 max_budget=args.max_budget)
 
-    res = bohb.run(n_iterations=args.iteration)
+    print("Still running")
 
-    # Shutdown after completion
-    bohb.shutdown(shutdown_workers=True)
-    NS.shutdown()
+    res = bohb.run(n_iterations=args.iterations)
+
+    output_fp = os.path.join(args.output_dir, 'results.pkl')
 
     id2config = res.get_id2config_mapping()
     incumbent = res.get_incumbent_id()
 
-    output_fp = os.path.join(args.output_dir, 'results.pkl')
     print("Results will be saved at:\n{}".format(output_fp))
     print("Best found configuration: ", id2config[incumbent]['config'])
 
-    with open(output_fp, mode='w') as file:
+    with open(output_fp, mode='wb') as file:
         pickle.dump(res, file)
+
+    # Shutdown after completion
+    bohb.shutdown(shutdown_workers=True)
+    NS.shutdown()
 
 
 if __name__ == '__main__':

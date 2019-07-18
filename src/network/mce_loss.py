@@ -97,10 +97,12 @@ class MCELoss(nn.CrossEntropyLoss):
         # in the mask.
         # We use torch.where to preserve the shape of the mask
 
-        perimeter_target = torch.where(target_mask, target, zero.long())
+        perimeter_target = torch.where(target_mask, target.long(),
+                                       zero.long())
         perimeter_predicted = torch.where(input_mask, input, zero)
 
-        other_target = torch.where(inverted_target_mask, target, zero.long())
+        other_target = torch.where(inverted_target_mask, target.long(),
+                                   zero.long())
         other_predicted = torch.where(inverted_input_mask, input, zero)
 
         perimeter_loss = F.cross_entropy(perimeter_predicted, perimeter_target,

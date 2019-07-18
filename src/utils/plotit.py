@@ -111,7 +111,7 @@ class PlotIt:
         # Calculate their moving averages, ma = moving average
         ma_loss, ma_loss_idx = self._calculate_moving_average(loss_data, period)
 
-        ma_acc = [[], [], []]
+        ma_acc = [0., 0., 0.]
 
         for i in range(3):
             ma_acc[i], ma_acc_idx = self._calculate_moving_average(acc_data[i],

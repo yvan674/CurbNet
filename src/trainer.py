@@ -422,7 +422,7 @@ class Trainer:
         returns:
             float: Average accuracy of the batch.
         """
-        accuracy = np.array([0., 0.])
+        accuracy = np.array([0., 0., 0.])
         for idx, item in enumerate(ground_truth):
             accuracy += calculate_accuracy(item, predicted[idx])
 

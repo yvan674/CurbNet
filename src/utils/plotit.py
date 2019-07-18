@@ -81,7 +81,7 @@ class PlotIt:
             return
 
         loss_data = []
-        acc_data = [[], [], []]
+        acc_data = np.array([[], [], []])
         has_validation_loss = False
         validation_loss = []
         validation_index = []

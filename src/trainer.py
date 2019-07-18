@@ -35,7 +35,7 @@ from constants import VALIDATION_STEPS
 from utils import calculate_accuracy
 
 # network imports
-from network.parallelizer import Parllelizer as Network
+from network.parallelizer import Parallelizer as Network
 from network.curbnet_d import CurbNetD
 from network.curbnet_e import CurbNetE
 from network.curbnet_f import CurbNetF

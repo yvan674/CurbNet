@@ -9,14 +9,14 @@ Author:
 import torch.nn as nn
 
 
-class Parllelizer(nn.Module):
+class Parallelizer(nn.Module):
     def __init__(self, network):
         """Parllelizer allows for any network to be run in parallel.
 
         Args:
             network (nn.Module): The torch module that is to be parallelized
         """
-        super(Parllelizer, self).__init__()
+        super(Parallelizer, self).__init__()
 
         self.parallelized = network
         self.parallelized = nn.DataParallel(self.parallelized)

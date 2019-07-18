@@ -69,7 +69,9 @@ class PlotCSV:
         self.csv_file = open(self.file_path, 'a', newline='')
         # Create the writer for the csv
         self.csv_writer = csv.DictWriter(self.csv_file, dialect=csv.excel,
-                                         fieldnames=["loss", "accuracy",
+                                         fieldnames=["loss", "accuracy other",
+                                                     "accuracy curb",
+                                                     "accuracy curb cut",
                                                      "validation loss"],
                                          restval="", extrasaction="ignore")
 

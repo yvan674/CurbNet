@@ -111,7 +111,10 @@ class Status(tk.Frame):
 
         # Row 1 labels
         self.loss_var.set("Loss: {:.3f}".format(loss))
-        self.accuracy_var.set("Accuracy: {:.3f}%".format(accuracy * 100))
+        self.accuracy_var.set("Accuracy: {:.3f}%, {:.3f}%, {:.3f}%"
+                              .format(accuracy[0] * 100.,
+                                      accuracy[1] * 100.,
+                                      accuracy[2] * 100.))
 
         # Row 2 labels
         self.rate_var.set("Rate: {:.3f} steps/sec".format(rate))
@@ -148,7 +151,7 @@ class Plots(tk.Frame):
         f = Figure(figsize=(4, 3), dpi=100)
         f.set_facecolor("#282c34")
         self.loss_values = []
-        self.accuracy_values = []
+        self.accuracy_values = [[], [], []]
 
         # Axes
         ax1 = f.add_subplot(111)
@@ -186,10 +189,12 @@ class Plots(tk.Frame):
 
         Args:
             loss (float): New loss value to be appended to the plot.
-            accuracy (float): New accuracy value to be appended to the plot
+            accuracy (list): New class-wise accuracy value to be appended to the
+                plot.
         """
         self.loss_values.append(loss)
-        self.accuracy_values.append(accuracy)
+        for i in range(len(accuracy)):
+            self.accuracy_values[i].append(accuracy[i])
 
         # Clear in preparation of new updates
         for axis in self.axes:
@@ -198,7 +203,9 @@ class Plots(tk.Frame):
 
         # Plot the new values
         self.axes[0].plot(self.loss_values, color='tab:red')
-        self.axes[1].plot(self.accuracy_values, color='tab:blue')
+        self.axes[1].plot(self.accuracy_values[0], color='tab:blue')
+        self.axes[1].plot(self.accuracy_values[1], color='tab:green')
+        self.axes[1].plot(self.accuracy_values[2], color='tab:yellow')
 
         # Axis label and color
         self.axes[0].set_ylabel("Loss")
@@ -256,7 +263,7 @@ class ImageFrame(tk.Frame):
 
         Args:
             input_image (torch.Tensor): The input image as a tensor. This is
-                expected to be in the range [0, 1].
+                expected to be in the range [-.5, .5].
             segmentation (numpy.array): Segmentation as a numpy array. This is
                 expected to be in the range [0, 1].
 
@@ -268,6 +275,7 @@ class ImageFrame(tk.Frame):
         # First prepare base layer by turning it into numpy and rescaling it to
         # the range [0, 1].
         input_image = input_image.numpy().astype(float)
+        input_image += .5
 
         # Then give it an alpha layer. Hacky but I'm too tired to think.
         base = np.full((4, input_image.shape[1], input_image.shape[2]), 1.)

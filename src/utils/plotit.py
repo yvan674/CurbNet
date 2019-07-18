@@ -81,7 +81,7 @@ class PlotIt:
             return
 
         loss_data = []
-        acc_data = []
+        acc_data = [[], [], []]
         has_validation_loss = False
         validation_loss = []
         validation_index = []
@@ -93,33 +93,29 @@ class PlotIt:
                 # Get csv as a list to iterate through
                 data = list(csv.reader(csv_file))
 
-                if len(data[0]) == 3:
-                    # If data has 3 columns, i.e. has validation loss
-                    has_validation_loss = True
-                    for i in range(1, len(data)):
-                        # using for i in range since we want the index
-                        loss_data.append(float(data[i][0]))
-                        acc_data.append(float(data[i][1]))
-                        if data[i][2] != '':
-                            # If the data has a validation loss value in that
-                            # row
-                            validation_loss.append(float(data[i][2]))
-                            validation_index.append(index_counter)
-                        index_counter += 1
-
-                elif len(data[0]) == 2:
-                    # Data doesn't have validity loss. Do it the old fashion
-                    # way
-                    # Skip first row
-                    for row in data[1:]:
-                        loss_data.append(float(row[0]))
-                        acc_data.append(float(row[1]))
-                        index_counter += 1
-
+                # If data has 3 columns, i.e. has validation loss
+                has_validation_loss = True
+                for i in range(1, len(data)):
+                    # using for i in range since we want the index
+                    loss_data.append(float(data[i][0]))
+                    acc_data[0].append(float(data[i][1]))
+                    acc_data[1].append(float(data[i][2]))
+                    acc_data[2].append(float(data[i][3]))
+                    if data[i][4] != '':
+                        # If the data has a validation loss value in that
+                        # row
+                        validation_loss.append(float(data[i][4]))
+                        validation_index.append(index_counter)
+                    index_counter += 1
 
         # Calculate their moving averages, ma = moving average
         ma_loss, ma_loss_idx = self._calculate_moving_average(loss_data, period)
-        ma_acc, ma_acc_idx = self._calculate_moving_average(acc_data, period)
+
+        ma_acc = [[], [], []]
+
+        for i in range(3):
+            ma_acc[i], ma_acc_idx = self._calculate_moving_average(acc_data[i],
+                                                                   period)
 
         # Turn accuracy to percentage
         ma_acc = np.array(ma_acc)
@@ -132,7 +128,7 @@ class PlotIt:
 
         # Setup colors
         loss_color = 'tab:red'
-        acc_color = 'tab:blue'
+        acc_color = ['tab:blue', 'tab:green', 'tab:yellow']
 
 
         # Setup the first axis
@@ -151,11 +147,12 @@ class PlotIt:
         labels = []
         # Plot in order
         if accuracy_bool:
-            acc_line, = acc_axis.plot(ma_acc_idx,
-                                      ma_acc,
-                                      color=acc_color)
-            lines.append(acc_line)
-            labels.append("Accuracy")
+            for i in range(3):
+                acc_line, = acc_axis.plot(ma_acc_idx,
+                                          ma_acc[i],
+                                          color=acc_color[i])
+                lines.append(acc_line)
+                labels.append("Class {} acc".format(i))
         if loss_bool:
             loss_line, = loss_axis.plot(ma_loss_idx,
                                         ma_loss,

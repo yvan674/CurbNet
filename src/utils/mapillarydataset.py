@@ -159,9 +159,6 @@ class MapillaryDataset(Dataset):
             segmented = np.array(segmented)
             segmented = self._process_segmented(segmented)
 
-        normalize = Normalize(constants.MEAN, constants.STD)
-        raw = normalize(raw)
-
         # Turn the selected file into a dict
         out = {
             "raw": raw,
@@ -193,6 +190,12 @@ class MapillaryDataset(Dataset):
         # numpy image: H x W x C
         # torch image: C X H X W
         image = image.transpose((2, 0, 1))
+
+        # Here we rescale the input image to [-0.5, 0.5] to improve numerical
+        # stability
+        image = image.astype(dtype=float)
+        image /= 255.
+        image -= 0.5
 
         return torch.from_numpy(image).to(dtype=torch.float)
 

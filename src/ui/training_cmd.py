@@ -57,10 +57,11 @@ class TrainingCmd(TrainingUI):
         Args:
             step (int): The current step of the training process.
             epoch (int): The current epoch of the training process.
-            accuracy (float): The accuracy of the network at the current step.
+            accuracy (list): The class-wise accuracy of the network at the
+                current step.
             loss (float): The loss of the network at the current step.
             rate (float): The rate the network is running at in steps per
-                          second.
+                second.
             status_file_path (str): The path to save the status file to.
             validation (bool): The state of the training, if it is in validation
                 or in training where False means training. Defaults to False.
@@ -74,7 +75,8 @@ class TrainingCmd(TrainingUI):
         self.step_var = "Step: {} / {}".format(step, max_step)
         self.epoch_var = "Epoch: {}/ {}".format(epoch, self.max_epoch)
         self.loss_var = "Loss: {:.3f}".format(loss)
-        self.acc_var = "Accuracy: {:.3f}%".format(accuracy * 100.)
+        self.acc_var = "Accuracy: {:.3f}%, {:.3f}%, {:.3f}%".format(
+            accuracy[0] * 100., accuracy[1] * 100., accuracy[2] * 100.)
         self.rate_var = "Rate: {:.3f} Steps/s".format(rate)
         self.time_var = "Time left: {}".format(time_left)
 

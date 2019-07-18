@@ -57,7 +57,9 @@ def process_data(step, epoch, accuracy, loss, rate, status_file_path,
         with open(status_file_path, 'w') as status_file:
             lines = ["Step: {}/{}\n".format(step, max_step),
                      "Epoch: {}/{}\n".format(epoch, max_epoch),
-                     "Accuracy: {:.2f}%\n".format(accuracy * 100),
+                     "Accuracy: {:.3f}%, {:.3f}%, {:.3f}%".format(
+                         accuracy[0] * 100., accuracy[1] * 100.,
+                         accuracy[2] * 100.),
                      "Loss: {:.3f}\n".format(loss),
                      "Rate: {:.3f} steps/s\n".format(rate),
                      "Time left: {}\n".format(str(time_left)),

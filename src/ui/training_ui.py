@@ -19,10 +19,11 @@ class TrainingUI(ABC):
         Args:
             step (int): The current step of the training process.
             epoch (int): The current epoch of the training process.
-            accuracy (float): The accuracy of the network at the current step.
+            accuracy (list): The class-wise accuracy of the network at the
+                current step.
             loss (float): The loss of the network at the current step.
             rate (float): The rate the network is running at in steps per
-                          second.
+                second.
             status_file_path (str): The path to save the status file to.
             validation (bool): The state of the training, if it is in validation
                 or in training where False means training. Defaults to False.

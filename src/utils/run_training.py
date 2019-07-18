@@ -25,11 +25,14 @@ except ImportError:
                       ImportWarning)
 
 
-def run_training(arguments):
+def run_training(arguments, silence=False):
     """Main function that runs everything.
 
     Args:
         arguments (dict): The arguments given by the user.
+        silence (bool): Additional argument used only by batch_train to allow
+            for silent running, i.e. it doesn't require the user to type
+            anything to move to the next training session. Defaults to False.
     """
     # Get the curses window ready by setting it to None
     stdscr = None
@@ -73,7 +76,8 @@ def run_training(arguments):
         if arguments['train'] or arguments['validate']:
             trainer.train(data, arguments['batch_size'],
                           arguments['epochs'], arguments['plot'],
-                          arguments['weights'], arguments['augment'])
+                          arguments['weights'], arguments['augment'],
+                          silent=silence)
     finally:
         if stdscr is not None:
             stdscr.clear()
@@ -87,7 +91,8 @@ def run_training(arguments):
 
         exception_encountered = traceback.format_exc(0)
         if "SystemExit" in exception_encountered \
-                or "KeyboardInterrupt" in exception_encountered:
+                or "KeyboardInterrupt" in exception_encountered \
+                or "None" in exception_encountered:
              return
 
         else:
@@ -96,3 +101,4 @@ def run_training(arguments):
 
             with open(join(getcwd(), "traceback.txt"), mode="w") as file:
                 traceback.print_exc(file=file)
+        return

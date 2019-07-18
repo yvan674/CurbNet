@@ -76,7 +76,7 @@ class PlotIt:
             else:
                 file_names = plot_location
 
-        if file_names == "":
+        if file_names[0] == "":
             print("No file selected. Exiting program.")
             return
 

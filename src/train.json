@@ -2,7 +2,7 @@
     "weights": "/home/satyaway/Documents/Thesis/Weights/16-Jul.pth",
     "mode": "train",
     "data path": "/tmp/mapillary-resized/",
-    "batch size": 32,
+    "batch size": 2,
     "epochs": 50,
     "learning_rate": 0.0002,
     "command line": true,

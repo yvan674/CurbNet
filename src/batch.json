@@ -1,0 +1,34 @@
+{
+  "sessions": [
+    {
+    "weights": "/home/satyaway/Documents/Thesis/Weights/1.pth",
+    "mode": "train",
+    "data path": "/home/satyaway/Documents/Thesis/mapillary_small/",
+    "batch size": 4,
+    "epochs": 5,
+    "learning_rate": 0.0002,
+    "command line": true,
+    "plot": "/home/satyaway/Documents/Thesis/Logs"
+    },
+    {
+    "weights": "/home/satyaway/Documents/Thesis/Weights/2.pth",
+    "mode": "train",
+    "data path": "/home/satyaway/Documents/Thesis/mapillary_small/",
+    "batch size": 4,
+    "epochs": 5,
+    "learning_rate": 0.0002,
+    "command line": true,
+    "plot": "/home/satyaway/Documents/Thesis/Logs"
+    },
+    {
+    "weights": "/home/satyaway/Documents/Thesis/Weights/3.pth",
+    "mode": "train",
+    "data path": "/home/satyaway/Documents/Thesis/mapillary_small/",
+    "batch size": 4,
+    "epochs": 5,
+    "learning_rate": 0.0002,
+    "command line": true,
+    "plot": "/home/satyaway/Documents/Thesis/Logs"
+    }
+  ]
+}

@@ -111,4 +111,4 @@ class PlotCSV:
         self.log_file.close()
 
         # Open the plot
-        PlotIt(self.file_path)
+        # PlotIt(self.file_path)

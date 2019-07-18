@@ -18,13 +18,14 @@ def parse_arguments():
 
     parser.add_argument('parameters', metavar='P', type=str, nargs="?",
                         help="path to the JSON file that contains the"
-                             "configuration. defaults to train.json")
+                             "configuration. defaults to train.json in the "
+                             "current working directory")
 
     return parser.parse_args()
 
 
-def parse_json(file_path):
-    """Parses the JSON configuration file into a dictionary.
+def parse_json(json_string, silence=False):
+    """Parses the JSON configuration string into a dictionary.
 
     The JSON file _MUST_ contain the following values:
     - "weights"      : [path to the network and optimizer weights].
@@ -50,10 +51,9 @@ def parse_json(file_path):
     - "email"        : [email address]. If an error occurs and training fails
 
     Args:
-        file_path (str): The file path of the JSON configuration file.
+        json_string (str): The json configuration file as a string.
     """
-    with open(file_path, mode='r') as json_file:
-        json_config = json.load(json_file)
+    json_config = json.loads(json_string)
 
     # Check the JSON file
     if "weights" not in json_config or "mode" not in json_config \
@@ -110,19 +110,18 @@ def parse_json(file_path):
     return out
 
 
-def run_it(fp = None):
-    """Making it possible to run it without using if name = main"""
-    if fp:
-        configuration = parse_json(fp)
-    else:
-        configuration = parse_json(join(getcwd(), "train.json"))
-
-    run_training(configuration)
-
-
 if __name__ == '__main__':
     arguments = parse_arguments()
+
+    fp = arguments.parameters if arguments.parameters else join(getcwd(),
+                                                                "train.json")
+
+    with open(fp, mode='r') as file:
+        json_str = file.read()
+
+    configuration = parse_json(json_str)
+
     try:
-        run_it(arguments.parameters)
+        run_training(configuration)
     except KeyboardInterrupt:
         print("User exited program. Killing process.")

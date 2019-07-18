@@ -92,7 +92,7 @@ def run_training(arguments):
 
         else:
             print("I Died")
+            Slacker.send_code("Exception encountered", exception_encountered)
+
             with open(join(getcwd(), "traceback.txt"), mode="w") as file:
                 traceback.print_exc(file=file)
-
-            Slacker.send_code("Exception encountered", exception_encountered)

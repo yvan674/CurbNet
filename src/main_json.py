@@ -110,14 +110,19 @@ def parse_json(file_path):
     return out
 
 
-if __name__ == '__main__':
-    arguments = parse_arguments()
-    if arguments.parameters:
-        configuration = parse_json(arguments.parameters)
+def run_it(fp = None):
+    """Making it possible to run it without using if name = main"""
+    if fp:
+        configuration = parse_json(fp)
     else:
         configuration = parse_json(join(getcwd(), "train.json"))
 
+    run_training(configuration)
+
+
+if __name__ == '__main__':
+    arguments = parse_arguments()
     try:
-        run_training(configuration)
+        run_it(arguments.parameters)
     except KeyboardInterrupt:
         print("User exited program. Killing process.")

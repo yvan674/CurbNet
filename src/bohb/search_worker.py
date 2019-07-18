@@ -78,8 +78,6 @@ class SearchWorker(Worker):
         Returns:
             dict: dictionary with fields 'loss' (float) and 'info' (dict)
         """
-        counter = 0
-
         network = Parallelizer(CurbNetD(sync_bn=config['sync_bn']))
         criterion = MCELoss(self._calculate_loss_weights(
             config['weight_ratio']))

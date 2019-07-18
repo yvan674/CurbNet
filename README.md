@@ -7,6 +7,13 @@ The project was motivated by the fact that currently our robotics platform is ca
 
 ![The EUROPA2 Robot Platform](https://github.com/yvan674/CurbNet/blob/master/media/europa2.jpg) 
 
+
+## Installation
+To install, first use conda to create a new environment either using the supplied curbnet.yml environment file or with the requirements file.
+The requirement `imgaug` will most likely fail to install. To install this, while in the correct environment, use the following commands:
+```bash
+pip install git+https://github.com/aleju/imgaug
+```
 ## Usage
 ### Single Session
 The proper way to use the network is by invoking the main_args.py script with:

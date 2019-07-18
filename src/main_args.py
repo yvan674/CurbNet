@@ -66,7 +66,7 @@ import argparse
 from os import getcwd
 from os.path import join
 import warnings
-from run_training import run_training
+from utils.run_training import run_training
 
 def parse_arguments():
     """Parses arguments."""

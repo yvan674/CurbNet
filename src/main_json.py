@@ -8,7 +8,7 @@ import argparse
 import warnings
 from os import getcwd
 from os.path import join
-from run_training import run_training
+from utils.run_training import run_training
 
 
 def parse_arguments():

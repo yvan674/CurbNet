@@ -31,7 +31,7 @@ To run a batch session, run the command
 ```bash
 batch_train.py [path to json file]
 ```
-The json file should be formatted similarly to the json file used by main_json.py, but with one entry for each training session.
+The json file should be formatted similarly to the json file used by main_json.py, but with one entry for each training session under the top-level key `"sessions"`.
 
 ## License
 This project is released under the MIT License. Please review the [License](https://raw.githubusercontent.com/yvan674/CurbNet/master/LICENSE) file for more details.

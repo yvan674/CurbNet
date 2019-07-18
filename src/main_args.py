@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Main Args.
 
 This makes it possible to run the network in both GUI and command line modes

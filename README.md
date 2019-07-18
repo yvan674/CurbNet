@@ -8,14 +8,30 @@ The project was motivated by the fact that currently our robotics platform is ca
 ![The EUROPA2 Robot Platform](https://github.com/yvan674/CurbNet/blob/master/media/europa2.jpg) 
 
 ## Usage
-### Command line
-The proper way to use the network is by invoking the main.py script with:
+### Single Session
+The proper way to use the network is by invoking the main_args.py script with:
 ```bash
-python3 main.py [arguments]
+main_args.py [arguments]
 ```
+To view the possible arguments, simply invoke `main_args.py --h`.
 
-### GUI
-Eventually, a GUI will also be implemented to allow for easier usage for training and inference.
+Or by listing the configuration within a json file and feeding it into the main_json.py script as follows:
+```bash
+main_json.py [path to json file]
+```
+The proper format of the json file can be seen in the docstring for `main_json.py`.
+
+Both main files have the added line:`#!/usr/bin/env python` so that they are directly executable.
+
+If the command-line argument flag is unused or the property set to false, then a GUI will be invoked.
+Note that command line operation is only available in nix-like operating systems, as it requires curses.
+
+### Batch session
+To run a batch session, run the command
+```bash
+batch_train.py [path to json file]
+```
+The json file should be formatted similarly to the json file used by main_json.py, but with one entry for each training session.
 
 ## License
 This project is released under the MIT License. Please review the [License](https://raw.githubusercontent.com/yvan674/CurbNet/master/LICENSE) file for more details.

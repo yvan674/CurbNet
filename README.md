@@ -37,5 +37,13 @@ batch_train.py [path to json file]
 ```
 The json file should be formatted similarly to the json file used by main_json.py, but with one entry for each training session under the top-level key `"sessions"`.
 
+### AutoML Optimization session
+An AutoML optimization session can also be done using the BOHB (Bayesian Optimization and HyperBand) optimizer.
+This is done by running
+```bash
+bohb/automl.py [dataset path] [output folder] [minimum budget] [maximum budget] [iterations]
+```
+Dataset path is the path to the dataset, the output folder is where the results (written as `results.pkl`) will be written to, the minimum/maximum budget is the minimum/maximum number of epochs to run each configuration for respectively, and the iterations is the number of configurations to try. 
+
 ## License
 This project is released under the MIT License. Please review the [License](https://raw.githubusercontent.com/yvan674/CurbNet/master/LICENSE) file for more details.

@@ -51,4 +51,50 @@ pip install git+https://github.com/aleju/imgaug
 ```
 
 ## Setting up the dataset
+To set up the dataset, a few steps must be taken.
+In general, these steps are:
+1. Set up the directory structure
+2. Select viable images
+3. Optionally, resize the images
+
+#### Setting up the directory structure
+The directory must be set up such that it is as follows
+```
+main dataset directory/
+├── training/
+│   ├── images/
+│   ├── instances/
+│   ├── labels/
+│   └── panoptic
+├── validation/
+│   ├── images/
+│   ├── instances/
+│   ├── labels/
+│   └── panoptic
+├── testing/
+│   ├── images/
+│   ├── instances/
+│   ├── labels/
+│   └── panoptic
+```
+The instances and panoptic directories of each subset is unnecessary, but included by default by the mapillary dataset.
+
+#### Selecting viable images
+Viable images (i.e. has at least a curb) are selected by using the script `utils/selector.py`.
+
+It can be run on a dataset subfolder (i.e. training, validation, or testing) by using the following command
+```bash
+python utils/selector.py [absolute path to subfolder]
+```
+This will produce a file `viable.txt` in the subfolder, which contains a list of all viable images to use.
+
+#### Optional: Resizing the images
+Optionally, the images can also be resized.
+If resized to fit within RAM, this reduces the number of file access operations required dramatically, increasing training speeds by at least 80%.
+This is done running `utils/resize.py` similarly to the `utils/selector.py` script.
+```bash
+python utils/resize.py [absolute path to the subfolder]
+``` 
+This produces a folder called `[subfolder]_resized`, which contains the resized images while keeping the original directory structure (ignoring panoptic and instances).
+The file `viable.txt` is still in the original subfolder and should not be deleted, although the original images may be deleted to conserve disk space.
 

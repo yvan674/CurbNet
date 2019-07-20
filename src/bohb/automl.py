@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """AutoML.
 
 Runs the BOHB search

@@ -8,7 +8,7 @@ We strongly recommend that you create a virtual environment using conda.
 This project was built to run on CUDA 9.0. It should work though on any other CUDA version that is compatible with Pytorch.
 Install the CUDA toolkit as you would normally.
 
-####Cuda without `sudo`
+#### Cuda without `sudo`
 Occasionally, you might want to install the CUDA toolkit without using `sudo`, such as when you don't have `sudo` access to the computer.
 This can get confusing. To help with that, here is a step-by-step guide on installing the CUDA toolkit without `sudo`.
 

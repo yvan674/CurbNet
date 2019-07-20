@@ -1,15 +1,19 @@
 # CurbNet
 A neural network designed to identify and segment curbs and cut curbs from street imagery. This project is a part of my bachelor's thesis at the Albert-Ludwigs-Universität Freiburg.
 
-The goal is to create a network architecture that is well suited to efficiently and accurately identify curbs and [curb cuts](https://en.wikipedia.org/wiki/Curb_cut). This network will then be used to aid in the pathfinding of the EUROPA2 (European Robotic Pedestrian Assitant 2.0) robot platform.
+The goal is to create a network architecture that is well suited to efficiently and accurately identify curbs and [curb cuts](https://en.wikipedia.org/wiki/Curb_cut).
+This network will then be used to aid in the pathfinding of the EUROPA2 (European Robotic Pedestrian Assitant 2.0) robot platform.
 
-The project was motivated by the fact that currently our robotics platform is capable of identifying pedestrian safe zones and streets but if there is a blockage in the path, it would not be able to find a path that crosses the street. This is to ensure that the robot does not fall over while traversing a curb. The goal is to include this network as part of the pathfinding algorithm, allowing the robot to find a safe path down curb cuts and allowing it to cross streets.
+The project was motivated by the fact that currently our robotics platform is capable of identifying pedestrian safe zones and streets but if there is a blockage in the path, it would not be able to find a path that crosses the street.
+This is to ensure that the robot does not fall over while traversing a curb.
+The goal is to include this network as part of the pathfinding algorithm, allowing the robot to find a safe path down curb cuts and allowing it to cross streets.
 
 ![The EUROPA2 Robot Platform](https://github.com/yvan674/CurbNet/blob/master/media/europa2.jpg) 
 
 
 ## Installation
 To install, first use conda to create a new environment either using the supplied curbnet.yml environment file or with the requirements file.
+More complete instructions can be found in the [INSTALL.md](https://github.com/yvan674/CurbNet/blob/master/INSTALL.md) file.
 
 ## Usage
 ### Single Session

@@ -122,7 +122,7 @@ class SearchWorker(Worker):
 
         return {'loss': 1 - average_validation_acc,
                 'info': {'validation accuracy': validation_accuracy.tolist(),
-                         'validation loss': loss
+                         'validation loss': loss.item()
                          }
                 }
 

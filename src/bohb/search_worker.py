@@ -88,10 +88,14 @@ class SearchWorker(Worker):
         elif config['optimizer'] == 'sgd':
             optimizer = SGD(network.parameters(), lr=config['lr'],
                             momentum=config['momentum'])
+        else:
+            raise ValueError("Illegal optimizer value used.")
 
         for epoch in range(int(budget)):
             for data in enumerate(self.training_loader):
                 network.train()
+                optimizer.zero_grad()
+
                 # Rename for easy access
                 raw_image = data[1]["raw"]
                 target_image = data[1]["segmented"]
@@ -102,8 +106,7 @@ class SearchWorker(Worker):
                 loss = criterion(out, target_image.to(self.device,
                                                       dtype=torch.long,
                                                       non_blocking=True))
-
-                optimizer.zero_grad()
+                loss.backward()
                 optimizer.step()
 
                 del out

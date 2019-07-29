@@ -56,6 +56,7 @@ from hpbandster.core.worker import Worker
 from network.curbnet_d import CurbNetD
 from network.mce_loss import MCELoss
 from network.parallelizer import Parallelizer
+from constants import BATCH_SIZE
 
 
 class SearchWorker(Worker):
@@ -63,9 +64,9 @@ class SearchWorker(Worker):
         super().__init__(**kwargs)
 
         self.training_loader = self._load_dataset(
-            path.join(data_path, "training"), True, 64)
+            path.join(data_path, "training"), True, BATCH_SIZE)
         self.validation_loader = self._load_dataset(
-            path.join(data_path, "validation"), True, 64)
+            path.join(data_path, "validation"), True, BATCH_SIZE)
         self.device = torch.device("cuda")
 
     def compute(self, config, budget, **kwargs):

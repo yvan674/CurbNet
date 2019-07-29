@@ -102,6 +102,12 @@ def run_optimization(args):
 if __name__ == '__main__':
     args = parse_args()
     try:
+        print("Starting optimization run with the following parameters:")
+        print("    Data path:      {}".format(args.data_path))
+        print("    Output dir:     {}".format(args.output_dir))
+        print("    Minimum budget: {}".format(args.min_budget))
+        print("    Maximum budget: {}".format(args.max_budget))
+        print("    Iterations:     {}".format(args.iterations))
         run_optimization(args)
     finally:
         exception_encountered = traceback.format_exc(0)

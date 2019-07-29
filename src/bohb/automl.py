@@ -16,6 +16,7 @@ import os
 import pickle
 
 import hpbandster.core.nameserver as hpns
+import hpbandster.core.result as hpres
 
 from hpbandster.optimizers import BOHB as BOHB
 from bohb.search_worker import SearchWorker
@@ -42,7 +43,7 @@ def parse_args():
 
 def run_optimization(args):
     """Runs the optimization process."""
-    print("Starting optimization run.")
+    print("Preparing optimization configuration.")
     date_time = datetime.datetime.now().strftime('%Y-%m-%d-%H_%M_%S')
 
     # First start nameserver
@@ -54,14 +55,27 @@ def run_optimization(args):
                      run_id=date_time)
     w.run(background=True)
 
+    # Also start result logger
+    result_logger_path = os.path.join(args.output_dir, 'results_log.json')
+    print("Result logger will be written to %s" % result_logger_path)
+    if os.path.exists(result_logger_path):
+        previous_run = hpres.logged_results_to_HBS_result(result_logger_path)
+    else:
+        previous_run = None
+
+    result_logger = hpres.json_result_logger(directory=args.output_directory,
+                                             overwrite=True)
+
     # Run the optimizer
     bohb = BOHB(configspace=w.get_configspace(),
                 run_id=date_time,
                 nameserver='127.0.0.1',
+                result_logger=result_logger,
                 min_budget=args.min_budget,
-                max_budget=args.max_budget)
+                max_budget=args.max_budget,
+                previous_run=previous_run)
 
-    print("Still running")
+    print("Loaded configuration and optimizer. Now starting optimization run.")
 
     res = bohb.run(n_iterations=args.iterations)
 

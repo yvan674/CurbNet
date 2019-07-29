@@ -14,6 +14,8 @@ import argparse
 import datetime
 import os
 import pickle
+from time import sleep
+import traceback
 
 import hpbandster.core.nameserver as hpns
 import hpbandster.core.result as hpres
@@ -24,7 +26,6 @@ from bohb.search_worker import SearchWorker
 from utils.slacker import Slacker
 
 import logging
-import traceback
 logging.basicConfig(level=logging.WARNING)
 
 
@@ -47,18 +48,14 @@ def parse_args():
 
 def run_optimization(args):
     """Runs the optimization process."""
-    print("Preparing optimization configuration.")
+    print("Starting name server.")
     date_time = datetime.datetime.now().strftime('%Y-%m-%d-%H_%M_%S')
 
     # First start nameserver
     NS = hpns.NameServer(run_id=date_time, host='127.0.0.1', port=None)
     NS.start()
 
-    # Then start worker
-    w = SearchWorker(args.data_path, nameserver='127.0.0.1',
-                     run_id=date_time)
-    w.run(background=True)
-
+    print("Preparing result logger and loading previous run, if it exists.")
     # Also start result logger
     result_logger_path = os.path.join(args.output_dir, 'results_log.json')
     print("Result logger will be written to %s" % result_logger_path)
@@ -70,6 +67,13 @@ def run_optimization(args):
     result_logger = hpres.json_result_logger(directory=args.output_dir,
                                              overwrite=True)
 
+    print("Starting search worker.")
+    # Then start worker
+    w = SearchWorker(args.data_path, nameserver='127.0.0.1',
+                     run_id=date_time)
+    w.run(background=True)
+
+    print("Initializing optimizer.")
     # Run the optimizer
     bohb = BOHB(configspace=w.get_configspace(),
                 run_id=date_time,
@@ -79,10 +83,11 @@ def run_optimization(args):
                 max_budget=args.max_budget,
                 previous_result=previous_run)
 
-    print("Loaded configuration and optimizer. Now starting optimization run.")
+    print("Initialization complete. Starting optimization run.")
 
     res = bohb.run(n_iterations=args.iterations)
 
+    print("Optimization complete.")
     output_fp = os.path.join(args.output_dir, 'results.pkl')
 
     id2config = res.get_id2config_mapping()
@@ -90,6 +95,20 @@ def run_optimization(args):
 
     print("Results will be saved at:\n{}".format(output_fp))
     print("Best found configuration: ", id2config[incumbent]['config'])
+
+    Slacker.send_message("AutoML Optimization finished with minimum "
+                         "budget {}, maximum budget {}, and {} "
+                         "iterations.\n"
+                         "Output file has been written in {}    \n"
+                         .format(args.min_budget,
+                                 args.max_budget,
+                                 args.iterations,
+                                 args.output_dir),
+                         "AutoML Optimization Finished!")
+
+    sleep(2)
+    Slacker.send_code("Best found configuration:", "{}".format(
+        id2config[incumbent]['config']))
 
     with open(output_fp, mode='wb') as file:
         pickle.dump(res, file)
@@ -114,15 +133,7 @@ if __name__ == '__main__':
         if "SystemExit" in exception_encountered \
                 or "KeyboardInterrupt" in exception_encountered \
                 or "None" in exception_encountered:
-            Slacker.send_message("AutoML Optimization finished with minimum "
-                                 "budget {}, maximum budget {}, and {} "
-                                 "iterations.\n"
-                                 "Output file has been written in {}"
-                                 .format(args.min_budget,
-                                         args.max_budget,
-                                         args.iterations,
-                                         args.output_dir),
-                                 "AutoML Optimization Finished!")
+            pass
 
         else:
             print("I Died")

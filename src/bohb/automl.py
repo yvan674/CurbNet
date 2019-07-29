@@ -67,7 +67,7 @@ def run_optimization(args):
     else:
         previous_run = None
 
-    result_logger = hpres.json_result_logger(directory=args.output_directory,
+    result_logger = hpres.json_result_logger(directory=args.output_dir,
                                              overwrite=True)
 
     # Run the optimizer

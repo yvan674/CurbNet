@@ -21,8 +21,12 @@ import hpbandster.core.result as hpres
 from hpbandster.optimizers import BOHB as BOHB
 from bohb.search_worker import SearchWorker
 
+from utils.slacker import Slacker
+
 import logging
+import traceback
 logging.basicConfig(level=logging.WARNING)
+
 
 def parse_args():
     """Parses command line arguments."""
@@ -97,4 +101,28 @@ def run_optimization(args):
 
 if __name__ == '__main__':
     args = parse_args()
-    run_optimization(args)
+    try:
+        run_optimization(args)
+    finally:
+        exception_encountered = traceback.format_exc(0)
+        if "SystemExit" in exception_encountered \
+                or "KeyboardInterrupt" in exception_encountered \
+                or "None" in exception_encountered:
+            Slacker.send_message("AutoML Optimization finished with minimum "
+                                 "budget {}, maximum budget {}, and {} "
+                                 "iterations.\n"
+                                 "Output file has been written in {}"
+                                 .format(args.min_budget,
+                                         args.max_budget,
+                                         args.iterations,
+                                         args.output_dir),
+                                 "AutoML Optimization Finished!")
+
+        else:
+            print("I Died")
+            Slacker.send_code("Exception encountered", exception_encountered)
+
+            with open(os.path.join(os.getcwd(), "traceback.txt"), mode="w") \
+                    as file:
+                traceback.print_exc(file=file)
+        pass

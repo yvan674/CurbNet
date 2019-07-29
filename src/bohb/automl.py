@@ -77,7 +77,7 @@ def run_optimization(args):
                 result_logger=result_logger,
                 min_budget=args.min_budget,
                 max_budget=args.max_budget,
-                previous_run=previous_run)
+                previous_result=previous_run)
 
     print("Loaded configuration and optimizer. Now starting optimization run.")
 

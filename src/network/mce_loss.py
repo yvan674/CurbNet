@@ -6,7 +6,7 @@ regular cross entropy loss, but additionally heavily penalizes any curb
 classification that is not around the perimeter of known roads.
 
 The perimeter around known roads is calculated by using a binary dilation on B.
-B is a b x b matrix, with b being 0.1 * image width.
+B is a b x b matrix, with b being 0.03 * image width.
 
 Author:
     Yvan Satyawan <y_satyawan@hotmail.com>

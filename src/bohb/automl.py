@@ -58,6 +58,8 @@ def run_optimization(args):
     print("Preparing result logger and loading previous run, if it exists.")
     # Also start result logger
     result_logger_path = os.path.join(args.output_dir, 'results_log.json')
+    best_result_path = os.path.join(args.output_dir, 'best_config.txt')
+
     print("Result logger will be written to %s" % result_logger_path)
     if os.path.exists(result_logger_path):
         previous_run = hpres.logged_results_to_HBS_result(result_logger_path)
@@ -110,6 +112,11 @@ def run_optimization(args):
     Slacker.send_code("Best found configuration:", "{}".format(
         id2config[incumbent]['config']))
 
+    with open(best_result_path, mode='wb') as file:
+        lines = ["Best results are as follows:\n",
+                 "{}".format(id2config[incumbent]['config'])]
+        file.writelines(lines)
+
     with open(output_fp, mode='wb') as file:
         pickle.dump(res, file)
 
@@ -121,12 +128,21 @@ def run_optimization(args):
 if __name__ == '__main__':
     args = parse_args()
     try:
-        print("Starting optimization run with the following parameters:")
-        print("    Data path:      {}".format(args.data_path))
-        print("    Output dir:     {}".format(args.output_dir))
-        print("    Minimum budget: {}".format(args.min_budget))
-        print("    Maximum budget: {}".format(args.max_budget))
-        print("    Iterations:     {}".format(args.iterations))
+        lines = ["Starting optimization run with the following parameters:\n",
+                 "    Data path:      {}\n".format(args.data_path),
+                 "    Output dir:     {}\n".format(args.output_dir),
+                 "    Minimum budget: {}\n".format(args.min_budget),
+                 "    Maximum budget: {}\n".format(args.max_budget),
+                 "    Iterations:     {}\n".format(args.iterations)]
+        with open(os.path.join(args.output_dir, 'optimizer_configuration.txt'),
+                  'wb') as file:
+            # Write configuration to file so we remember what happened
+            file.writelines(lines)
+
+        for line in lines:
+            # Print out of the current configuration
+            print(line, end='')
+
         run_optimization(args)
     finally:
         exception_encountered = traceback.format_exc(0)

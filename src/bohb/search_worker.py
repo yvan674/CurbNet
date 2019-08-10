@@ -88,7 +88,7 @@ class SearchWorker(Worker):
         print("    optimizer:    {}".format(config['optimizer']))
         print("    sync_bn:      {}".format(config['sync_bn']))
         print("    weight ratio: {}".format(config['weight_ratio']))
-        if config['optimizer'] is "adam":
+        if config['optimizer'] == "adam":
             print("    epsilon:      {:.2f}".format(config['epsilon']))
         else:
             print("    momentum:     {}".format(config['momentum']))

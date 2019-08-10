@@ -69,7 +69,7 @@ def run_optimization(args):
     result_logger = hpres.json_result_logger(directory=args.output_dir,
                                              overwrite=True)
 
-    print("Starting search worker.")
+    print("Starting search worker.\n")
     # Then start worker
     w = SearchWorker(args.data_path, nameserver='127.0.0.1',
                      run_id=date_time)

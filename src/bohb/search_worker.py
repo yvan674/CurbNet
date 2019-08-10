@@ -58,6 +58,9 @@ from network.mce_loss import MCELoss
 from network.parallelizer import Parallelizer
 from constants import BATCH_SIZE
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
 
 class SearchWorker(Worker):
     def __init__(self, data_path, **kwargs):
@@ -68,6 +71,7 @@ class SearchWorker(Worker):
         self.validation_loader = self._load_dataset(
             path.join(data_path, "validation"), True, BATCH_SIZE)
         self.device = torch.device("cuda")
+        self.run_count = 0
 
     def compute(self, config, budget, **kwargs):
         """Runs the training session.
@@ -79,6 +83,18 @@ class SearchWorker(Worker):
         Returns:
             dict: dictionary with fields 'loss' (float) and 'info' (dict)
         """
+        print("\nStarting run {} with config:".format(self.run_count))
+        print("    lr:           {}".format(config['lr']))
+        print("    optimizer:    {}".format(config['optimizer']))
+        print("    sync_bn:      {}".format(config['sync_bn']))
+        print("    weight ratio: {}".format(config['weight_ratio']))
+        if config['optimizer'] is "adam":
+            print("    epsilon:      {:.2f}".format(config['epsilon']))
+        else:
+            print("    momentum:     {}".format(config['momentum']))
+
+        self.run_count += 1
+
         network = Parallelizer(CurbNetD(sync_bn=config['sync_bn']).cuda())
         criterion = MCELoss(self._calculate_loss_weights(
             config['weight_ratio']))

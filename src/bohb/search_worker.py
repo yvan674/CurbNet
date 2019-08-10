@@ -57,6 +57,7 @@ from network.curbnet_d import CurbNetD
 from network.mce_loss import MCELoss
 from network.parallelizer import Parallelizer
 from constants import BATCH_SIZE
+from datetime import datetime
 
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -84,6 +85,8 @@ class SearchWorker(Worker):
             dict: dictionary with fields 'loss' (float) and 'info' (dict)
         """
         print("\nStarting run {} with config:".format(self.run_count))
+        print("    Start time:   {}"
+              .format(datetime.now().strftime("%a, %-d %b at %H:%M:%S")))
         print("    lr:           {}".format(config['lr']))
         print("    optimizer:    {}".format(config['optimizer']))
         print("    sync_bn:      {}".format(config['sync_bn']))
@@ -184,6 +187,9 @@ class SearchWorker(Worker):
         loss /= total_values
         accuracy /= total_values
 
+        print("\nFinished at {}"
+              .format(datetime.now().strftime("%a, %-d %b at %H:%M:%S")))
+        print("=====================================================")
         return accuracy, loss
 
     def _calculate_batch_accuracy(self, ground_truth, predicted, batch_size):

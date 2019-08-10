@@ -112,7 +112,7 @@ def run_optimization(args):
     Slacker.send_code("Best found configuration:", "{}".format(
         id2config[incumbent]['config']))
 
-    with open(best_result_path, mode='wb') as file:
+    with open(best_result_path, mode='w') as file:
         lines = ["Best results are as follows:\n",
                  "{}".format(id2config[incumbent]['config'])]
         file.writelines(lines)
@@ -135,7 +135,7 @@ if __name__ == '__main__':
                  "    Maximum budget: {}\n".format(args.max_budget),
                  "    Iterations:     {}\n".format(args.iterations)]
         with open(os.path.join(args.output_dir, 'optimizer_configuration.txt'),
-                  'wb') as file:
+                  'w') as file:
             # Write configuration to file so we remember what happened
             file.writelines(lines)
 

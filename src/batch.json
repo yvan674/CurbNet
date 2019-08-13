@@ -3,9 +3,9 @@
     {
     "weights": "/home/satyaway/Documents/Thesis/Weights/with-px.pth",
     "mode": "train",
-    "data path": "/tmp/mapillary-resized",
+    "data path": "/tmp/mapillary-resized/",
     "batch size": 16,
-    "epochs": 7,
+    "epochs": 10,
     "learning_rate": 0.0002,
     "command line": true,
     "plot": "/home/satyaway/Documents/Thesis/Logs",
@@ -14,13 +14,13 @@
     {
     "weights": "/home/satyaway/Documents/Thesis/Weights/without-px.pth",
     "mode": "train",
-    "data path": "/home/satyaway/Documents/Thesis/mapillary_small/",
+    "data path": "/tmp/mapillary-resized/",
     "batch size": 16,
-    "epochs": 7,
+    "epochs": 10,
     "learning_rate": 0.0002,
     "command line": true,
     "plot": "/home/satyaway/Documents/Thesis/Logs",
     "px data": false
-    },
+    }
   ]
 }

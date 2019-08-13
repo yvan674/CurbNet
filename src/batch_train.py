@@ -17,6 +17,7 @@ from os import getcwd, remove
 from os.path import join
 from utils.run_training import run_training
 import re
+from sys import exit
 
 
 def parse_arguments():
@@ -76,11 +77,14 @@ def watchdog(configuration_list):
             else:
                 epoch = int(re.findall(r"\d+", lines[1])[0]) - 1
                 current_config['epochs'] -= epoch
-        except FileNotFoundError or IndexError:
+        except FileNotFoundError or IndexError or KeyboardInterrupt as error:
             # Means that something's wrong with the status file, most likely
             # meaning that something is completely wrong with the training
             # session. Delete the weight associated and restart.
-            remove(current_config['weights'])
+            if error == FileNotFoundError or IndexError:
+                remove(current_config['weights'])
+            else:
+                exit()  # Exit if KeyboardInterrupt
 
 
 if __name__ == "__main__":

@@ -27,7 +27,7 @@ def calculate_accuracy(ground_truth, predicted):
         union = np.count_nonzero((ground_truth == i) + (predicted == i))
 
         # Calculate number of intersecting values
-        intersect = np.count_nonzero((ground_truth == 1) * (predicted == 1))
+        intersect = np.count_nonzero((ground_truth == i) * (predicted == i))
 
         # Return intersect over union, with special handling for union = 0
         if union == 0:

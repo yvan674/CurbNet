@@ -17,7 +17,6 @@ from os import getcwd, remove
 from os.path import join
 from utils.run_training import run_training
 import re
-from sys import exit
 
 
 def parse_arguments():
@@ -85,7 +84,7 @@ def watchdog(configuration_list):
             if error == FileNotFoundError or IndexError:
                 remove(current_config['weights'])
             else:
-                exit()  # Exit if KeyboardInterrupt
+                return  # Exit if KeyboardInterrupt
 
 
 if __name__ == "__main__":

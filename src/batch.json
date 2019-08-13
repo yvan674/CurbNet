@@ -1,34 +1,26 @@
 {
   "sessions": [
     {
-    "weights": "/home/satyaway/Documents/Thesis/Weights/1.pth",
+    "weights": "/home/satyaway/Documents/Thesis/Weights/with-px.pth",
     "mode": "train",
-    "data path": "/home/satyaway/Documents/Thesis/mapillary_small/",
-    "batch size": 4,
-    "epochs": 5,
+    "data path": "/tmp/mapillary-resized",
+    "batch size": 16,
+    "epochs": 7,
     "learning_rate": 0.0002,
     "command line": true,
-    "plot": "/home/satyaway/Documents/Thesis/Logs"
+    "plot": "/home/satyaway/Documents/Thesis/Logs",
+    "px data": true
     },
     {
-    "weights": "/home/satyaway/Documents/Thesis/Weights/2.pth",
+    "weights": "/home/satyaway/Documents/Thesis/Weights/without-px.pth",
     "mode": "train",
     "data path": "/home/satyaway/Documents/Thesis/mapillary_small/",
-    "batch size": 4,
-    "epochs": 5,
+    "batch size": 16,
+    "epochs": 7,
     "learning_rate": 0.0002,
     "command line": true,
-    "plot": "/home/satyaway/Documents/Thesis/Logs"
+    "plot": "/home/satyaway/Documents/Thesis/Logs",
+    "px data": false
     },
-    {
-    "weights": "/home/satyaway/Documents/Thesis/Weights/3.pth",
-    "mode": "train",
-    "data path": "/home/satyaway/Documents/Thesis/mapillary_small/",
-    "batch size": 4,
-    "epochs": 5,
-    "learning_rate": 0.0002,
-    "command line": true,
-    "plot": "/home/satyaway/Documents/Thesis/Logs"
-    }
   ]
 }

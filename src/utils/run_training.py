@@ -9,6 +9,7 @@ from platform import system
 from trainer import Trainer
 from utils.slacker import Slacker
 
+
 from os import getcwd
 from os.path import join
 import warnings
@@ -25,7 +26,7 @@ except ImportError:
                       ImportWarning)
 
 
-def run_training(arguments, silence=False):
+def run_training(arguments, iaa, silence=False):
     """Main function that runs everything.
 
     Args:
@@ -50,7 +51,8 @@ def run_training(arguments, silence=False):
         # Get the trainer object ready
         if arguments["train"]:
             # Run in training mode
-            trainer = Trainer(arguments["learning_rate"],
+
+            trainer = Trainer(iaa, arguments["learning_rate"],
                               arguments['optimizer'],
                               arguments['loss_weights'], stdscr)
 
@@ -97,6 +99,7 @@ def run_training(arguments, silence=False):
 
         else:
             print("I Died")
+            print(exception_encountered)
             Slacker.send_code("Exception encountered", exception_encountered)
 
             with open(join(getcwd(), "traceback.txt"), mode="w") as file:

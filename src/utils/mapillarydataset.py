@@ -8,17 +8,16 @@ containing the raw image, the segmentation, and the panoptic segmentation.
 Authors:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
-import numpy as np
+
 import torch
 from torch.utils.data import Dataset
-from torchvision.transforms import Normalize
-from imgaug import augmenters as iaa
+import numpy as np
 from os.path import join, exists
 from PIL import Image
 import constants
 
 
-def augment(image):
+def augment(image, iaa):
     """Augments a given input image.
 
     Args:
@@ -69,7 +68,7 @@ def augment(image):
 
 
 class MapillaryDataset(Dataset):
-    def __init__(self, path, with_aug):
+    def __init__(self, path, with_aug, iaa):
         """Dataset object that contains the mapillary dataset.
 
         The dataset takes all the types of images within the specified training,
@@ -82,6 +81,8 @@ class MapillaryDataset(Dataset):
             with_aug (bool): Whether or not to use image augmentation.
         """
         super().__init__()
+
+        self.iaa = iaa
 
         self.resized_available = False
         # Set mode (i.e. if small files available, load all images to memory)
@@ -180,11 +181,11 @@ class MapillaryDataset(Dataset):
             torch.Tensor: The image as a torch tensor.
         """
         # Crop the image to 4:3 ratio
-        image = self._resize(image, "cubic")
+        image = self._resize(image, "cubic", self.iaa)
 
         if self.with_aug:
             # apply image augmentation sequential
-            image = augment(image)
+            image = augment(image, self.iaa)
 
         # swap color axis because
         # numpy image: H x W x C
@@ -213,7 +214,7 @@ class MapillaryDataset(Dataset):
             np.array: An array of the images with one-hot labelling.
         """
         # First resize the image
-        image = self._resize(image, "nearest")
+        image = self._resize(image, "nearest", self.iaa)
 
         # Create an out array
         out_array = np.zeros((image.shape[0], image.shape[1]), dtype=np.uint8)
@@ -236,7 +237,7 @@ class MapillaryDataset(Dataset):
         return out_array
 
     @staticmethod
-    def _resize(image, interpolation):
+    def _resize(image, interpolation, iaa):
         """Resizes a given input image to DIMENSIONS
 
         Args:

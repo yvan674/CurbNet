@@ -56,16 +56,21 @@ from hpbandster.core.worker import Worker
 from network.curbnet_d import CurbNetD
 from network.mce_loss import MCELoss
 from network.parallelizer import Parallelizer
+from constants import BATCH_SIZE
+import datetime
+from tqdm import tqdm
 
 
 class SearchWorker(Worker):
-    def __init__(self, data_path, **kwargs):
+    def __init__(self, data_path, iaa, **kwargs):
         super().__init__(**kwargs)
 
+        self.iaa = iaa
+
         self.training_loader = self._load_dataset(
-            path.join(data_path, "training"), True, 64)
+            path.join(data_path, "training"), True, BATCH_SIZE, self.iaa)
         self.validation_loader = self._load_dataset(
-            path.join(data_path, "validation"), True, 64)
+            path.join(data_path, "validation"), True, BATCH_SIZE, self.iaa)
         self.device = torch.device("cuda")
 
     def compute(self, config, budget, **kwargs):
@@ -88,10 +93,17 @@ class SearchWorker(Worker):
         elif config['optimizer'] == 'sgd':
             optimizer = SGD(network.parameters(), lr=config['lr'],
                             momentum=config['momentum'])
+        else:
+            raise ValueError("Illegal optimizer value used.")
 
         for epoch in range(int(budget)):
-            for data in enumerate(self.training_loader):
+            for data in tqdm(enumerate(self.training_loader)):
+
+                print('time: ', datetime.datetime.now() , 'epoch: ', epoch, '  iteration: ', data[0], ' / ', len(self.training_loader))
+
                 network.train()
+                optimizer.zero_grad()
+
                 # Rename for easy access
                 raw_image = data[1]["raw"]
                 target_image = data[1]["segmented"]
@@ -102,8 +114,7 @@ class SearchWorker(Worker):
                 loss = criterion(out, target_image.to(self.device,
                                                       dtype=torch.long,
                                                       non_blocking=True))
-
-                optimizer.zero_grad()
+                loss.backward()
                 optimizer.step()
 
                 del out
@@ -246,7 +257,7 @@ class SearchWorker(Worker):
             curb_cut_weight * normalization_constant]).cuda()
 
     @staticmethod
-    def _load_dataset(data_path, augmentation, batch_size):
+    def _load_dataset(data_path, augmentation, batch_size, iaa):
         """Loads a dataset and creates the data loader.
 
         Args:
@@ -261,7 +272,7 @@ class SearchWorker(Worker):
             # Deal with edge case where there's a "/" at the end of the path.
             data_path = path.split(data_path)[0]
 
-        dataset = MapillaryDataset(data_path, augmentation)
+        dataset = MapillaryDataset(data_path, augmentation, iaa)
         data_loader = DataLoader(dataset,
                                  batch_size,
                                  shuffle=True)

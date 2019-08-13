@@ -64,6 +64,7 @@ def watchdog(configuration_list):
             current_config = main_json.parse_json(configuration_list[i])
 
         run_training(current_config, silence=True)
+        print(current_config['plot'])
 
         try:
             # Next check the status file to see if it has finished training

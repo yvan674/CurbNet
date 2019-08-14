@@ -5,20 +5,22 @@ implementation of BOHB from the AutoML group at Uni Freiburg.
 
 The hyperparameters we will be optimizing are as follows:
 
-+----------------+----------------+-----------------+------------------------+
-| Parameter name | Parameter type |      Range      |        Comment         |
-+----------------+----------------+-----------------+------------------------+
-| Learning rate  | float          | [1e-5, 1e-2]    | varied logarithmically |
-| Optimizer      | categorical    | {'adam', 'sgd'} | choose one             |
-| SGD momentum   | float          | [0, 0.99]       | only active when       |
-|                |                |                 | optimizer == 'sgd'     |
-| Adam epsilon   | float          | [1e-2, 1]       | using step size 5e-2   |
-| Sync batchnorm | bool           | {True, False}   | using synchronized     |
-|                |                |                 | batchnorm or regular   |
-|                |                |                 | batchnorm              |
-| Loss weight    | float          | {2, 6}          | intervals of .25        |
-| ratio          |                |                 |                        |
-+----------------+----------------+-----------------+------------------------+
++----------------+----------------+------------------+------------------------+
+| Parameter name | Parameter type |      Range       |        Comment         |
++----------------+----------------+------------------+------------------------+
+| Learning rate  | float          | [1e-5, 1e-2]     | varied logarithmically |
+| Optimizer      | categorical    | {'adam', 'sgd'}  | choose one             |
+| SGD momentum   | float          | [0, 0.99]        | only active when       |
+|                |                |                  | optimizer == 'sgd'     |
+| Adam epsilon   | float          | [1e-2, 1]        | using step size 5e-2   |
+| Sync batchnorm | bool           | {True, False}    | using synchronized     |
+|                |                |                  | batchnorm or regular   |
+|                |                |                  | batchnorm              |
+| Loss weight    | float          | {2, 6}           |                        |
+| ratio          |                |                  |                        |
+| Loss criterion | categorical    | {'cross_entropy',|                        |
+|                |                |  'mce'}          |                        |
++----------------+----------------+------------------+------------------------+
 
 +-------------------+----------------+
 |  Parameter name   | Name in config |
@@ -29,6 +31,7 @@ The hyperparameters we will be optimizing are as follows:
 | Adam epsilon      | epsilon        |
 | Sync batchnorm    | sync_bn        |
 | Loss weight ratio | weight_ratio   |
+| Loss criterion    | loss_criterion |
 +-------------------+----------------+
 
 
@@ -44,6 +47,7 @@ References:
 """
 # Torch imports
 import torch
+from torch.nn import CrossEntropyLoss
 from torch.utils.data.dataloader import DataLoader
 from torch.optim import Adam, SGD
 from utils.mapillarydataset import MapillaryDataset
@@ -66,7 +70,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 
 class SearchWorker(Worker):
-    def __init__(self, data_path, iaa, **kwargs):
+    def __init__(self, data_path, iaa, logging_path, **kwargs):
         super().__init__(**kwargs)
 
         self.iaa = iaa
@@ -89,6 +93,7 @@ class SearchWorker(Worker):
         Returns:
             dict: dictionary with fields 'loss' (float) and 'info' (dict)
         """
+        # Start with printouts
         print("\nStarting run {} with config:".format(self.run_count))
         print("    Start time:   {}"
               .format(datetime.now().strftime("%a, %-d %b at %H:%M:%S")))
@@ -101,12 +106,22 @@ class SearchWorker(Worker):
         else:
             print("    momentum:     {}".format(config['momentum']))
 
+        # Increment run count number
         self.run_count += 1
 
+        # Set network and loss criterion
         network = Parallelizer(CurbNetD(sync_bn=config['sync_bn']).cuda())
-        criterion = MCELoss(self._calculate_loss_weights(
-            config['weight_ratio']))
+        loss_weights = self._calculate_loss_weights(config['weight_ratio'])
 
+        if config['loss_criterion'] == 'cross_entropy':
+            criterion = CrossEntropyLoss(loss_weights)
+        elif config['loss_criterion'] == 'mce':
+            criterion = MCELoss(self._calculate_loss_weights(
+                config['weight_ratio']))
+        else:
+            raise ValueError("Illegal loss criterion value used.")
+
+        # Setup optimizers
         if config['optimizer'] == 'adam':
             optimizer = Adam(network.parameters(), lr=config['lr'],
                              eps=config['epsilon'])
@@ -116,11 +131,15 @@ class SearchWorker(Worker):
         else:
             raise ValueError("Illegal optimizer value used.")
 
+        # Start actual training loop
         for epoch in range(int(budget)):
             for data in tqdm(enumerate(self.training_loader)):
 
-                print('time: ', datetime.now() , 'epoch: ', epoch, '  iteration: ', data[0], ' / ', len(self.training_loader))
+                print('time: ', datetime.now() , 'epoch: ', epoch,
+                      '  iteration: ', data[0], ' / ',
+                      len(self.training_loader))
 
+                # Make sure network is in train and optimizer has been zeroed
                 network.train()
                 optimizer.zero_grad()
 
@@ -137,6 +156,7 @@ class SearchWorker(Worker):
                 loss.backward()
                 optimizer.step()
 
+                # flush from memory
                 del out
                 del raw_image
                 del target_image
@@ -243,13 +263,14 @@ class SearchWorker(Worker):
                                                 q=5e-2)
         sync_bn = CS.CategoricalHyperparameter('sync_bn', [True, False])
         weight_ratio = CS.UniformFloatHyperparameter('weight_ratio',
-                                                     lower=2.,
+                                                     lower=1.,
                                                      upper=6.,
-                                                     default_value=5.,
-                                                     q=.25)
+                                                     default_value=5.)
+        loss_criterion = CS.CategoricalHyperparameter('loss_criterion',
+                                                      ['cross_entropy', 'mce'])
 
         cs.add_hyperparameters([lr, optimizer, momentum, epsilon, sync_bn,
-                               weight_ratio])
+                               weight_ratio, loss_criterion])
         cs.add_condition(CS.EqualsCondition(momentum, optimizer, 'sgd'))
         cs.add_condition(CS.EqualsCondition(epsilon, optimizer, 'adam'))
 

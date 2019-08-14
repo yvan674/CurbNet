@@ -16,6 +16,8 @@ import os
 import pickle
 from time import sleep
 import traceback
+from imgaug import augmenters as iaa
+
 
 import hpbandster.core.nameserver as hpns
 import hpbandster.core.result as hpres
@@ -73,8 +75,8 @@ def run_optimization(args):
     print("Starting search worker.\n")
     
     # Then start worker
-    w = SearchWorker(args.data_path, nameserver='127.0.0.1',
-                     run_id=date_time)
+    w = SearchWorker(args.data_path, iaa, args.output_dir,
+                     nameserver='127.0.0.1', run_id=date_time)
     w.run(background=True)
 
     print("Initializing optimizer.")

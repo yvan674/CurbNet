@@ -63,6 +63,7 @@ from network.parallelizer import Parallelizer
 from constants import BATCH_SIZE
 from tqdm import tqdm
 from datetime import datetime
+from utils.plotcsv import PlotCSV
 
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -70,7 +71,19 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 
 class SearchWorker(Worker):
-    def __init__(self, data_path, iaa, logging_path, **kwargs):
+    def __init__(self, data_path, iaa, logging_dir, **kwargs):
+        """Initializes the search worker.
+
+        Args:
+            data_path (str): Path to the data directory.
+            iaa: The image augmentation module imported. This is necessary
+                because sometimes, importing it here doesn't work but importing
+                it in a different module does.
+            logging_dir (str): Path to the logging directory. Used for logging
+                configuration, loss, accuracy. Ideally, this is a subdirectory
+                from the output directory.
+            **kwargs:
+        """
         super().__init__(**kwargs)
 
         self.iaa = iaa
@@ -83,11 +96,22 @@ class SearchWorker(Worker):
         self.device = torch.device("cuda")
         self.run_count = 0
 
+        self.data_path = data_path
+
+        # Logging
+        self.logging = PlotCSV()
+
+        self.logging_dir = logging_dir
+
     def compute(self, config, budget, **kwargs):
         """Runs the training session.
 
+        This training session will also save all the data on its runs (e.g.
+        config, loss, accuracy) into the logging dir
+
         Args:
-            config (dict): Dictionary containing the configuration by the optimizer
+            config (dict): Dictionary containing the configuration by the
+                optimizer
             budget (int): Amount of epochs the model can use to train.
 
         Returns:
@@ -105,9 +129,6 @@ class SearchWorker(Worker):
             print("    epsilon:      {:.2f}".format(config['epsilon']))
         else:
             print("    momentum:     {}".format(config['momentum']))
-
-        # Increment run count number
-        self.run_count += 1
 
         # Set network and loss criterion
         network = Parallelizer(CurbNetD(sync_bn=config['sync_bn']).cuda())
@@ -131,6 +152,24 @@ class SearchWorker(Worker):
         else:
             raise ValueError("Illegal optimizer value used.")
 
+        # Prepare logging
+        self.logging.reset()
+        self.logging.configure({
+            'run number': self.run_count,
+            'plot path': self.logging_dir,
+            'training data path': self.data_path,
+            'optimizer': optimizer,
+            'batch size': BATCH_SIZE,
+            'epochs': budget,
+            'network': network,
+            'loss criterion': config['loss_criterion']
+        })
+
+        # Increment run count number
+        self.run_count += 1
+
+        csv_data = []  # To keep its scope outside of the for loop
+
         # Start actual training loop
         for epoch in range(int(budget)):
             for data in tqdm(enumerate(self.training_loader)):
@@ -153,6 +192,21 @@ class SearchWorker(Worker):
                 loss = criterion(out, target_image.to(self.device,
                                                       dtype=torch.long,
                                                       non_blocking=True))
+
+                # Calculate class-wise accuracy
+                accuracy = np.array([0., 0., 0.])
+                for idx, item in enumerate(target_image):
+                    accuracy += calculate_accuracy(item, out[idx])
+                accuracy / BATCH_SIZE
+
+                # Append the data to a list first before writing to the file
+                csv_data.append({"loss": loss.item(),
+                                 "accuracy other": accuracy[0],
+                                 "accuracy curb": accuracy[1],
+                                 "accuracy curb cut": accuracy[2],
+                                 "validation loss": ""})
+
+
                 loss.backward()
                 optimizer.step()
 
@@ -167,6 +221,10 @@ class SearchWorker(Worker):
         average_validation_acc = (validation_accuracy[0]
                                   + validation_accuracy[1]
                                   + validation_accuracy[2]) / 3.
+
+        csv_data[-1]["validation loss"] = loss
+        self.logging.write_data(csv_data)
+        self.logging.close()
 
         return {'loss': 1 - average_validation_acc,
                 'info': {'validation accuracy': validation_accuracy.tolist(),

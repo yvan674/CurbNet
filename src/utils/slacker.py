@@ -1,6 +1,12 @@
 """Slacker.
 
-Creates messages to send to a slack bot when something is amiss.
+Creates messages to send to a slack bot when something is amiss. To make sure
+this runs, the following environment variable must be added: SLACK_API_TOKEN.
+
+To add this, follow the instructions at api.slack.com to get a slack api token.
+A new app must be created and a bot added to the app. The API token can then
+be added to environment variables using whatever method works best for the host
+OS.
 
 Author:
     Yvan Satyawan <y_satyawan@hotmail.com>

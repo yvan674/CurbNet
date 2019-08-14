@@ -33,8 +33,9 @@ class TrainingCmd(TrainingUI):
         # Set variables for window height and width
         self.height = 0
         self.width = 0
-        self.window_width = 64
+        self.window_width = 70
         self.window_height = 11
+        self.second_column_pos = 30
         self.window = None
 
         self._create_box()
@@ -121,13 +122,13 @@ class TrainingCmd(TrainingUI):
                     # the window goes off screen
                     pass
         self.window.addstr(2, 2, self.step_var)
-        self.window.addstr(2, 32, self.epoch_var)
+        self.window.addstr(2, self.second_column_pos, self.epoch_var)
 
         self.window.addstr(3, 2, self.loss_var)
-        self.window.addstr(3, 32, self.acc_var)
+        self.window.addstr(3, self.second_column_pos, self.acc_var)
 
         self.window.addstr(4, 2, self.rate_var)
-        self.window.addstr(4, 32, self.time_var)
+        self.window.addstr(4, self.second_column_pos, self.time_var)
         self.window.addstr(8, 2, self.status_var)
 
         self._draw_progress_bar()

@@ -95,7 +95,7 @@ def run_training(arguments, iaa, silence=False):
         if "SystemExit" in exception_encountered \
                 or "KeyboardInterrupt" in exception_encountered \
                 or "None" in exception_encountered:
-             return
+            return
 
         else:
             print("I Died")

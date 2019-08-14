@@ -48,8 +48,8 @@ def parse_json(json_string, silence=False):
     - "plot location": [path to the plot file]. This is the directory where the
                        loss, accuracy, and log will be recorded to. Defaults to
                        the current working directory.
-    - "email"        : [email address]. If an error occurs and training fails
-
+    - "px data"      : bool. True means that px coordinates will be added to the
+                       4th and 5th dimensions of the input image.
     Args:
         json_string (str): The json configuration file as a string.
     """
@@ -104,6 +104,10 @@ def parse_json(json_string, silence=False):
     if "plot" not in json_config:
         warnings.warn("Plot save path not given. Setting path to the current "
                       "working directory.", UserWarning)
+    else:
+        out['plot'] = json_config['plot']
+    if "px data" in json_config:
+        out['px_coordinates'] = json_config['px data']
     else:
         out['plot'] = json_config['plot']
 

@@ -63,6 +63,7 @@ def watchdog(configuration_list):
             current_config = main_json.parse_json(configuration_list[i])
 
         run_training(current_config, silence=True)
+        print(current_config['plot'])
 
         try:
             # Next check the status file to see if it has finished training
@@ -76,11 +77,14 @@ def watchdog(configuration_list):
             else:
                 epoch = int(re.findall(r"\d+", lines[1])[0]) - 1
                 current_config['epochs'] -= epoch
-        except FileNotFoundError or IndexError:
+        except FileNotFoundError or IndexError or KeyboardInterrupt as error:
             # Means that something's wrong with the status file, most likely
             # meaning that something is completely wrong with the training
             # session. Delete the weight associated and restart.
-            remove(current_config['weights'])
+            if error == FileNotFoundError or IndexError:
+                remove(current_config['weights'])
+            else:
+                return  # Exit if KeyboardInterrupt
 
 
 if __name__ == "__main__":

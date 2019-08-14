@@ -57,8 +57,12 @@ from network.curbnet_d import CurbNetD
 from network.mce_loss import MCELoss
 from network.parallelizer import Parallelizer
 from constants import BATCH_SIZE
-import datetime
 from tqdm import tqdm
+from datetime import datetime
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
 
 
 class SearchWorker(Worker):
@@ -71,7 +75,9 @@ class SearchWorker(Worker):
             path.join(data_path, "training"), True, BATCH_SIZE, self.iaa)
         self.validation_loader = self._load_dataset(
             path.join(data_path, "validation"), True, BATCH_SIZE, self.iaa)
+
         self.device = torch.device("cuda")
+        self.run_count = 0
 
     def compute(self, config, budget, **kwargs):
         """Runs the training session.
@@ -83,6 +89,20 @@ class SearchWorker(Worker):
         Returns:
             dict: dictionary with fields 'loss' (float) and 'info' (dict)
         """
+        print("\nStarting run {} with config:".format(self.run_count))
+        print("    Start time:   {}"
+              .format(datetime.now().strftime("%a, %-d %b at %H:%M:%S")))
+        print("    lr:           {}".format(config['lr']))
+        print("    optimizer:    {}".format(config['optimizer']))
+        print("    sync_bn:      {}".format(config['sync_bn']))
+        print("    weight ratio: {}".format(config['weight_ratio']))
+        if config['optimizer'] == "adam":
+            print("    epsilon:      {:.2f}".format(config['epsilon']))
+        else:
+            print("    momentum:     {}".format(config['momentum']))
+
+        self.run_count += 1
+
         network = Parallelizer(CurbNetD(sync_bn=config['sync_bn']).cuda())
         criterion = MCELoss(self._calculate_loss_weights(
             config['weight_ratio']))
@@ -99,7 +119,7 @@ class SearchWorker(Worker):
         for epoch in range(int(budget)):
             for data in tqdm(enumerate(self.training_loader)):
 
-                print('time: ', datetime.datetime.now() , 'epoch: ', epoch, '  iteration: ', data[0], ' / ', len(self.training_loader))
+                print('time: ', datetime.now() , 'epoch: ', epoch, '  iteration: ', data[0], ' / ', len(self.training_loader))
 
                 network.train()
                 optimizer.zero_grad()
@@ -175,6 +195,9 @@ class SearchWorker(Worker):
         loss /= total_values
         accuracy /= total_values
 
+        print("\nFinished at {}"
+              .format(datetime.now().strftime("%a, %-d %b at %H:%M:%S")))
+        print("=====================================================")
         return accuracy, loss
 
     def _calculate_batch_accuracy(self, ground_truth, predicted, batch_size):

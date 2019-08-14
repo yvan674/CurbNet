@@ -56,6 +56,7 @@ def run_optimization(args):
     NS.start()
 
     print("Preparing result logger and loading previous run, if it exists.")
+
     # Also start result logger
     result_logger_path = os.path.join(args.output_dir, 'results_log.json')
     best_result_path = os.path.join(args.output_dir, 'best_config.txt')
@@ -70,6 +71,7 @@ def run_optimization(args):
                                              overwrite=True)
 
     print("Starting search worker.\n")
+    
     # Then start worker
     w = SearchWorker(args.data_path, nameserver='127.0.0.1',
                      run_id=date_time)

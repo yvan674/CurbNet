@@ -111,10 +111,9 @@ class Status(tk.Frame):
 
         # Row 1 labels
         self.loss_var.set("Loss: {:.3f}".format(loss))
-        self.accuracy_var.set("Accuracy: {:.3f}%, {:.3f}%, {:.3f}%"
+        self.accuracy_var.set("Accuracy: {:.3f}%, {:.3f}%"
                               .format(accuracy[0] * 100.,
-                                      accuracy[1] * 100.,
-                                      accuracy[2] * 100.))
+                                      accuracy[1] * 100.))
 
         # Row 2 labels
         self.rate_var.set("Rate: {:.3f} steps/sec".format(rate))
@@ -161,9 +160,9 @@ class Plots(tk.Frame):
         # Axis label and color
         self.axes[0].set_ylabel("Loss")
         self.axes[0].yaxis.label.set_color("#a8afb8")
-        self.axes[0].tick_params(axis='y', colors="tab:red")
+        self.axes[0].tick_params(axis='y', colors="red")
         self.axes[1].set_ylabel("Accuracy")
-        self.axes[1].tick_params(axis='y', colors="tab:blue")
+        self.axes[1].tick_params(axis='y', colors="blue")
         self.axes[1].yaxis.label.set_color("#a8afb8")
 
         # Colors for the axes
@@ -202,17 +201,17 @@ class Plots(tk.Frame):
             axis.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
         # Plot the new values
-        self.axes[0].plot(self.loss_values, color='tab:red')
-        self.axes[1].plot(self.accuracy_values[0], color='tab:blue')
-        self.axes[1].plot(self.accuracy_values[1], color='tab:green')
-        self.axes[1].plot(self.accuracy_values[2], color='tab:yellow')
+        self.axes[0].plot(self.loss_values, color='red')
+        self.axes[1].plot(self.accuracy_values[0], color='blue')
+        self.axes[1].plot(self.accuracy_values[1], color='green')
+        # self.axes[1].plot(self.accuracy_values[2], color='yellow')
 
         # Axis label and color
         self.axes[0].set_ylabel("Loss")
         self.axes[0].yaxis.label.set_color("#a8afb8")
-        self.axes[0].tick_params(axis='y', colors="tab:red")
+        self.axes[0].tick_params(axis='y', colors="red")
         self.axes[1].set_ylabel("Accuracy")
-        self.axes[1].tick_params(axis='y', colors="tab:blue")
+        self.axes[1].tick_params(axis='y', colors="blue")
         self.axes[1].yaxis.label.set_color("#a8afb8")
 
         # Redraw canvas

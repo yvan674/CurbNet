@@ -63,11 +63,15 @@ network arguments:
 Author:
     Yvan Satyawan <y_satyawan@hotmail.com>
 """
+from imgaug import augmenters as iaa
+
 import argparse
 from os import getcwd
 from os.path import join
 import warnings
 from utils.run_training import run_training
+
+
 
 def parse_arguments():
     """Parses arguments."""
@@ -105,10 +109,10 @@ def parse_arguments():
 
     # Validation and training arguments
     vt = parser.add_argument_group("validation and training arguments")
-    vt.add_argument('-b', '--batch-size', type=int, nargs='?', default=4,
+    vt.add_argument('-b', '--batch-size', type=int, nargs='?', default=16,
                           help="sets the batch size for the session. Defaults "
                                "to 4")
-    vt.add_argument('-e', '--epochs', type=int, nargs='?', default=1,
+    vt.add_argument('-e', '--epochs', type=int, nargs='?', default=100,
                           help="sets the number of epochs for the session. "
                                "Defaults to 1")
     vt.add_argument('-a', '--augment', action='store_true',
@@ -156,6 +160,6 @@ def parse_arguments():
 if __name__ == "__main__":
     arguments = parse_arguments()
     try:
-        run_training(vars(arguments))
+        run_training(vars(arguments), iaa)
     except KeyboardInterrupt:
         print("User exited program. Killing process.")

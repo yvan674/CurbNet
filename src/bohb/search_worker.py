@@ -57,20 +57,25 @@ from network.curbnet_d import CurbNetD
 from network.mce_loss import MCELoss
 from network.parallelizer import Parallelizer
 from constants import BATCH_SIZE
+from tqdm import tqdm
 from datetime import datetime
 
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
+
 class SearchWorker(Worker):
-    def __init__(self, data_path, **kwargs):
+    def __init__(self, data_path, iaa, **kwargs):
         super().__init__(**kwargs)
 
+        self.iaa = iaa
+
         self.training_loader = self._load_dataset(
-            path.join(data_path, "training"), True, BATCH_SIZE)
+            path.join(data_path, "training"), True, BATCH_SIZE, self.iaa)
         self.validation_loader = self._load_dataset(
-            path.join(data_path, "validation"), True, BATCH_SIZE)
+            path.join(data_path, "validation"), True, BATCH_SIZE, self.iaa)
+
         self.device = torch.device("cuda")
         self.run_count = 0
 
@@ -112,7 +117,10 @@ class SearchWorker(Worker):
             raise ValueError("Illegal optimizer value used.")
 
         for epoch in range(int(budget)):
-            for data in enumerate(self.training_loader):
+            for data in tqdm(enumerate(self.training_loader)):
+
+                print('time: ', datetime.now() , 'epoch: ', epoch, '  iteration: ', data[0], ' / ', len(self.training_loader))
+
                 network.train()
                 optimizer.zero_grad()
 
@@ -272,7 +280,7 @@ class SearchWorker(Worker):
             curb_cut_weight * normalization_constant]).cuda()
 
     @staticmethod
-    def _load_dataset(data_path, augmentation, batch_size):
+    def _load_dataset(data_path, augmentation, batch_size, iaa):
         """Loads a dataset and creates the data loader.
 
         Args:
@@ -287,7 +295,7 @@ class SearchWorker(Worker):
             # Deal with edge case where there's a "/" at the end of the path.
             data_path = path.split(data_path)[0]
 
-        dataset = MapillaryDataset(data_path, augmentation)
+        dataset = MapillaryDataset(data_path, augmentation, iaa)
         data_loader = DataLoader(dataset,
                                  batch_size,
                                  shuffle=True)

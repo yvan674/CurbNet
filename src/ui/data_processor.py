@@ -22,6 +22,7 @@ def process_data(step, epoch, accuracy, loss, rate, status_file_path,
     # Calculate time left
     steps_total = 1
     running_step_count = 0
+    finished = False
     if rate == 0:
         time_left = "NaN"
         finish_at = "NaN"
@@ -71,14 +72,17 @@ def process_data(step, epoch, accuracy, loss, rate, status_file_path,
                 finish_at = finish_at.strftime("%a, %d %b, %I:%M:%S %p")
                 lines[5] = "Time left: -\n"
                 lines[6] = "Finished at: {}".format(finish_at)
-                lines.append("Finished training.\n")
+                lines.append("\nFinished training.\n")
 
                 message = "".join(lines)
                 Slacker.send_message(message, "Finished Training")
 
+                finished = True
+
             status_file.writelines(lines)
 
-        if epoch % 10 == 0 and validation and step == validation_steps:
+        if epoch % 10 == 0 and validation and step == validation_steps \
+                and not finished:
             message = "".join(lines)
 
             Slacker.send_message(message,

@@ -127,8 +127,8 @@ class PlotIt:
         fig.canvas.set_window_title('Loss and Accuracy Plot')
 
         # Setup colors
-        loss_color = 'tab:red'
-        acc_color = ['tab:blue', 'tab:green', 'y']
+        loss_color = 'red'
+        acc_color = ['blue', 'green', 'yellow']
 
 
         # Setup the first axis
@@ -162,7 +162,7 @@ class PlotIt:
 
         # Add validation loss to legend if the data has validation loss
         if has_validation_loss and validation_bool:
-            validation_color = 'm'
+            validation_color = 'magenta'
             validation_line, = loss_axis.plot(validation_index,
                                               validation_loss,
                                               color=validation_color)

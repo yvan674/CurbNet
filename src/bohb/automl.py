@@ -16,6 +16,8 @@ import os
 import pickle
 from time import sleep
 import traceback
+from imgaug import augmenters as iaa
+
 
 import hpbandster.core.nameserver as hpns
 import hpbandster.core.result as hpres
@@ -56,9 +58,13 @@ def run_optimization(args):
     NS.start()
 
     print("Preparing result logger and loading previous run, if it exists.")
+
     # Also start result logger
-    result_logger_path = os.path.join(args.output_dir, 'results_log.json')
-    best_result_path = os.path.join(args.output_dir, 'best_config.txt')
+    output_dir = os.path.join(args.output_dir,
+                              datetime.datetime.now()
+                              .strftime('%Y_%m_%d--%H_%M_%S'))
+    result_logger_path = os.path.join(output_dir, 'results_log.json')
+    best_result_path = os.path.join(output_dir, 'best_config.txt')
 
     print("Result logger will be written to %s" % result_logger_path)
     if os.path.exists(result_logger_path):
@@ -66,13 +72,14 @@ def run_optimization(args):
     else:
         previous_run = None
 
-    result_logger = hpres.json_result_logger(directory=args.output_dir,
+    result_logger = hpres.json_result_logger(directory=output_dir,
                                              overwrite=True)
 
     print("Starting search worker.\n")
+    
     # Then start worker
-    w = SearchWorker(args.data_path, nameserver='127.0.0.1',
-                     run_id=date_time)
+    w = SearchWorker(args.data_path, iaa, os.path.join(output_dir, "logging"),
+                     nameserver='127.0.0.1', run_id=date_time)
     w.run(background=True)
 
     print("Initializing optimizer.")
@@ -90,7 +97,7 @@ def run_optimization(args):
     res = bohb.run(n_iterations=args.iterations)
 
     print("Optimization complete.")
-    output_fp = os.path.join(args.output_dir, 'results.pkl')
+    output_fp = os.path.join(output_dir, 'results.pkl')
 
     id2config = res.get_id2config_mapping()
     incumbent = res.get_incumbent_id()
@@ -105,7 +112,7 @@ def run_optimization(args):
                          .format(args.min_budget,
                                  args.max_budget,
                                  args.iterations,
-                                 args.output_dir),
+                                 output_dir),
                          "AutoML Optimization Finished!")
 
     sleep(2)
@@ -127,14 +134,17 @@ def run_optimization(args):
 
 if __name__ == '__main__':
     args = parse_args()
+    output_dir = os.path.join(args.output_dir,
+                              datetime.datetime.now().
+                              strftime('%Y_%m_%d--%H_%M_%S'))
     try:
         lines = ["Starting optimization run with the following parameters:\n",
                  "    Data path:      {}\n".format(args.data_path),
-                 "    Output dir:     {}\n".format(args.output_dir),
+                 "    Output dir:     {}\n".format(output_dir),
                  "    Minimum budget: {}\n".format(args.min_budget),
                  "    Maximum budget: {}\n".format(args.max_budget),
                  "    Iterations:     {}\n".format(args.iterations)]
-        with open(os.path.join(args.output_dir, 'optimizer_configuration.txt'),
+        with open(os.path.join(output_dir, 'optimizer_configuration.txt'),
                   'w') as file:
             # Write configuration to file so we remember what happened
             file.writelines(lines)

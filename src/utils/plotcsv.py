@@ -11,7 +11,6 @@ Author:
 import os
 import csv
 from time import strftime, gmtime
-from utils.plotit import PlotIt
 
 
 class PlotCSV:
@@ -31,12 +30,14 @@ class PlotCSV:
         Args:
             parameters (dict): Required parameters:
                 - "plot path" (str): Where to put the plot file.
-                - "weights path" (str): Where the weights will be saved.
                 - "training data path" (str): Where the training data is.
-                - "optimizer" (str): The optimizer used to train.
+                - "optimizer" (nn.Module): The optimizer used to train.
                 - "batch size" (int): The size of the batch in this session.
                 - "epochs" (int): Number of epochs to train for.
                 - "augmentation" (bool): Whether or not to use augmentation.
+                - "network" (nn.Module): The network module used to train.
+                Optional:
+                - "weights path" (str): Where the weights will be saved.
         """
         # Reassign the plot path
         directory = parameters["plot path"]
@@ -104,6 +105,19 @@ class PlotCSV:
             raise Exception("PlotCSV has not been properly configured.")
 
         self.log_file.write("{}\n".format(message))
+
+    def reset(self):
+        """Resets the class to its initial state for reuse."""
+        self.file_path = None
+        if self.csv_file is not None:
+            self.csv_file.close()
+            self.csv_file = None
+        self.csv_writer = None
+        self.configured = False
+        if self.log_file is not None:
+            self.log_file.close()
+            self.log_file = None
+
 
     def close(self):
         """Writes any last lines, closes open files, and shows the plot."""

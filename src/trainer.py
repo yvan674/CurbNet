@@ -22,7 +22,6 @@ from time import strftime, localtime
 from os import path
 import datetime
 import warnings
-
 import numpy as np
 
 # Custom classes imports
@@ -43,7 +42,7 @@ from network.curbnet_g import CurbNetG
 
 
 class Trainer:
-    def __init__(self, lr: float = 0.01, optimizer: str = "sgd",
+    def __init__(self, iaa, lr: float = 0.01, optimizer: str = "sgd",
                  loss_weights: list = None, cmd_line=None,
                  validation: bool = False) -> None:
         """Training class used to train the CurbNetG network.
@@ -63,6 +62,8 @@ class Trainer:
         """
         self.validation = validation
         self.network = None
+        self.iaa = iaa
+
         if loss_weights is None:
             # To avoid mutable default values
             loss_weights = [0.005, 0.3000, 0.695]
@@ -228,6 +229,11 @@ class Trainer:
 
             # Step iterations for training
             for data in enumerate(training_loader):
+
+                print(data[0], datetime.datetime.now())
+
+
+
                 # Grab the raw and target images
                 raw_image = data[1]["raw"]
                 target_image = data[1]["segmented"]
@@ -282,8 +288,13 @@ class Trainer:
                                     rate=rate,
                                     status_file_path=self.status_file_path)
 
+
+
+                show_image = (raw_image[0]+0.5)*255.
+                show_image = show_image.type(torch.LongTensor)
                 self._update_gui_image(detached_out[0], out_argmax[0],
-                                       target_image[0], raw_image[0])
+                                       target_image[0], show_image)
+
 
                 # Write to the plot file every step
                 csv_data.append({"loss": loss_value,
@@ -332,8 +343,6 @@ class Trainer:
                 counter += 1
                 num_validation_steps += 1
 
-                detached_out = out.cpu().detach()
-
                 accuracy = self._calculate_batch_accuracy(target_image,
                                                           out.cpu().detach(),
                                                           batch_size)
@@ -348,10 +357,10 @@ class Trainer:
                                     status_file_path=self.status_file_path,
                                     validation=True)
 
-                self._update_gui_image(detached_out[0],
-                                       torch.argmax(detached_out[0], dim=1),
-                                       target_image[0],
-                                       data[1]["raw"][0])
+                # self._update_gui_image(detached_out[0],
+                #                        torch.argmax(detached_out[0], dim=1),
+                #                        target_image[0],
+                #                        data[1]["raw"][0])
 
                 if data[0] + 1 == VALIDATION_STEPS:
                     # Only do 10 steps for validation
@@ -476,7 +485,9 @@ class Trainer:
 
         start_time = time.time()
         self._update_status("Loading {}.".format(dataset_name))
-        dataset = MapillaryDataset(data_path, augmentation)
+
+
+        dataset = MapillaryDataset(data_path, augmentation, self.iaa)
         data_loader = DataLoader(dataset,
                                  batch_size,
                                  shuffle=True)
@@ -498,7 +509,8 @@ class Trainer:
             self.ui.update_image(
                 target=target,
                 generated=predicted,
-                input_image=self.unnorm(raw))
+                input_image=raw
+            )
 
     @staticmethod
     def _process_out_for_gui(prediction, argmax):

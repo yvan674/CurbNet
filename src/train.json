@@ -1,10 +1,11 @@
 {
-    "weights": "/home/satyaway/Documents/Thesis/Weights/16-Jul.pth",
+    "weights": "/home/satyaway/Documents/Thesis/Weights/without-px.pth",
     "mode": "train",
     "data path": "/tmp/mapillary-resized/",
-    "batch size": 2,
-    "epochs": 50,
+    "batch size": 32,
+    "epochs": 10,
     "learning_rate": 0.0002,
     "command line": true,
-    "plot": "/home/satyaway/Documents/Thesis/Logs"
+    "plot": "/home/satyaway/Documents/Thesis/Logs",
+    "px data": false
 }

@@ -81,7 +81,7 @@ class PlotIt:
             return
 
         loss_data = []
-        acc_data = np.array([[], [], []])
+        acc_data = [[], [], []]
         has_validation_loss = False
         validation_loss = []
         validation_index = []
@@ -128,7 +128,7 @@ class PlotIt:
 
         # Setup colors
         loss_color = 'tab:red'
-        acc_color = ['tab:blue', 'tab:green', 'tab:yellow']
+        acc_color = ['tab:blue', 'tab:green', 'y']
 
 
         # Setup the first axis
@@ -162,7 +162,7 @@ class PlotIt:
 
         # Add validation loss to legend if the data has validation loss
         if has_validation_loss and validation_bool:
-            validation_color = 'tab:green'
+            validation_color = 'm'
             validation_line, = loss_axis.plot(validation_index,
                                               validation_loss,
                                               color=validation_color)

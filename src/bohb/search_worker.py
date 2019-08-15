@@ -98,7 +98,8 @@ class SearchWorker(Worker):
 
         self.run_count += 1
 
-        network = Parallelizer(CurbNetD(sync_bn=config['sync_bn']).cuda())
+        network = Parallelizer(CurbNetD(sync_bn=config['sync_bn'],
+                                        px_coordinates=False).cuda())
         criterion = MCELoss(self._calculate_loss_weights(
             config['weight_ratio']))
 

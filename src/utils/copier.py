@@ -60,7 +60,7 @@ def copy_n_files(source, dest, n, randomize):
 
     # Copy files themselves
     for file in copy_list:
-        shutil.copyfile(os.path.join(source, file), dest)
+        shutil.copyfile(os.path.join(source, file), os.path.join(dest, file))
 
 
 if __name__ == '__main__':

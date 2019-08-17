@@ -52,9 +52,10 @@ def process_data(step, epoch, accuracy, loss, rate, status_file_path,
         max_step = validation_steps if validation else max_step
 
     # Now write the status file
-    if step % 10 == 0 or (step == validation_steps
-                          and epoch == max_epoch
-                          and validation):
+    if (step % 10 == 0 or (step == validation_steps
+                           and epoch == max_epoch
+                           and validation))\
+            and not status_file_path == '':
         with open(status_file_path, 'w') as status_file:
             lines = ["Step: {}/{}\n".format(step, max_step),
                      "Epoch: {}/{}\n".format(epoch, max_epoch),

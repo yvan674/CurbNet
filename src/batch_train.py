@@ -17,6 +17,7 @@ from os import getcwd, remove
 from os.path import join
 from utils.run_training import run_training
 import re
+from imgaug import augmenters as iaa
 
 
 def parse_arguments():
@@ -62,7 +63,7 @@ def watchdog(configuration_list):
         if not current_config:  # Checks to see if current config exists
             current_config = main_json.parse_json(configuration_list[i])
 
-        run_training(current_config, silence=True)
+        run_training(current_config, iaa, silence=True)
         print(current_config['plot'])
 
         try:

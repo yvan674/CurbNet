@@ -60,13 +60,12 @@ def watchdog(configuration_list):
     current_config = None
 
     while i < len(configuration_list):
-        if not current_config:  # Checks to see if current config exists
-            current_config = main_json.parse_json(configuration_list[i])
-
-        run_training(current_config, iaa, silence=True)
-        print(current_config['plot'])
-
         try:
+            if not current_config:  # Checks to see if current config exists
+                current_config = main_json.parse_json(configuration_list[i])
+
+            run_training(current_config, iaa, silence=True)
+
             # Next check the status file to see if it has finished training
             with open(join(current_config['plot'], "status.txt")) as status:
                 lines = status.readlines()

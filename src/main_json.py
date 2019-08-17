@@ -51,6 +51,8 @@ def parse_json(json_string, silence=False):
                        the current working directory.
     - "px data"      : bool. True means that px coordinates will be added to the
                        4th and 5th dimensions of the input image.
+    - "network"      : str. Defaults to "d", can be "e", "f", or "g". Selects
+                       the corresponding network.
     Args:
         json_string (str): The json configuration file as a string.
     """
@@ -111,6 +113,9 @@ def parse_json(json_string, silence=False):
         out['px_coordinates'] = json_config['px data']
     else:
         out['plot'] = json_config['plot']
+
+    if 'network' in json_config:
+        out['network'] = json_config['network']
 
     return out
 

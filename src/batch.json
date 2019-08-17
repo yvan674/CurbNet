@@ -1,26 +1,52 @@
 {
   "sessions": [
     {
-    "weights": "/home/satyaway/Documents/Thesis/Weights/with-px.pth",
+    "weights": "/home/satyaway/Documents/Thesis/Weights/netd.pth",
     "mode": "train",
-    "data path": "/tmp/mapillary-resized/",
-    "batch size": 32,
-    "epochs": 7,
+    "network": "d",
+    "data path": "/tmp/mapillary_64/",
+    "batch size": 16,
+    "epochs": 100,
     "learning_rate": 0.0002,
     "command line": true,
     "plot": "/home/satyaway/Documents/Thesis/Logs",
     "px data": true
     },
     {
-    "weights": "/home/satyaway/Documents/Thesis/Weights/without-px.pth",
+    "weights": "/home/satyaway/Documents/Thesis/Weights/nete.pth",
     "mode": "train",
-    "data path": "/tmp/mapillary-resized/",
-    "batch size": 32,
-    "epochs": 7,
+    "network": "e",
+    "data path": "/tmp/mapillary_64/",
+    "batch size": 16,
+    "epochs": 100,
     "learning_rate": 0.0002,
     "command line": true,
     "plot": "/home/satyaway/Documents/Thesis/Logs",
-    "px data": false
+    "px data": true
+    },
+    {
+    "weights": "/home/satyaway/Documents/Thesis/Weights/netf.pth",
+    "mode": "train",
+    "network": "f",
+    "data path": "/tmp/mapillary_64/",
+    "batch size": 16,
+    "epochs": 100,
+    "learning_rate": 0.0002,
+    "command line": true,
+    "plot": "/home/satyaway/Documents/Thesis/Logs",
+    "px data": true
+    },
+    {
+    "weights": "/home/satyaway/Documents/Thesis/Weights/netg.pth",
+    "mode": "train",
+    "network": "g",
+    "data path": "/tmp/mapillary_64/",
+    "batch size": 16,
+    "epochs": 100,
+    "learning_rate": 0.0002,
+    "command line": true,
+    "plot": "/home/satyaway/Documents/Thesis/Logs",
+    "px data": true
     }
   ]
 }

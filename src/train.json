@@ -1,8 +1,9 @@
 {
-    "weights": "/home/satyaway/Documents/Thesis/Weights/without-px.pth",
+    "weights": "/home/satyaway/Documents/Thesis/Weights/netd.pth",
     "mode": "train",
-    "data path": "/tmp/mapillary-resized/",
-    "batch size": 32,
+    "data path": "/tmp/mapillary_64/",
+    "batch size": 16,
+    "network": "d",
     "epochs": 10,
     "learning_rate": 0.0002,
     "command line": true,

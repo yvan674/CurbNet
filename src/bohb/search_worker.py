@@ -69,7 +69,6 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-
 class SearchWorker(Worker):
     def __init__(self, data_path, iaa, logging_dir, **kwargs):
         """Initializes the search worker.
@@ -131,7 +130,8 @@ class SearchWorker(Worker):
             print("    momentum:     {}".format(config['momentum']))
 
         # Set network and loss criterion
-        network = Parallelizer(CurbNetD(sync_bn=config['sync_bn']).cuda())
+        network = Parallelizer(CurbNetD(sync_bn=config['sync_bn'],
+                                        px_coordinates=False).cuda())
         loss_weights = self._calculate_loss_weights(config['weight_ratio'])
 
         if config['loss_criterion'] == 'cross_entropy':

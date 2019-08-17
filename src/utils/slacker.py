@@ -46,6 +46,13 @@ class Slacker:
                         "type": "mrkdwn",
                         "text": message
                     }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "\n\n"
+                    }
                 }
             ]
 
@@ -63,6 +70,7 @@ class Slacker:
         # Try to get the bot token
         blocks = []
         if header:
+            # Add the header block if it exists
             blocks.append({
                     "type": "section",
                     "text": {
@@ -72,18 +80,33 @@ class Slacker:
                  })
             blocks.append({"type": "divider"})
 
-        blocks.append({
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": message
-                    }
-                })
+        # Add the message block
+        blocks.append(
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": message
+                }
+            })
+
+        # Add vertical spacer
+        blocks.append(
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "\n\n"
+                }
+            }
+            )
         Slacker._send_blocks(blocks)
 
     @staticmethod
     def _send_blocks(blocks):
         """Sends preformatted blocks to slack."""
+        if slack is None:
+            return
         try:
             bot_token = os.environ["SLACK_API_TOKEN"]
         except KeyError:

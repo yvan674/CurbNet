@@ -65,11 +65,13 @@ def watchdog(configuration_list):
 
         run_training(current_config, iaa, silence=True)
         print(current_config['plot'])
+        input()
 
         try:
             # Next check the status file to see if it has finished training
             with open(join(current_config['plot'], "status.txt")) as status:
                 lines = status.readlines()
+                print(lines)
 
             if "Finished Training." in lines[-1]:
                 # Means that training completed properly.

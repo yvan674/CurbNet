@@ -1,6 +1,6 @@
 """Copier.
 
-Copies n files from one directory to another directory.
+Copies n files from one mapillary subdirectory to another directory.
 
 Authors:
     Yvan Satyawan <y_satyawan@hotmail.com>
@@ -32,10 +32,19 @@ def copy_n_files(source, dest, n, randomize):
         n (int): The number of files to copy.
         randomize (bool): Whether or not to randomize which files are chosen.
     """
-    if not os.path.isdir(source):
-        raise ValueError("Source is not a directory")
+    images_dir_src = os.path.join(source, "images")
+    label_dir_src = os.path.join(source, "labels")
 
-    file_list = os.listdir(source)
+    images_dir_dest = os.path.join(dest, "images")
+    label_dir_dest = os.path.join(dest, "labels")
+
+    if not os.path.isdir(source) and not \
+            os.path.isdir(images_dir_src) and not \
+            os.path.isdir(label_dir_src):
+        raise ValueError("Source is not a directory or does not have the right "
+                         "structure")
+
+    file_list = os.listdir(os.path.join(source, "images"))
 
     # check if n is a legal value
     if n > len(file_list):
@@ -48,8 +57,23 @@ def copy_n_files(source, dest, n, randomize):
         warnings.warn("Destination directory does not exist. Will create it.",
                       UserWarning)
         os.mkdir(dest)
+        os.mkdir(images_dir_dest)
+        os.mkdir(label_dir_dest)
 
-    if not len(os.listdir(dest)) == 0:
+    if not os.path.isdir(images_dir_dest):
+        warnings.warn("Destination images directory does not exist. "
+                      "Will create it.",
+                      UserWarning)
+        os.mkdir(images_dir_dest)
+
+    if not os.path.isdir(label_dir_dest):
+        warnings.warn("Destination images directory does not exist. "
+                      "Will create it.",
+                      UserWarning)
+        os.mkdir(label_dir_dest)
+
+    if not len(os.listdir(images_dir_dest)) == 0 or \
+            not len(os.listdir(label_dir_dest)) == 0:
         raise ValueError("Destination directory is not empty.")
 
     # Handle randomize
@@ -60,7 +84,10 @@ def copy_n_files(source, dest, n, randomize):
 
     # Copy files themselves
     for file in copy_list:
-        shutil.copyfile(os.path.join(source, file), os.path.join(dest, file))
+        shutil.copyfile(os.path.join(images_dir_src, file),
+                        os.path.join(images_dir_dest, file))
+        shutil.copyfile(os.path.join(label_dir_src, file),
+                        os.path.join(label_dir_dest, file))
 
 
 if __name__ == '__main__':

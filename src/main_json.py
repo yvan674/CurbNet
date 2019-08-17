@@ -9,6 +9,7 @@ import warnings
 from os import getcwd
 from os.path import join
 from utils.run_training import run_training
+from imgaug import augmenters as iaa
 
 
 def parse_arguments():
@@ -126,6 +127,6 @@ if __name__ == '__main__':
     configuration = parse_json(json_str)
 
     try:
-        run_training(configuration)
+        run_training(configuration, iaa)
     except KeyboardInterrupt:
         print("User exited program. Killing process.")

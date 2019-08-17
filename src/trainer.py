@@ -229,11 +229,6 @@ class Trainer:
 
             # Step iterations for training
             for data in enumerate(training_loader):
-
-                print(data[0], datetime.datetime.now())
-
-
-
                 # Grab the raw and target images
                 raw_image = data[1]["raw"]
                 target_image = data[1]["segmented"]

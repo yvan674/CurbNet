@@ -70,6 +70,8 @@ def watchdog(configuration_list):
             # Next check the status file to see if it has finished training
             with open(join(current_config['plot'], "status.txt")) as status:
                 lines = status.readlines()
+                print(lines)
+                input()
 
             if "Finished Training." in lines[-1]:
                 # Means that training completed properly.

@@ -1,7 +1,7 @@
 """CurbNetF.
 
 A deep neural network designed to identify and segment urban images for curbs
-and curb cuts. This version is based on GoogLeNet. Modifications include adding
+and curb cuts. This version is based on FCN16s. Modifications include adding
 pixel coordinates to the input since we're only segmenting one specific type
 of scene.
 

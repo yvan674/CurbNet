@@ -84,10 +84,11 @@ def copy_n_files(source, dest, n, randomize):
 
     # Copy files themselves
     for file in copy_list:
+        file_png = os.path.splitext(file)[0] + ".png"
         shutil.copyfile(os.path.join(images_dir_src, file),
                         os.path.join(images_dir_dest, file))
-        shutil.copyfile(os.path.join(label_dir_src, file),
-                        os.path.join(label_dir_dest, file))
+        shutil.copyfile(os.path.join(label_dir_src, file_png),
+                        os.path.join(label_dir_dest, file_png))
 
 
 if __name__ == '__main__':

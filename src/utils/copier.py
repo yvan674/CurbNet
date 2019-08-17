@@ -52,11 +52,13 @@ def copy_n_files(source, dest, n, randomize):
     if not len(os.listdir(dest)) == 0:
         raise ValueError("Destination directory is not empty.")
 
+    # Handle randomize
     if randomize:
         copy_list = random.sample(file_list, n)  # randomly select n files
     else:
         copy_list = file_list[:n]  # Select first n files
 
+    # Copy files themselves
     for file in copy_list:
         shutil.copyfile(os.path.join(source, file), dest)
 

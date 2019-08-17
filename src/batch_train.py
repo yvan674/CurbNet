@@ -52,6 +52,9 @@ def watchdog(configuration_list):
     wrong, attempts to restart/continue the session without requiring input from
     the user.
 
+    Known issues:
+        Can't quit while running.
+
     Args:
         configuration_list (list): A list of strings, where each string is the
             json encoded configuration for a single training session.

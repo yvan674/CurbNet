@@ -82,11 +82,4 @@ def process_data(step, epoch, accuracy, loss, rate, status_file_path,
 
             status_file.writelines(lines)
 
-        if epoch % 10 == 0 and validation and step == validation_steps \
-                and not finished:
-            message = "".join(lines)
-
-            Slacker.send_message(message,
-                                 "Update: Finished epoch {}".format(epoch))
-
     return time_left, running_step_count, steps_total

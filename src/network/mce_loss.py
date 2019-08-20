@@ -30,7 +30,7 @@ class MCELoss(nn.CrossEntropyLoss):
         self.register_buffer('weight_penalized', weight_penalized)
 
         # Calculate the size of the b matrix.
-        self.b_size = int(constants.DIM_WIDTH * 0.03)  # Chosen based on
+        self.b_size = int(constants.DIM_WIDTH * 0.05)  # Chosen based on
         # manually viewing the dataset
         # B is created later since it will have to depend on the batch size.
 

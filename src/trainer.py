@@ -15,6 +15,7 @@ Authors:
 # Torch imports
 import torch
 from torch.utils.data.dataloader import DataLoader
+from torch.nn import CrossEntropyLoss
 
 # Python built in imports
 import time
@@ -44,7 +45,8 @@ from network.curbnet_g import CurbNetG
 class Trainer:
     def __init__(self, iaa, lr: float = 0.01, optimizer: str = "sgd",
                  loss_weights: list = None, cmd_line=None,
-                 validation: bool = False) -> None:
+                 validation: bool = False,
+                 loss_criterion: str = 'mce') -> None:
         """Training class used to train the CurbNetG network.
 
         Args:
@@ -59,6 +61,9 @@ class Trainer:
                 interface. Defaults to None.
             silent: Whether or not to immediately quit upon completion. Defaults
                 to false.
+            validation: Whether or not to learn during this session
+            loss_criterion: Which loss criterion to use. Options are 'mce' or
+                'ce'. Defaults to 'mce'.
         """
         self.validation = validation
         self.network = None
@@ -90,8 +95,11 @@ class Trainer:
         loss_weights = torch.tensor(loss_weights,
                                     dtype=torch.float).to(device=self.device)
 
-        self.criterion = MCELoss(weight_normal=loss_weights,
-                                 weight_penalized=3 * loss_weights)
+        if loss_criterion == 'mce':
+            self.criterion = MCELoss(weight_normal=loss_weights,
+                                     weight_penalized=3 * loss_weights)
+        if loss_criterion == 'ce':
+            self.criterion = CrossEntropyLoss(weight=loss_weights)
 
         # Create UI
         if cmd_line:

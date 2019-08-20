@@ -1,12 +1,13 @@
 {
-    "weights": "/home/satyaway/Documents/Thesis/Weights/test.pth",
+    "weights": "/home/satyaway/Documents/Thesis/Weights/with-mce.pth",
     "mode": "train",
-    "data path": "/tmp/mapillary_64/",
-    "batch size": 4,
-    "network": "g",
+    "data path": "/tmp/mapillary-resized/",
+    "batch size": 32,
+    "network": "d",
     "epochs": 10,
     "learning_rate": 0.0002,
     "command line": true,
     "plot": "/home/satyaway/Documents/Thesis/Logs",
-    "px data": false
+    "px data": false,
+    "pretrained": true
 }

@@ -54,7 +54,9 @@ def run_training(arguments, iaa, silence=False):
 
             trainer = Trainer(iaa, arguments["learning_rate"],
                               arguments['optimizer'],
-                              arguments['loss_weights'], stdscr)
+                              arguments['loss_weights'],
+                              stdscr,
+                              loss_criterion=arguments['criterion'])
 
             trainer.set_network(arguments['network'], arguments['pretrained'],
                                 arguments['px_coordinates'])
@@ -62,8 +64,9 @@ def run_training(arguments, iaa, silence=False):
 
         elif arguments['validate']:
             # Run for validation
-            trainer = Trainer(cmd_line=stdscr,
-                              validation=arguments['validate'])
+            trainer = Trainer(iaa, cmd_line=stdscr,
+                              validation=arguments['validate'],
+                              loss_criterion=arguments['criterion'])
             trainer.set_network(arguments['network'], arguments['pretrained'],
                                 arguments['px_coordinates'])
             data = arguments['validate']

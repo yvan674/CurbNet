@@ -131,7 +131,8 @@ class SearchWorker(Worker):
 
         # Set network and loss criterion
         network = Parallelizer(CurbNetD(sync_bn=config['sync_bn'],
-                                        px_coordinates=False).cuda())
+                                        px_coordinates=False,
+                                        pretrained=True).cuda())
         loss_weights = self._calculate_loss_weights(config['weight_ratio'])
 
         if config['loss_criterion'] == 'cross_entropy':

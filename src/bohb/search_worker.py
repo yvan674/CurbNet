@@ -195,10 +195,9 @@ class SearchWorker(Worker):
                                                       non_blocking=True))
 
                 # Calculate class-wise accuracy
-                accuracy = np.array([0., 0., 0.])
-                for idx, item in enumerate(target_image):
-                    accuracy += calculate_accuracy(item, out[idx])
-                accuracy / BATCH_SIZE
+                accuracy = self._calculate_batch_accuracy(target_image,
+                                                          out,
+                                                          BATCH_SIZE)
 
                 # Append the data to a list first before writing to the file
                 csv_data.append({"loss": loss.item(),
@@ -296,7 +295,8 @@ class SearchWorker(Worker):
         """
         accuracy = np.array([0., 0., 0.])
         for idx, item in enumerate(ground_truth):
-            accuracy += calculate_accuracy(item, predicted[idx])
+            accuracy += calculate_accuracy(item.detach().cpu(),
+                                           predicted[idx].detach().cpu())
 
         return accuracy / batch_size
 

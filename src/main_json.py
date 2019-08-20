@@ -12,6 +12,7 @@ from utils.run_training import run_training
 from imgaug import augmenters as iaa
 
 
+
 def parse_arguments():
     """Parses command line arguments."""
     description = "trains or validates CurbNet based on a JSON file."

@@ -30,7 +30,7 @@ def parse_args():
                         help='do not display the validation loss')
     parser.add_argument('path', metavar='P', type=str, nargs='?',
                         help='path of the loss data to be plotted.')
-    parser.add_argument('period', metavar='T', type=int, nargs='?',
+    parser.add_argument('-p', '--period', type=int, nargs='?',
                         help='period of the moving average calculation')
     return parser.parse_args()
 

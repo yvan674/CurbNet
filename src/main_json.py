@@ -109,11 +109,12 @@ def parse_json(json_string, silence=False):
     if "plot" not in json_config:
         warnings.warn("Plot save path not given. Setting path to the current "
                       "working directory.", UserWarning)
+    else:
+        out['plot'] = json_config['plot']
 
     if "pretrained" in json_config:
         out['pretrained'] = json_config['pretrained']
-    else:
-        out['plot'] = json_config['plot']
+
     if "px data" in json_config:
         out['px_coordinates'] = json_config['px data']
     else:

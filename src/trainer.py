@@ -196,6 +196,7 @@ class Trainer:
             "batch size": batch_size,
             "epochs": num_epochs,
             "augmentation": augmentation,
+            "loss criterion": self.criterion,
             "network": self.network
         })
 

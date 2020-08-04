@@ -1,6 +1,6 @@
 # CurbNet
 
-![CurbNet Repo Card](media/curbnet_repo_card.png)
+![CurbNet Result Sample](media/map-1.png)
 A neural network designed to identify and segment curbs and cut curbs from street imagery. This project is a part of my bachelor's thesis at the Albert-Ludwigs-Universität Freiburg.
 
 The goal is to create a network architecture that is well suited to efficiently and accurately identify curbs and [curb cuts](https://en.wikipedia.org/wiki/Curb_cut).
